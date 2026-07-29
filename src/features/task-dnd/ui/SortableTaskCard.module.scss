@@ -1,0 +1,62 @@
+.item {
+  margin: 0;
+
+  border-radius: var(--radius-md);
+
+  transition:
+    opacity 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.dragging {
+  z-index: 10;
+
+  opacity: 0.45;
+}
+
+.dropTarget {
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+.dragHandle {
+  flex-shrink: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 28px;
+  height: 28px;
+  padding: 0;
+
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+
+  font-size: 1rem;
+  line-height: 1;
+
+  cursor: grab;
+  touch-action: none;
+}
+
+.dragHandle:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-column);
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.dragHandle:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    transition: none;
+  }
+}
