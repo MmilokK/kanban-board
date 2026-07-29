@@ -106,10 +106,16 @@
   font-size: 0.75rem;
 }
 
-.deleteButton {
-  padding: 6px 10px;
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
 
-  color: var(--color-danger);
+.editButton,
+.deleteButton {
+  padding: 6px 8px;
+
   background: transparent;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
@@ -120,10 +126,23 @@
   cursor: pointer;
 }
 
+.editButton {
+  color: var(--color-accent);
+}
+
+.editButton:hover {
+  background-color: var(--color-accent-soft);
+}
+
+.deleteButton {
+  color: var(--color-danger);
+}
+
 .deleteButton:hover {
   background-color: var(--color-danger-soft);
 }
 
+.editButton:focus-visible,
 .deleteButton:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;

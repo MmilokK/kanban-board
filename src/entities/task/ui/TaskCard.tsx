@@ -7,6 +7,7 @@ import styles from './TaskCard.module.scss';
 type TaskCardProps = {
   task: Task;
   onDeleteTask: (taskId: TaskId) => void;
+  onEditTask: (taskId: TaskId) => void;
 };
 
 const priorityLabels: Record<TaskPriority, string> = {
@@ -27,11 +28,15 @@ const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
   year: 'numeric',
 });
 
-export function TaskCard({ task, onDeleteTask }: TaskCardProps) {
+export function TaskCard({ task, onDeleteTask, onEditTask }: TaskCardProps) {
   const updatedDate = new Date(task.updatedAt);
 
   function handleDelete(): void {
     onDeleteTask(task.id);
+  }
+
+  function handleEdit(): void {
+    onEditTask(task.id);
   }
 
   return (
@@ -46,7 +51,7 @@ export function TaskCard({ task, onDeleteTask }: TaskCardProps) {
 
       {task.description && <p className={styles.description}>{task.description}</p>}
 
-      {task.tags.length && (
+      {!!task.tags.length && (
         <ul className={styles.tags} aria-label="Теги задачи">
           {task.tags.map((tag) => (
             <li className={styles.tag} key={tag}>
@@ -63,9 +68,15 @@ export function TaskCard({ task, onDeleteTask }: TaskCardProps) {
           <time dateTime={task.updatedAt}>{dateFormatter.format(updatedDate)}</time>
         </div>
 
-        <button className={styles.deleteButton} type="button" onClick={handleDelete}>
-          Удалить
-        </button>
+        <div className={styles.actions}>
+          <button className={styles.editButton} type="button" onClick={handleEdit}>
+            Изменить
+          </button>
+
+          <button className={styles.deleteButton} type="button" onClick={handleDelete}>
+            Удалить
+          </button>
+        </div>
       </footer>
     </article>
   );

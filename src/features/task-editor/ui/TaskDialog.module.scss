@@ -1,0 +1,74 @@
+.dialog {
+  width: min(100% - 24px, 620px);
+  max-height: min(90vh, 760px);
+  padding: 0;
+
+  color: var(--color-text-primary);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 60px rgb(31 35 40 / 24%);
+
+  overflow: auto;
+}
+
+.dialog::backdrop {
+  background-color: rgb(31 35 40 / 55%);
+  backdrop-filter: blur(2px);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+
+  padding: var(--space-lg);
+
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.title {
+  margin: 0;
+
+  font-size: 1.25rem;
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+  padding: 0;
+
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+
+  font-size: 1.5rem;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-column);
+}
+
+.closeButton:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.content {
+  padding: var(--space-lg);
+}
