@@ -72,3 +72,28 @@
   line-height: 1.5;
   text-align: center;
 }
+
+.addButton {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+
+  color: var(--color-accent);
+  background-color: transparent;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.addButton:hover {
+  background-color: var(--color-accent-soft);
+  border-color: var(--color-accent);
+}
+
+.addButton:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
