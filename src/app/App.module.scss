@@ -43,4 +43,37 @@
     flex-direction: column;
     gap: var(--space-md);
   }
+
+  .headerActions {
+    align-items: flex-start;
+  }
+}
+
+.headerActions {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.resetButton {
+  padding: 8px 14px;
+
+  color: var(--color-accent);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.resetButton:hover {
+  background-color: var(--color-accent-soft);
+}
+
+.resetButton:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }

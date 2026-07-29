@@ -1,9 +1,12 @@
-import { demoBoardState } from '../entities/board/model/demo-board';
+import { useBoardStore } from '../entities/board/model/board-store';
+
 import { Board } from '../widgets/board/ui/Board';
 
 import styles from './App.module.scss';
 
 export function App() {
+  const resetBoard = useBoardStore((state) => state.resetBoard);
+
   return (
     <main className={styles.page}>
       <header className={styles.header}>
@@ -11,10 +14,16 @@ export function App() {
           <h1 className={styles.title}>Kanban Board</h1>
         </div>
 
-        <p className={styles.description}>Простая доска для управления задачами.</p>
+        <div className={styles.headerActions}>
+          <p className={styles.description}>Простая доска для управления задачами.</p>
+
+          <button className={styles.resetButton} type="button" onClick={resetBoard}>
+            Восстановить задачи
+          </button>
+        </div>
       </header>
 
-      <Board board={demoBoardState} />
+      <Board />
     </main>
   );
 }

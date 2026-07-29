@@ -1,9 +1,12 @@
-import type { Task, TaskPriority } from '../model/types';
+import clsx from 'clsx';
+
+import type { Task, TaskId, TaskPriority } from '../model/types';
 
 import styles from './TaskCard.module.scss';
 
 type TaskCardProps = {
   task: Task;
+  onDeleteTask: (taskId: TaskId) => void;
 };
 
 const priorityLabels: Record<TaskPriority, string> = {
@@ -24,15 +27,19 @@ const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
   year: 'numeric',
 });
 
-export function TaskCard({ task }: TaskCardProps) {
+export function TaskCard({ task, onDeleteTask }: TaskCardProps) {
   const updatedDate = new Date(task.updatedAt);
+
+  function handleDelete(): void {
+    onDeleteTask(task.id);
+  }
 
   return (
     <article className={styles.card}>
       <div className={styles.header}>
         <h3 className={styles.title}>{task.title}</h3>
 
-        <span className={`${styles.priority} ${priorityClassNames[task.priority]}`}>
+        <span className={clsx(styles.priority, priorityClassNames[task.priority])}>
           {priorityLabels[task.priority]}
         </span>
       </div>
@@ -50,9 +57,15 @@ export function TaskCard({ task }: TaskCardProps) {
       )}
 
       <footer className={styles.footer}>
-        <span>Обновлено</span>
+        <div className={styles.updatedAt}>
+          <span>Обновлено</span>
 
-        <time dateTime={task.updatedAt}>{dateFormatter.format(updatedDate)}</time>
+          <time dateTime={task.updatedAt}>{dateFormatter.format(updatedDate)}</time>
+        </div>
+
+        <button className={styles.deleteButton} type="button" onClick={handleDelete}>
+          Удалить
+        </button>
       </footer>
     </article>
   );
