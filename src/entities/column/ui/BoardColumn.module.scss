@@ -11,6 +11,14 @@
   border-radius: var(--radius-lg);
 
   scroll-snap-align: start;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.dropTarget {
+  background-color: var(--color-accent-soft);
+  border-color: var(--color-accent);
 }
 
 .header {
@@ -56,10 +64,6 @@
   padding: 0;
 
   list-style: none;
-}
-
-.taskItem {
-  margin: 0;
 }
 
 .emptyState {

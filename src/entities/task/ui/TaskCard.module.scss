@@ -147,3 +147,10 @@
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
+
+.titleGroup {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  min-width: 0;
+}

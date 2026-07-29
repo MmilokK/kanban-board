@@ -1,7 +1,11 @@
 import type { Column, ColumnId } from '../model/types';
 import type { Task, TaskId } from '../../task/model/types';
 
-import { TaskCard } from '../../task/ui/TaskCard';
+import { CollisionPriority } from '@dnd-kit/abstract';
+import { useDroppable } from '@dnd-kit/react';
+import clsx from 'clsx';
+
+import { SortableTaskCard } from '../../../features/task-dnd/ui/SortableTaskCard';
 
 import styles from './BoardColumn.module.scss';
 
@@ -22,12 +26,22 @@ export function BoardColumn({
 }: BoardColumnProps) {
   const titleId = `column-${column.id}-title`;
 
+  const { ref: droppableRef, isDropTarget } = useDroppable({
+    id: column.id,
+    accept: 'task',
+    collisionPriority: CollisionPriority.Low,
+  });
+
   function handleCreateTask(): void {
     onCreateTask(column.id);
   }
 
   return (
-    <section className={styles.column} aria-labelledby={titleId}>
+    <section
+      className={clsx(styles.column, isDropTarget && styles.dropTarget)}
+      ref={droppableRef}
+      aria-labelledby={titleId}
+    >
       <header className={styles.header}>
         <h2 className={styles.title} id={titleId}>
           {column.title}
@@ -38,16 +52,21 @@ export function BoardColumn({
         </span>
       </header>
 
-      {tasks.length ? (
+      {tasks.length > 0 ? (
         <ul className={styles.taskList}>
-          {tasks.map((task) => (
-            <li className={styles.taskItem} key={task.id}>
-              <TaskCard task={task} onDeleteTask={onDeleteTask} onEditTask={onEditTask} />
-            </li>
+          {tasks.map((task, index) => (
+            <SortableTaskCard
+              columnId={column.id}
+              index={index}
+              key={task.id}
+              task={task}
+              onDeleteTask={onDeleteTask}
+              onEditTask={onEditTask}
+            />
           ))}
         </ul>
       ) : (
-        <p className={styles.emptyState}>В этой колонке пока нет задач</p>
+        <p className={styles.emptyState}>Перетащи задачу сюда</p>
       )}
 
       <button className={styles.addButton} type="button" onClick={handleCreateTask}>

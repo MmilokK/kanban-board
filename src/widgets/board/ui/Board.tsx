@@ -1,4 +1,11 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+
+import { DragDropProvider, type DragEndEvent, type DragOverEvent } from '@dnd-kit/react';
+import { move } from '@dnd-kit/helpers';
+import {
+  selectTaskIdsByColumn,
+  type TaskIdsByColumn,
+} from '../../../entities/board/model/task-order';
 import { useShallow } from 'zustand/react/shallow';
 
 import { useBoardStore } from '../../../entities/board/model/board-store';
@@ -23,18 +30,21 @@ type TaskEditorState =
   | null;
 
 export function Board() {
-  const { tasks, columns, columnOrder, addTask, updateTask, deleteTask } = useBoardStore(
-    useShallow((state) => ({
-      tasks: state.tasks,
-      columns: state.columns,
-      columnOrder: state.columnOrder,
-      addTask: state.addTask,
-      updateTask: state.updateTask,
-      deleteTask: state.deleteTask,
-    })),
-  );
+  const { tasks, columns, columnOrder, addTask, updateTask, deleteTask, replaceTaskOrder } =
+    useBoardStore(
+      useShallow((state) => ({
+        tasks: state.tasks,
+        columns: state.columns,
+        columnOrder: state.columnOrder,
+        addTask: state.addTask,
+        updateTask: state.updateTask,
+        deleteTask: state.deleteTask,
+        replaceTaskOrder: state.replaceTaskOrder,
+      })),
+    );
 
   const [editorState, setEditorState] = useState<TaskEditorState>(null);
+  const previousTaskOrderRef = useRef<TaskIdsByColumn | null>(null);
 
   const editedTask = editorState?.mode === 'edit' ? (tasks[editorState.taskId] ?? null) : null;
 
@@ -74,28 +84,54 @@ export function Board() {
     updateTask(editorState.taskId, input);
   }
 
+  function handleDragStart(): void {
+    previousTaskOrderRef.current = selectTaskIdsByColumn(useBoardStore.getState());
+  }
+
+  function handleDragOver(event: DragOverEvent): void {
+    const currentTaskOrder = selectTaskIdsByColumn(useBoardStore.getState());
+
+    const nextTaskOrder = move(currentTaskOrder, event);
+
+    replaceTaskOrder(nextTaskOrder);
+  }
+
+  function handleDragEnd(event: DragEndEvent): void {
+    if (event.canceled && previousTaskOrderRef.current) {
+      replaceTaskOrder(previousTaskOrderRef.current);
+    }
+
+    previousTaskOrderRef.current = null;
+  }
+
   return (
     <>
-      <section className={styles.board} aria-label="Kanban-доска">
-        {columnOrder.map((columnId) => {
-          const column = columns[columnId];
+      <DragDropProvider
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <section className={styles.board} aria-label="Kanban-доска">
+          {columnOrder.map((columnId) => {
+            const column = columns[columnId];
 
-          const columnTasks = column.taskIds
-            .map((taskId) => tasks[taskId])
-            .filter((task): task is Task => task !== undefined);
+            const columnTasks = column.taskIds
+              .map((taskId) => tasks[taskId])
+              .filter((task): task is Task => task !== undefined);
 
-          return (
-            <BoardColumn
-              column={column}
-              key={column.id}
-              tasks={columnTasks}
-              onCreateTask={handleCreateTask}
-              onDeleteTask={deleteTask}
-              onEditTask={handleEditTask}
-            />
-          );
-        })}
-      </section>
+            return (
+              <BoardColumn
+                column={column}
+                key={column.id}
+                tasks={columnTasks}
+                onCreateTask={handleCreateTask}
+                onDeleteTask={deleteTask}
+                onEditTask={handleEditTask}
+              />
+            );
+          })}
+        </section>
+      </DragDropProvider>
 
       {editorState && (
         <TaskDialog

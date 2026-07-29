@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import clsx from 'clsx';
 
 import type { Task, TaskId, TaskPriority } from '../model/types';
@@ -6,6 +8,7 @@ import styles from './TaskCard.module.scss';
 
 type TaskCardProps = {
   task: Task;
+  dragHandle?: ReactNode;
   onDeleteTask: (taskId: TaskId) => void;
   onEditTask: (taskId: TaskId) => void;
 };
@@ -28,7 +31,7 @@ const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
   year: 'numeric',
 });
 
-export function TaskCard({ task, onDeleteTask, onEditTask }: TaskCardProps) {
+export function TaskCard({ task, dragHandle, onDeleteTask, onEditTask }: TaskCardProps) {
   const updatedDate = new Date(task.updatedAt);
 
   function handleDelete(): void {
@@ -42,7 +45,11 @@ export function TaskCard({ task, onDeleteTask, onEditTask }: TaskCardProps) {
   return (
     <article className={styles.card}>
       <div className={styles.header}>
-        <h3 className={styles.title}>{task.title}</h3>
+        <div className={styles.titleGroup}>
+          {dragHandle}
+
+          <h3 className={styles.title}>{task.title}</h3>
+        </div>
 
         <span className={clsx(styles.priority, priorityClassNames[task.priority])}>
           {priorityLabels[task.priority]}

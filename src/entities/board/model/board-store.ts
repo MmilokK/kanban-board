@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 import type { ColumnId } from '../../column/model/types';
 import type { CreateTaskInput, TaskId, UpdateTaskInput } from '../../task/model/types';
+import type { TaskIdsByColumn } from './task-order';
 
 import { createDemoBoardState } from './demo-board';
 import type { BoardState } from './types';
@@ -14,6 +15,8 @@ type BoardActions = {
   deleteTask: (taskId: TaskId) => void;
 
   resetBoard: () => void;
+
+  replaceTaskOrder: (taskIdsByColumn: TaskIdsByColumn) => void;
 };
 
 export type BoardStore = BoardState & BoardActions;
@@ -112,5 +115,24 @@ export const useBoardStore = create<BoardStore>()((set) => ({
 
   resetBoard: () => {
     set(createDemoBoardState());
+  },
+
+  replaceTaskOrder: (taskIdsByColumn) => {
+    set((state) => {
+      const nextColumns = {
+        ...state.columns,
+      };
+
+      state.columnOrder.forEach((columnId) => {
+        nextColumns[columnId] = {
+          ...state.columns[columnId],
+          taskIds: [...taskIdsByColumn[columnId]],
+        };
+      });
+
+      return {
+        columns: nextColumns,
+      };
+    });
   },
 }));
