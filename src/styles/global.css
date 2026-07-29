@@ -24,6 +24,11 @@
   --color-accent: #0969da;
   --color-accent-soft: #ddf4ff;
 
+  --color-danger: #cf222e;
+  --color-danger-soft: #ffebe9;
+
+  --color-focus: #0969da;
+
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;

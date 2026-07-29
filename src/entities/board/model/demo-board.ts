@@ -83,3 +83,7 @@ export const demoBoardState = {
 
   schemaVersion: 1,
 } satisfies BoardState;
+
+export function createDemoBoardState(): BoardState {
+  return structuredClone(demoBoardState);
+}

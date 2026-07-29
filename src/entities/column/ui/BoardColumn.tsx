@@ -1,5 +1,5 @@
 import type { Column } from '../model/types';
-import type { Task } from '../../task/model/types';
+import type { Task, TaskId } from '../../task/model/types';
 
 import { TaskCard } from '../../task/ui/TaskCard';
 
@@ -8,9 +8,10 @@ import styles from './BoardColumn.module.scss';
 type BoardColumnProps = {
   column: Column;
   tasks: Task[];
+  onDeleteTask: (taskId: TaskId) => void;
 };
 
-export function BoardColumn({ column, tasks }: BoardColumnProps) {
+export function BoardColumn({ column, tasks, onDeleteTask }: BoardColumnProps) {
   const titleId = `column-${column.id}-title`;
 
   return (
@@ -20,7 +21,7 @@ export function BoardColumn({ column, tasks }: BoardColumnProps) {
           {column.title}
         </h2>
 
-        <span className={styles.counter} aria-label={`Задач: ${tasks.length}`}>
+        <span className={styles.counter} aria-label={`Количество задач: ${tasks.length}`}>
           {tasks.length}
         </span>
       </header>
@@ -29,7 +30,7 @@ export function BoardColumn({ column, tasks }: BoardColumnProps) {
         <ul className={styles.taskList}>
           {tasks.map((task) => (
             <li className={styles.taskItem} key={task.id}>
-              <TaskCard task={task} />
+              <TaskCard task={task} onDeleteTask={onDeleteTask} />
             </li>
           ))}
         </ul>

@@ -1,25 +1,36 @@
-import type { BoardState } from '../../../entities/board/model/types';
+import { useShallow } from 'zustand/react/shallow';
+import { useBoardStore } from '../../../entities/board/model/board-store';
+import styles from './Board.module.scss';
 import type { Task } from '../../../entities/task/model/types';
-
 import { BoardColumn } from '../../../entities/column/ui/BoardColumn';
 
-import styles from './Board.module.scss';
+export function Board() {
+  const { tasks, columns, columnOrder, deleteTask } = useBoardStore(
+    useShallow((state) => ({
+      tasks: state.tasks,
+      columns: state.columns,
+      columnOrder: state.columnOrder,
+      deleteTask: state.deleteTask,
+    })),
+  );
 
-type BoardProps = {
-  board: BoardState;
-};
-
-export function Board({ board }: BoardProps) {
   return (
     <section className={styles.board} aria-label="Kanban-доска">
-      {board.columnOrder.map((columnId) => {
-        const column = board.columns[columnId];
+      {columnOrder.map((columnId) => {
+        const column = columns[columnId];
 
-        const tasks = column.taskIds
-          .map((taskId) => board.tasks[taskId])
+        const columnTasks = column.taskIds
+          .map((taskId) => tasks[taskId])
           .filter((task): task is Task => task !== undefined);
 
-        return <BoardColumn column={column} key={column.id} tasks={tasks} />;
+        return (
+          <BoardColumn
+            key={column.id}
+            column={column}
+            tasks={columnTasks}
+            onDeleteTask={deleteTask}
+          />
+        );
       })}
     </section>
   );
