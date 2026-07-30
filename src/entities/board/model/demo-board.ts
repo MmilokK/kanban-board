@@ -1,4 +1,4 @@
-import type { BoardState } from './types';
+import { BOARD_SCHEMA_VERSION, type BoardState } from './types';
 
 export const demoBoardState = {
   tasks: {
@@ -81,7 +81,7 @@ export const demoBoardState = {
 
   columnOrder: ['backlog', 'todo', 'in-progress', 'done'],
 
-  schemaVersion: 1,
+  schemaVersion: BOARD_SCHEMA_VERSION,
 } satisfies BoardState;
 
 export function createDemoBoardState(): BoardState {

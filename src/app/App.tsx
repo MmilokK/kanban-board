@@ -18,7 +18,7 @@ export function App() {
           <p className={styles.description}>Простая доска для управления задачами.</p>
 
           <button className={styles.resetButton} type="button" onClick={resetBoard}>
-            Восстановить задачи
+            Сбросить доску
           </button>
         </div>
       </header>
