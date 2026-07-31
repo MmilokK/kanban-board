@@ -52,6 +52,10 @@ export function BoardColumn({
         </span>
       </header>
 
+      <button className={styles.addButton} type="button" onClick={handleCreateTask}>
+        Добавить задачу
+      </button>
+
       {tasks.length > 0 ? (
         <ul className={styles.taskList}>
           {tasks.map((task, index) => (
@@ -68,10 +72,6 @@ export function BoardColumn({
       ) : (
         <p className={styles.emptyState}>Перетащи задачу сюда</p>
       )}
-
-      <button className={styles.addButton} type="button" onClick={handleCreateTask}>
-        Добавить задачу
-      </button>
     </section>
   );
 }
