@@ -1,0 +1,73 @@
+.page {
+  display: grid;
+  place-items: center;
+
+  min-height: 100vh;
+  padding: var(--space-lg);
+
+  background-color: var(--color-background);
+}
+
+.message {
+  width: min(100%, 560px);
+  padding: clamp(24px, 5vw, 48px);
+
+  text-align: center;
+
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 50px rgb(31 35 40 / 12%);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-sm);
+
+  color: var(--color-danger);
+
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+
+  color: var(--color-text-primary);
+
+  font-size: clamp(1.5rem, 5vw, 2rem);
+}
+
+.description {
+  margin: var(--space-md) auto var(--space-lg);
+
+  max-width: 420px;
+
+  color: var(--color-text-secondary);
+
+  line-height: 1.6;
+}
+
+.reloadButton {
+  min-height: 42px;
+  padding: 9px 18px;
+
+  color: #ffffff;
+  background-color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.reloadButton:hover {
+  filter: brightness(0.94);
+}
+
+.reloadButton:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
