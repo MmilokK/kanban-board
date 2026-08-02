@@ -2,9 +2,10 @@ import type { ReactNode } from 'react';
 
 import clsx from 'clsx';
 
-import type { Task, TaskId, TaskPriority } from '../model/types';
+import type { Task, TaskPriority } from '../model/types';
 
 import styles from './TaskCard.module.scss';
+import type { TaskId } from '../../../shared/model/entity-ids';
 
 type TaskCardProps = {
   task: Task;

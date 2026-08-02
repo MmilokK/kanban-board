@@ -1,24 +1,24 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import type { ColumnId } from '../../column/model/types';
-import type { CreateTaskInput, TaskId, UpdateTaskInput } from '../../task/model/types';
+import type { BoardId, ColumnId, TaskId } from '../../../shared/model/entity-ids';
+import type { CreateTaskInput, UpdateTaskInput } from '../../task/model/types';
 
+import type { AppState } from './app-state';
+import { APP_SCHEMA_VERSION } from './app-state';
+import { safeParseAppState } from './board-schema';
 import {
   BOARD_STORAGE_KEY,
   migratePersistedBoardState,
-  removePersistedBoardState,
   selectPersistedBoardState,
 } from './board-storage';
-import { createDemoBoardState } from './demo-board';
-import { parseBoardState } from './board-schema';
+import { createDemoAppState } from './demo-board';
 import type { TaskIdsByColumn } from './task-order';
-import { BOARD_SCHEMA_VERSION, type BoardState } from './types';
 
 type BoardActions = {
-  addTask: (input: CreateTaskInput, columnId?: ColumnId) => TaskId;
+  addTask: (columnId: ColumnId, input: CreateTaskInput) => void;
 
-  updateTask: (taskId: TaskId, changes: UpdateTaskInput) => void;
+  updateTask: (taskId: TaskId, input: UpdateTaskInput) => void;
 
   deleteTask: (taskId: TaskId) => void;
 
@@ -27,29 +27,65 @@ type BoardActions = {
   resetBoard: () => void;
 };
 
-export type BoardStore = BoardState & BoardActions;
+export type BoardStore = AppState & BoardActions;
+
+function findTaskColumnId(state: AppState, taskId: TaskId): ColumnId | null {
+  for (const column of Object.values(state.columns)) {
+    if (column.taskIds.includes(taskId)) {
+      return column.id;
+    }
+  }
+
+  return null;
+}
+
+function updateBoardTimestamp(
+  boards: AppState['boards'],
+  boardId: BoardId,
+  updatedAt: string,
+): AppState['boards'] {
+  const board = boards[boardId];
+
+  if (!board) {
+    return boards;
+  }
+
+  return {
+    ...boards,
+
+    [boardId]: {
+      ...board,
+      updatedAt,
+    },
+  };
+}
 
 export const useBoardStore = create<BoardStore>()(
-  persist<BoardStore, [], [], BoardState>(
+  persist<BoardStore, [], [], AppState>(
     (set) => ({
-      ...createDemoBoardState(),
+      ...createDemoAppState(),
 
-      addTask: (input, columnId = 'backlog') => {
-        const taskId = crypto.randomUUID();
-        const timestamp = new Date().toISOString();
-
+      addTask: (columnId, input) => {
         set((state) => {
           const column = state.columns[columnId];
+
+          if (!column) {
+            return state;
+          }
+
+          const now = new Date().toISOString();
+
+          const taskId = crypto.randomUUID();
 
           return {
             tasks: {
               ...state.tasks,
 
               [taskId]: {
-                ...input,
                 id: taskId,
-                createdAt: timestamp,
-                updatedAt: timestamp,
+                ...input,
+                createdAt: now,
+                updatedAt: now,
               },
             },
 
@@ -61,15 +97,13 @@ export const useBoardStore = create<BoardStore>()(
                 taskIds: [...column.taskIds, taskId],
               },
             },
+
+            boards: updateBoardTimestamp(state.boards, column.boardId, now),
           };
         });
-
-        return taskId;
       },
 
-      updateTask: (taskId, changes) => {
-        const timestamp = new Date().toISOString();
-
+      updateTask: (taskId, input) => {
         set((state) => {
           const task = state.tasks[taskId];
 
@@ -77,23 +111,45 @@ export const useBoardStore = create<BoardStore>()(
             return state;
           }
 
+          const now = new Date().toISOString();
+
+          const columnId = findTaskColumnId(state, taskId);
+
+          const column = columnId ? state.columns[columnId] : undefined;
+
           return {
             tasks: {
               ...state.tasks,
 
               [taskId]: {
                 ...task,
-                ...changes,
-                updatedAt: timestamp,
+                ...input,
+                updatedAt: now,
               },
             },
+
+            boards: column ? updateBoardTimestamp(state.boards, column.boardId, now) : state.boards,
           };
         });
       },
 
       deleteTask: (taskId) => {
         set((state) => {
-          if (!state.tasks[taskId]) {
+          const task = state.tasks[taskId];
+
+          if (!task) {
+            return state;
+          }
+
+          const columnId = findTaskColumnId(state, taskId);
+
+          if (!columnId) {
+            return state;
+          }
+
+          const column = state.columns[columnId];
+
+          if (!column) {
             return state;
           }
 
@@ -103,22 +159,22 @@ export const useBoardStore = create<BoardStore>()(
 
           delete nextTasks[taskId];
 
-          const nextColumns = {
-            ...state.columns,
-          };
-
-          state.columnOrder.forEach((columnId) => {
-            const column = state.columns[columnId];
-
-            nextColumns[columnId] = {
-              ...column,
-              taskIds: column.taskIds.filter((currentTaskId) => currentTaskId !== taskId),
-            };
-          });
+          const now = new Date().toISOString();
 
           return {
             tasks: nextTasks,
-            columns: nextColumns,
+
+            columns: {
+              ...state.columns,
+
+              [columnId]: {
+                ...column,
+
+                taskIds: column.taskIds.filter((currentTaskId) => currentTaskId !== taskId),
+              },
+            },
+
+            boards: updateBoardTimestamp(state.boards, column.boardId, now),
           };
         });
       },
@@ -129,43 +185,74 @@ export const useBoardStore = create<BoardStore>()(
             ...state.columns,
           };
 
-          state.columnOrder.forEach((columnId) => {
+          const affectedBoardIds = new Set<BoardId>();
+
+          for (const [columnId, taskIds] of Object.entries(taskIdsByColumn)) {
+            const column = state.columns[columnId];
+
+            if (!column) {
+              continue;
+            }
+
             nextColumns[columnId] = {
-              ...state.columns[columnId],
-              taskIds: [...taskIdsByColumn[columnId]],
+              ...column,
+              taskIds: [...taskIds],
             };
-          });
+
+            affectedBoardIds.add(column.boardId);
+          }
+
+          if (affectedBoardIds.size === 0) {
+            return state;
+          }
+
+          const now = new Date().toISOString();
+
+          const nextBoards = {
+            ...state.boards,
+          };
+
+          for (const boardId of affectedBoardIds) {
+            const board = nextBoards[boardId];
+
+            if (!board) {
+              continue;
+            }
+
+            nextBoards[boardId] = {
+              ...board,
+              updatedAt: now,
+            };
+          }
 
           return {
             columns: nextColumns,
+            boards: nextBoards,
           };
         });
       },
 
       resetBoard: () => {
-        set(createDemoBoardState());
+        set(createDemoAppState());
       },
     }),
 
     {
       name: BOARD_STORAGE_KEY,
 
-      version: BOARD_SCHEMA_VERSION,
+      version: APP_SCHEMA_VERSION,
 
-      storage: createJSONStorage<BoardState>(() => window.localStorage),
+      storage: createJSONStorage<AppState>(() => window.localStorage),
 
       partialize: selectPersistedBoardState,
 
-      migrate: (persistedState, persistedVersion) =>
-        migratePersistedBoardState(persistedState, persistedVersion),
+      migrate: migratePersistedBoardState,
 
       merge: (persistedState, currentState) => {
-        const parsedState = parseBoardState(persistedState);
+        const parsedState = safeParseAppState(persistedState);
 
         if (!parsedState) {
-          if (persistedState !== undefined) {
-            removePersistedBoardState();
-          }
+          console.error('Persisted board state is invalid. Demo state will be used.');
 
           return currentState;
         }
@@ -176,10 +263,12 @@ export const useBoardStore = create<BoardStore>()(
         };
       },
 
-      onRehydrateStorage: () => (_state, error) => {
-        if (error) {
-          removePersistedBoardState();
-        }
+      onRehydrateStorage: () => {
+        return (_state, error) => {
+          if (error) {
+            console.error('Failed to restore board state', error);
+          }
+        };
       },
     },
   ),

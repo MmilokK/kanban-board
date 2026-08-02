@@ -1,11 +1,9 @@
-import type { TaskId } from '../../task/model/types';
-
-export const COLUMN_IDS = ['backlog', 'todo', 'in-progress', 'done'] as const;
-
-export type ColumnId = (typeof COLUMN_IDS)[number];
+import type { BoardId, ColumnId, TaskId } from '../../../shared/model/entity-ids';
 
 export type Column = {
   id: ColumnId;
+  boardId: BoardId;
   title: string;
   taskIds: TaskId[];
+  isCompleted: boolean;
 };

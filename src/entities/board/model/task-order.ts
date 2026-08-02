@@ -1,14 +1,22 @@
-import type { ColumnId } from '../../column/model/types';
-import type { TaskId } from '../../task/model/types';
-
-import type { BoardState } from './types';
+import type { AppState } from './app-state';
+import type { ColumnId, TaskId } from '../../../shared/model/entity-ids';
 
 export type TaskIdsByColumn = Record<ColumnId, TaskId[]>;
 
 export function selectTaskIdsByColumn(
-  state: Pick<BoardState, 'columns' | 'columnOrder'>,
+  state: Pick<AppState, 'activeBoardId' | 'boards' | 'columns'>,
 ): TaskIdsByColumn {
+  if (!state.activeBoardId) {
+    return {};
+  }
+
+  const board = state.boards[state.activeBoardId];
+
+  if (!board) {
+    return {};
+  }
+
   return Object.fromEntries(
-    state.columnOrder.map((columnId) => [columnId, [...state.columns[columnId].taskIds]]),
-  ) as TaskIdsByColumn;
+    board.columnIds.map((columnId) => [columnId, [...(state.columns[columnId]?.taskIds ?? [])]]),
+  );
 }

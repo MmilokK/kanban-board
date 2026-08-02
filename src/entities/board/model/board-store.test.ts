@@ -1,172 +1,310 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { BOARD_STORAGE_KEY } from './board-storage';
-import { createDemoBoardState } from './demo-board';
+import type { BoardId, ColumnId, TaskId } from '../../../shared/model/entity-ids';
+
+import { APP_SCHEMA_VERSION } from './app-state';
+import { DEFAULT_BOARD_ID, DEFAULT_COLUMN_IDS } from './default-board';
 import { useBoardStore } from './board-store';
-import { selectTaskIdsByColumn } from './task-order';
-import type { BoardState } from './types';
+import { createDemoAppState } from './demo-board';
 
-describe('useBoardStore', () => {
+const CREATED_AT = '2026-08-02T10:00:00.000Z';
+
+const UPDATED_AT = '2026-08-02T11:00:00.000Z';
+
+const DELETED_AT = '2026-08-02T12:00:00.000Z';
+
+const REORDERED_AT = '2026-08-02T13:00:00.000Z';
+
+const CREATED_TASK_ID = '00000000-0000-4000-8000-000000000001';
+
+const FIRST_TASK_ID = '00000000-0000-4000-8000-000000000002';
+
+const SECOND_TASK_ID = '00000000-0000-4000-8000-000000000003';
+
+const randomUUIDMock = vi.fn((): string => CREATED_TASK_ID);
+
+const taskInput = {
+  title: 'Новая задача',
+  description: 'Описание новой задачи',
+  priority: 'high' as const,
+  tags: ['test', 'zustand'],
+};
+
+function getBoard(boardId: BoardId) {
+  const board = useBoardStore.getState().boards[boardId];
+
+  if (!board) {
+    throw new Error(`Доска "${boardId}" не найдена`);
+  }
+
+  return board;
+}
+
+function getColumn(columnId: ColumnId) {
+  const column = useBoardStore.getState().columns[columnId];
+
+  if (!column) {
+    throw new Error(`Колонка "${columnId}" не найдена`);
+  }
+
+  return column;
+}
+
+function getTask(taskId: TaskId) {
+  const task = useBoardStore.getState().tasks[taskId];
+
+  if (!task) {
+    throw new Error(`Задача "${taskId}" не найдена`);
+  }
+
+  return task;
+}
+
+function selectDataState() {
+  const state = useBoardStore.getState();
+
+  return {
+    boards: state.boards,
+    boardOrder: state.boardOrder,
+    activeBoardId: state.activeBoardId,
+    columns: state.columns,
+    tasks: state.tasks,
+    schemaVersion: state.schemaVersion,
+  };
+}
+
+describe('Хранилище доски', () => {
   beforeEach(() => {
+    vi.useFakeTimers();
+
+    vi.setSystemTime(new Date(CREATED_AT));
+
+    randomUUIDMock.mockReset();
+    randomUUIDMock.mockReturnValue(CREATED_TASK_ID);
+
+    vi.stubGlobal('crypto', {
+      randomUUID: randomUUIDMock,
+    });
+
     window.localStorage.clear();
 
-    /*
-     * setState без replace сохраняет действия store
-     * и заменяет только данные доски.
-     */
-    useBoardStore.setState(createDemoBoardState());
+    useBoardStore.setState(createDemoAppState());
   });
 
-  it('добавляет задачу в выбранную колонку', () => {
-    const taskId = useBoardStore.getState().addTask(
-      {
-        title: 'Новая задача',
-        description: 'Описание',
-        priority: 'high',
-        tags: ['Vitest'],
-      },
-      'todo',
-    );
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
 
-    const state = useBoardStore.getState();
-    const task = state.tasks[taskId];
+  it('создаёт задачу в указанной колонке', () => {
+    const backlogBefore = getColumn(DEFAULT_COLUMN_IDS.backlog);
 
-    expect(task).toBeDefined();
+    const previousTaskIds = [...backlogBefore.taskIds];
 
-    expect(task).toMatchObject({
-      id: taskId,
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    const createdTask = getTask(CREATED_TASK_ID);
+
+    const backlogAfter = getColumn(DEFAULT_COLUMN_IDS.backlog);
+
+    expect(createdTask).toEqual({
+      id: CREATED_TASK_ID,
       title: 'Новая задача',
-      description: 'Описание',
+      description: 'Описание новой задачи',
       priority: 'high',
-      tags: ['Vitest'],
+      tags: ['test', 'zustand'],
+      createdAt: CREATED_AT,
+      updatedAt: CREATED_AT,
     });
 
-    expect(state.columns.todo.taskIds).toContain(taskId);
+    expect(backlogAfter.taskIds).toEqual([...previousTaskIds, CREATED_TASK_ID]);
+
+    expect(getBoard(DEFAULT_BOARD_ID).updatedAt).toBe(CREATED_AT);
   });
 
-  it('редактирует задачу', () => {
-    const taskId = useBoardStore.getState().addTask(
-      {
-        title: 'Старое название',
-        description: '',
-        priority: 'low',
-        tags: [],
-      },
-      'backlog',
-    );
+  it('редактирует существующую задачу', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
 
-    const createdTask = useBoardStore.getState().tasks[taskId];
+    vi.setSystemTime(new Date(UPDATED_AT));
 
-    if (!createdTask) {
-      throw new Error('Задача не была создана');
-    }
+    useBoardStore.getState().updateTask(CREATED_TASK_ID, {
+      title: 'Обновлённая задача',
+      description: 'Новое описание задачи',
+    });
 
-    const createdAt = createdTask.createdAt;
+    const updatedTask = getTask(CREATED_TASK_ID);
 
-    useBoardStore.getState().updateTask(taskId, {
+    expect(updatedTask).toEqual({
+      id: CREATED_TASK_ID,
+      title: 'Обновлённая задача',
+      description: 'Новое описание задачи',
+      priority: 'high',
+      tags: ['test', 'zustand'],
+      createdAt: CREATED_AT,
+      updatedAt: UPDATED_AT,
+    });
+
+    expect(getBoard(DEFAULT_BOARD_ID).updatedAt).toBe(UPDATED_AT);
+  });
+
+  it('сохраняет неизменённые поля при частичном редактировании', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.todo, taskInput);
+
+    vi.setSystemTime(new Date(UPDATED_AT));
+
+    useBoardStore.getState().updateTask(CREATED_TASK_ID, {
+      priority: 'low',
+    });
+
+    const updatedTask = getTask(CREATED_TASK_ID);
+
+    expect(updatedTask.title).toBe(taskInput.title);
+
+    expect(updatedTask.description).toBe(taskInput.description);
+
+    expect(updatedTask.tags).toEqual(taskInput.tags);
+
+    expect(updatedTask.priority).toBe('low');
+
+    expect(updatedTask.createdAt).toBe(CREATED_AT);
+
+    expect(updatedTask.updatedAt).toBe(UPDATED_AT);
+  });
+
+  it('удаляет задачу из объекта задач и колонки', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.todo, taskInput);
+
+    expect(getColumn(DEFAULT_COLUMN_IDS.todo).taskIds).toContain(CREATED_TASK_ID);
+
+    vi.setSystemTime(new Date(DELETED_AT));
+
+    useBoardStore.getState().deleteTask(CREATED_TASK_ID);
+
+    const state = useBoardStore.getState();
+
+    expect(state.tasks[CREATED_TASK_ID]).toBeUndefined();
+
+    expect(getColumn(DEFAULT_COLUMN_IDS.todo).taskIds).not.toContain(CREATED_TASK_ID);
+
+    expect(getBoard(DEFAULT_BOARD_ID).updatedAt).toBe(DELETED_AT);
+  });
+
+  it('изменяет порядок задач и переносит задачу между колонками', () => {
+    randomUUIDMock.mockReturnValueOnce(FIRST_TASK_ID).mockReturnValueOnce(SECOND_TASK_ID);
+
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, {
+      ...taskInput,
+      title: 'Первая задача',
+    });
+
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, {
+      ...taskInput,
+      title: 'Вторая задача',
+    });
+
+    const backlogBefore = getColumn(DEFAULT_COLUMN_IDS.backlog);
+
+    const todoBefore = getColumn(DEFAULT_COLUMN_IDS.todo);
+
+    const nextBacklogTaskIds = backlogBefore.taskIds.filter((taskId) => taskId !== FIRST_TASK_ID);
+
+    const nextTodoTaskIds = [...todoBefore.taskIds, FIRST_TASK_ID];
+
+    vi.setSystemTime(new Date(REORDERED_AT));
+
+    useBoardStore.getState().replaceTaskOrder({
+      [DEFAULT_COLUMN_IDS.backlog]: nextBacklogTaskIds,
+
+      [DEFAULT_COLUMN_IDS.todo]: nextTodoTaskIds,
+    });
+
+    expect(getColumn(DEFAULT_COLUMN_IDS.backlog).taskIds).toEqual(nextBacklogTaskIds);
+
+    expect(getColumn(DEFAULT_COLUMN_IDS.todo).taskIds).toEqual(nextTodoTaskIds);
+
+    expect(getColumn(DEFAULT_COLUMN_IDS.backlog).taskIds).toContain(SECOND_TASK_ID);
+
+    expect(getColumn(DEFAULT_COLUMN_IDS.backlog).taskIds).not.toContain(FIRST_TASK_ID);
+
+    expect(getColumn(DEFAULT_COLUMN_IDS.todo).taskIds).toContain(FIRST_TASK_ID);
+
+    expect(useBoardStore.getState().tasks[FIRST_TASK_ID]).toBeDefined();
+
+    expect(useBoardStore.getState().tasks[SECOND_TASK_ID]).toBeDefined();
+
+    expect(getBoard(DEFAULT_BOARD_ID).updatedAt).toBe(REORDERED_AT);
+  });
+
+  it('сбрасывает состояние до демонстрационных данных', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    expect(useBoardStore.getState().tasks[CREATED_TASK_ID]).toBeDefined();
+
+    useBoardStore.getState().resetBoard();
+
+    const expectedState = createDemoAppState();
+
+    expect(selectDataState()).toEqual(expectedState);
+
+    expect(useBoardStore.getState().schemaVersion).toBe(APP_SCHEMA_VERSION);
+
+    expect(useBoardStore.getState().activeBoardId).toBe(DEFAULT_BOARD_ID);
+
+    expect(useBoardStore.getState().tasks[CREATED_TASK_ID]).toBeUndefined();
+  });
+
+  it('сохраняет действия хранилища после сброса', () => {
+    useBoardStore.getState().resetBoard();
+
+    const state = useBoardStore.getState();
+
+    expect(state.addTask).toEqual(expect.any(Function));
+
+    expect(state.updateTask).toEqual(expect.any(Function));
+
+    expect(state.deleteTask).toEqual(expect.any(Function));
+
+    expect(state.replaceTaskOrder).toEqual(expect.any(Function));
+
+    expect(state.resetBoard).toEqual(expect.any(Function));
+  });
+
+  it('не создаёт задачу в несуществующей колонке', () => {
+    const stateBefore = structuredClone(selectDataState());
+
+    useBoardStore.getState().addTask('missing-column', taskInput);
+
+    expect(selectDataState()).toEqual(stateBefore);
+
+    expect(randomUUIDMock).not.toHaveBeenCalled();
+  });
+
+  it('не изменяет несуществующую задачу', () => {
+    const stateBefore = structuredClone(selectDataState());
+
+    useBoardStore.getState().updateTask('missing-task', {
       title: 'Новое название',
-      priority: 'high',
     });
 
-    const updatedTask = useBoardStore.getState().tasks[taskId];
-
-    expect(updatedTask).toBeDefined();
-
-    expect(updatedTask?.title).toBe('Новое название');
-
-    expect(updatedTask?.priority).toBe('high');
-
-    expect(updatedTask?.createdAt).toBe(createdAt);
+    expect(selectDataState()).toEqual(stateBefore);
   });
 
-  it('удаляет задачу из tasks и колонки', () => {
-    const taskId = useBoardStore.getState().addTask(
-      {
-        title: 'Удаляемая задача',
-        description: '',
-        priority: 'medium',
-        tags: [],
-      },
-      'done',
-    );
+  it('не удаляет данные при неизвестном идентификаторе задачи', () => {
+    const stateBefore = structuredClone(selectDataState());
 
-    useBoardStore.getState().deleteTask(taskId);
+    useBoardStore.getState().deleteTask('missing-task');
 
-    const state = useBoardStore.getState();
-
-    expect(state.tasks[taskId]).toBeUndefined();
-
-    expect(state.columns.done.taskIds).not.toContain(taskId);
+    expect(selectDataState()).toEqual(stateBefore);
   });
 
-  it('перемещает порядок задач между колонками', () => {
-    const state = useBoardStore.getState();
+  it('игнорирует изменение порядка для неизвестной колонки', () => {
+    const stateBefore = structuredClone(selectDataState());
 
-    const sourceColumnId = state.columnOrder.find(
-      (columnId) => state.columns[columnId].taskIds.length > 0,
-    );
+    useBoardStore.getState().replaceTaskOrder({
+      'missing-column': [],
+    });
 
-    if (!sourceColumnId) {
-      throw new Error('Не найдена колонка с задачами');
-    }
-
-    const targetColumnId = state.columnOrder.find((columnId) => columnId !== sourceColumnId);
-
-    if (!targetColumnId) {
-      throw new Error('Не найдена целевая колонка');
-    }
-
-    const taskOrder = selectTaskIdsByColumn(state);
-
-    const taskId = taskOrder[sourceColumnId][0];
-
-    if (!taskId) {
-      throw new Error('Не удалось получить задачу');
-    }
-
-    taskOrder[sourceColumnId] = taskOrder[sourceColumnId].filter(
-      (currentTaskId) => currentTaskId !== taskId,
-    );
-
-    taskOrder[targetColumnId] = [...taskOrder[targetColumnId], taskId];
-
-    useBoardStore.getState().replaceTaskOrder(taskOrder);
-
-    const nextState = useBoardStore.getState();
-
-    expect(nextState.columns[sourceColumnId].taskIds).not.toContain(taskId);
-
-    expect(nextState.columns[targetColumnId].taskIds).toContain(taskId);
-  });
-
-  it('сохраняет данные в localStorage без действий', () => {
-    const taskId = useBoardStore.getState().addTask(
-      {
-        title: 'Сохраняемая задача',
-        description: '',
-        priority: 'medium',
-        tags: [],
-      },
-      'todo',
-    );
-
-    const rawValue = window.localStorage.getItem(BOARD_STORAGE_KEY);
-
-    expect(rawValue).not.toBeNull();
-
-    if (!rawValue) {
-      throw new Error('Данные не сохранились');
-    }
-
-    const persisted = JSON.parse(rawValue) as {
-      state: BoardState;
-      version: number;
-    };
-
-    expect(persisted.state.tasks[taskId]).toBeDefined();
-
-    expect('addTask' in persisted.state).toBe(false);
-
-    expect('deleteTask' in persisted.state).toBe(false);
+    expect(selectDataState()).toEqual(stateBefore);
   });
 });

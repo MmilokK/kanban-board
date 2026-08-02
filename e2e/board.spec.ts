@@ -59,3 +59,71 @@ test('создаёт задачу и сохраняет её после пере
     }),
   ).toBeVisible();
 });
+
+test('мигрирует сохраненную доску версии 1', async ({ page }) => {
+  const legacyPersistedState = {
+    state: {
+      tasks: {
+        'legacy-task': {
+          id: 'legacy-task',
+          title: 'Task from v1',
+          description: 'Saved before migration',
+          priority: 'high',
+          tags: ['migration'],
+          createdAt: '2025-01-01T00:00:00.000Z',
+          updatedAt: '2025-01-01T00:00:00.000Z',
+        },
+      },
+
+      columns: {
+        backlog: {
+          id: 'backlog',
+          title: 'Backlog',
+          taskIds: ['legacy-task'],
+        },
+
+        todo: {
+          id: 'todo',
+          title: 'To do',
+          taskIds: [],
+        },
+
+        'in-progress': {
+          id: 'in-progress',
+          title: 'In progress',
+          taskIds: [],
+        },
+
+        done: {
+          id: 'done',
+          title: 'Done',
+          taskIds: [],
+        },
+      },
+
+      columnOrder: ['backlog', 'todo', 'in-progress', 'done'],
+
+      schemaVersion: 1,
+    },
+
+    version: 1,
+  };
+
+  await page.addInitScript(
+    ({ storageKey, value }) => {
+      window.localStorage.setItem(storageKey, JSON.stringify(value));
+    },
+    {
+      storageKey: 'kanban-board-storage',
+      value: legacyPersistedState,
+    },
+  );
+
+  await page.goto('/');
+
+  await expect(page.getByText('Task from v1')).toBeVisible();
+
+  await page.reload();
+
+  await expect(page.getByText('Task from v1')).toBeVisible();
+});

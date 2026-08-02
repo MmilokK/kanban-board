@@ -1,22 +1,22 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
-import { DragDropProvider, type DragEndEvent, type DragOverEvent } from '@dnd-kit/react';
 import { move } from '@dnd-kit/helpers';
+import { DragDropProvider } from '@dnd-kit/react';
+import { useShallow } from 'zustand/react/shallow';
+
+import type { Column } from '../../../entities/column/model/types';
+import { BoardColumn } from '../../../entities/column/ui/BoardColumn';
+import { useBoardStore } from '../../../entities/board/model/board-store';
 import {
   selectTaskIdsByColumn,
   type TaskIdsByColumn,
 } from '../../../entities/board/model/task-order';
-import { useShallow } from 'zustand/react/shallow';
-
-import { useBoardStore } from '../../../entities/board/model/board-store';
-import type { ColumnId } from '../../../entities/column/model/types';
-import { BoardColumn } from '../../../entities/column/ui/BoardColumn';
-import type { CreateTaskInput, Task, TaskId } from '../../../entities/task/model/types';
-
-import { parseTaskTags, type TaskFormValues } from '../../../features/task-editor/model/task-form';
+import type { ColumnId, TaskId } from '../../../shared/model/entity-ids';
+import type { Task } from '../../../entities/task/model/types';
 import { TaskDialog } from '../../../features/task-editor/ui/TaskDialog';
 
 import styles from './Board.module.scss';
+import { parseTaskTags, type TaskFormValues } from '../../../features/task-editor/model/task-form';
 
 type TaskEditorState =
   | {
@@ -29,117 +29,168 @@ type TaskEditorState =
     }
   | null;
 
+function isColumn(column: Column | undefined): column is Column {
+  return column !== undefined;
+}
+
+function isTask(task: Task | undefined): task is Task {
+  return task !== undefined;
+}
+
 export function Board() {
-  const { tasks, columns, columnOrder, addTask, updateTask, deleteTask, replaceTaskOrder } =
-    useBoardStore(
-      useShallow((state) => ({
-        tasks: state.tasks,
-        columns: state.columns,
-        columnOrder: state.columnOrder,
-        addTask: state.addTask,
-        updateTask: state.updateTask,
-        deleteTask: state.deleteTask,
-        replaceTaskOrder: state.replaceTaskOrder,
-      })),
-    );
+  const {
+    activeBoardId,
+    boards,
+    columns,
+    tasks,
+    addTask,
+    updateTask,
+    deleteTask,
+    replaceTaskOrder,
+  } = useBoardStore(
+    useShallow((state) => ({
+      activeBoardId: state.activeBoardId,
+      boards: state.boards,
+      columns: state.columns,
+      tasks: state.tasks,
+      addTask: state.addTask,
+      updateTask: state.updateTask,
+      deleteTask: state.deleteTask,
+      replaceTaskOrder: state.replaceTaskOrder,
+    })),
+  );
 
   const [editorState, setEditorState] = useState<TaskEditorState>(null);
-  const previousTaskOrderRef = useRef<TaskIdsByColumn | null>(null);
 
-  const editedTask = editorState?.mode === 'edit' ? (tasks[editorState.taskId] ?? null) : null;
+  const taskOrderSnapshotRef = useRef<TaskIdsByColumn>({});
 
-  function handleCreateTask(columnId: ColumnId): void {
+  const activeBoard = activeBoardId ? boards[activeBoardId] : undefined;
+
+  const orderedColumns = useMemo(() => {
+    if (!activeBoard) {
+      return [];
+    }
+
+    return activeBoard.columnIds.map((columnId) => columns[columnId]).filter(isColumn);
+  }, [activeBoard, columns]);
+
+  const editingTask = editorState?.mode === 'edit' ? (tasks[editorState.taskId] ?? null) : null;
+
+  function handleOpenCreateTask(columnId: ColumnId) {
     setEditorState({
       mode: 'create',
       columnId,
     });
   }
 
-  function handleEditTask(taskId: TaskId): void {
+  function handleOpenEditTask(taskId: TaskId) {
+    const task = tasks[taskId];
+
+    if (!task) {
+      return;
+    }
+
     setEditorState({
       mode: 'edit',
       taskId,
     });
   }
 
-  function handleCloseEditor(): void {
+  function handleCloseTaskDialog() {
     setEditorState(null);
   }
 
-  function handleSubmitTask(values: TaskFormValues): void {
+  function handleTaskSubmit(input: TaskFormValues) {
     if (!editorState) {
       return;
     }
-
-    const input = {
-      ...values,
-      tags: parseTaskTags(values.tags),
-    } satisfies CreateTaskInput;
+    const values = { ...input, tags: parseTaskTags(input.tags) };
 
     if (editorState.mode === 'create') {
-      addTask(input, editorState.columnId);
-      return;
+      addTask(editorState.columnId, values);
+    } else {
+      updateTask(editorState.taskId, values);
     }
 
-    updateTask(editorState.taskId, input);
+    setEditorState(null);
   }
 
-  function handleDragStart(): void {
-    previousTaskOrderRef.current = selectTaskIdsByColumn(useBoardStore.getState());
-  }
+  function handleDeleteTask(taskId: TaskId) {
+    deleteTask(taskId);
 
-  function handleDragOver(event: DragOverEvent): void {
-    const currentTaskOrder = selectTaskIdsByColumn(useBoardStore.getState());
-
-    const nextTaskOrder = move(currentTaskOrder, event);
-
-    replaceTaskOrder(nextTaskOrder);
-  }
-
-  function handleDragEnd(event: DragEndEvent): void {
-    if (event.canceled && previousTaskOrderRef.current) {
-      replaceTaskOrder(previousTaskOrderRef.current);
+    if (editorState?.mode === 'edit' && editorState.taskId === taskId) {
+      setEditorState(null);
     }
+  }
 
-    previousTaskOrderRef.current = null;
+  if (!activeBoard) {
+    return (
+      <section className={styles.board} aria-labelledby="empty-board-title">
+        <div className={styles.emptyState}>
+          <h1 id="empty-board-title">Доска не найдена</h1>
+
+          <p>Создай новую доску, чтобы начать работу с задачами.</p>
+        </div>
+      </section>
+    );
   }
 
   return (
     <>
       <DragDropProvider
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
+        onDragStart={() => {
+          taskOrderSnapshotRef.current = selectTaskIdsByColumn(useBoardStore.getState());
+        }}
+        onDragOver={(event) => {
+          const currentTaskOrder = selectTaskIdsByColumn(useBoardStore.getState());
+
+          const nextTaskOrder = move(currentTaskOrder, event);
+
+          replaceTaskOrder(nextTaskOrder);
+        }}
+        onDragEnd={(event) => {
+          if (!event.canceled) {
+            return;
+          }
+
+          replaceTaskOrder(taskOrderSnapshotRef.current);
+        }}
       >
-        <section className={styles.board} aria-label="Kanban-доска">
-          {columnOrder.map((columnId) => {
-            const column = columns[columnId];
+        <section className={styles.board} aria-label="Kanban-доска" aria-labelledby="board-title">
+          <header className={styles.header}>
+            <div>
+              <h1 id="board-title">{activeBoard.title}</h1>
+            </div>
+          </header>
 
-            const columnTasks = column.taskIds
-              .map((taskId) => tasks[taskId])
-              .filter((task): task is Task => task !== undefined);
+          <div className={styles.columns}>
+            {orderedColumns.map((column) => {
+              const columnTasks = column.taskIds.map((taskId) => tasks[taskId]).filter(isTask);
 
-            return (
-              <BoardColumn
-                column={column}
-                key={column.id}
-                tasks={columnTasks}
-                onCreateTask={handleCreateTask}
-                onDeleteTask={deleteTask}
-                onEditTask={handleEditTask}
-              />
-            );
-          })}
+              return (
+                <BoardColumn
+                  key={column.id}
+                  column={column}
+                  tasks={columnTasks}
+                  onCreateTask={() => {
+                    handleOpenCreateTask(column.id);
+                  }}
+                  onEditTask={handleOpenEditTask}
+                  onDeleteTask={handleDeleteTask}
+                />
+              );
+            })}
+          </div>
         </section>
       </DragDropProvider>
 
       {editorState && (
         <TaskDialog
-          task={editedTask}
+          task={editingTask}
           title={editorState.mode === 'create' ? 'Новая задача' : 'Редактирование задачи'}
           submitLabel={editorState.mode === 'create' ? 'Создать задачу' : 'Сохранить изменения'}
-          onClose={handleCloseEditor}
-          onSubmit={handleSubmitTask}
+          onClose={handleCloseTaskDialog}
+          onSubmit={handleTaskSubmit}
         />
       )}
     </>

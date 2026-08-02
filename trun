@@ -1,0 +1,8 @@
+[35msrc/entities/board/model/board-schema.test.ts[m[36m:[m[32m28[m[36m:[m    const sourceColumnId = board.[1;31mcolumnOrder[m.find(
+[35msrc/entities/board/model/board-schema.test.ts[m[36m:[m[32m42[m[36m:[m    const targetColumnId = board.[1;31mcolumnOrder[m.find((columnId) => columnId !== sourceColumnId);
+[35msrc/entities/board/model/board-store.test.ts[m[36m:[m[32m105[m[36m:[m    const sourceColumnId = state.[1;31mcolumnOrder[m.find(
+[35msrc/entities/board/model/board-store.test.ts[m[36m:[m[32m113[m[36m:[m    const targetColumnId = state.[1;31mcolumnOrder[m.find((columnId) => columnId !== sourceColumnId);
+[35msrc/entities/board/model/initial-board.ts[m[36m:[m[32m32[m[36m:[m  [1;31mcolumnOrder[m: ['backlog', 'todo', 'in-progress', 'done'],
+[35msrc/widgets/board/ui/Board.tsx[m[36m:[m[32m34[m[36m:[m  const { tasks, columns, [1;31mcolumnOrder[m, addTask, updateTask, deleteTask, replaceTaskOrder } =
+[35msrc/widgets/board/ui/Board.tsx[m[36m:[m[32m39[m[36m:[m        [1;31mcolumnOrder[m: state.[1;31mcolumnOrder[m,
+[35msrc/widgets/board/ui/Board.tsx[m[36m:[m[32m116[m[36m:[m          {[1;31mcolumnOrder[m.map((columnId) => {

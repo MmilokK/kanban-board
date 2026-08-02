@@ -1,4 +1,4 @@
-export type TaskId = string;
+import type { TaskId } from '../../../shared/model/entity-ids';
 
 export type TaskPriority = 'low' | 'medium' | 'high';
 
