@@ -1,14 +1,17 @@
-import { createDemoBoardState } from './demo-board';
-import { parseBoardState } from './board-schema';
-import { BOARD_SCHEMA_VERSION, type BoardState } from './types';
+import type { AppState } from './app-state';
+import { legacyBoardStateSchema } from './legacy-board-schema';
+import { migrateBoardStateV1ToV2 } from './board-migration';
+import { appStateSchema, parseAppState } from './board-schema';
 
 export const BOARD_STORAGE_KEY = 'kanban-board-storage';
 
-export function selectPersistedBoardState(state: BoardState): BoardState {
+export function selectPersistedBoardState(state: AppState): AppState {
   return {
-    tasks: state.tasks,
+    boards: state.boards,
+    boardOrder: state.boardOrder,
+    activeBoardId: state.activeBoardId,
     columns: state.columns,
-    columnOrder: state.columnOrder,
+    tasks: state.tasks,
     schemaVersion: state.schemaVersion,
   };
 }
@@ -16,27 +19,28 @@ export function selectPersistedBoardState(state: BoardState): BoardState {
 export function migratePersistedBoardState(
   persistedState: unknown,
   persistedVersion: number,
-): BoardState {
-  /*
-   * Пока существует только версия 1.
-   *
-   * Когда появится версия 2, здесь можно будет
-   * преобразовать состояние версии 1 в новый формат.
-   */
-  if (persistedVersion > BOARD_SCHEMA_VERSION) {
-    return createDemoBoardState();
+): AppState {
+  const currentResult = appStateSchema.safeParse(persistedState);
+
+  if (currentResult.success) {
+    return currentResult.data;
   }
 
-  return parseBoardState(persistedState) ?? createDemoBoardState();
+  if (persistedVersion === 0 || persistedVersion === 1) {
+    const legacyResult = legacyBoardStateSchema.safeParse(persistedState);
+
+    if (legacyResult.success) {
+      return migrateBoardStateV1ToV2(legacyResult.data);
+    }
+  }
+
+  throw new Error(`Unsupported persisted board state version: ${persistedVersion}`);
+}
+
+export function parsePersistedBoardState(value: unknown): AppState {
+  return parseAppState(value);
 }
 
 export function removePersistedBoardState(): void {
-  try {
-    window.localStorage.removeItem(BOARD_STORAGE_KEY);
-  } catch {
-    /*
-     * Браузер может запретить доступ к localStorage.
-     * Приложение продолжит работать без persistence.
-     */
-  }
+  window.localStorage.removeItem(BOARD_STORAGE_KEY);
 }

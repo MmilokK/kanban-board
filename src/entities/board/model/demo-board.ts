@@ -1,6 +1,63 @@
-import { BOARD_SCHEMA_VERSION, type BoardState } from './types';
+import type { AppState } from './app-state';
+import { APP_SCHEMA_VERSION } from './app-state';
+import { DEFAULT_BOARD_ID, DEFAULT_BOARD_TITLE, DEFAULT_COLUMN_IDS } from './default-board';
 
-export const demoBoardState = {
+const DEMO_CREATED_AT = '2026-01-01T00:00:00.000Z';
+
+const demoAppState: AppState = {
+  boards: {
+    [DEFAULT_BOARD_ID]: {
+      id: DEFAULT_BOARD_ID,
+      title: DEFAULT_BOARD_TITLE,
+      columnIds: [
+        DEFAULT_COLUMN_IDS.backlog,
+        DEFAULT_COLUMN_IDS.todo,
+        DEFAULT_COLUMN_IDS.inProgress,
+        DEFAULT_COLUMN_IDS.done,
+      ],
+      createdAt: DEMO_CREATED_AT,
+      updatedAt: DEMO_CREATED_AT,
+    },
+  },
+
+  boardOrder: [DEFAULT_BOARD_ID],
+
+  activeBoardId: DEFAULT_BOARD_ID,
+
+  columns: {
+    [DEFAULT_COLUMN_IDS.backlog]: {
+      id: DEFAULT_COLUMN_IDS.backlog,
+      boardId: DEFAULT_BOARD_ID,
+      title: 'Backlog',
+      taskIds: ['task-4'],
+      isCompleted: false,
+    },
+
+    [DEFAULT_COLUMN_IDS.todo]: {
+      id: DEFAULT_COLUMN_IDS.todo,
+      boardId: DEFAULT_BOARD_ID,
+      title: 'To do',
+      taskIds: ['task-1', 'task-2'],
+      isCompleted: false,
+    },
+
+    [DEFAULT_COLUMN_IDS.inProgress]: {
+      id: DEFAULT_COLUMN_IDS.inProgress,
+      boardId: DEFAULT_BOARD_ID,
+      title: 'In progress',
+      taskIds: ['task-3'],
+      isCompleted: false,
+    },
+
+    [DEFAULT_COLUMN_IDS.done]: {
+      id: DEFAULT_COLUMN_IDS.done,
+      boardId: DEFAULT_BOARD_ID,
+      title: 'Done',
+      taskIds: ['task-5'],
+      isCompleted: true,
+    },
+  },
+
   tasks: {
     'task-1': {
       id: 'task-1',
@@ -53,37 +110,9 @@ export const demoBoardState = {
     },
   },
 
-  columns: {
-    backlog: {
-      id: 'backlog',
-      title: 'Backlog',
-      taskIds: ['task-4'],
-    },
+  schemaVersion: APP_SCHEMA_VERSION,
+};
 
-    todo: {
-      id: 'todo',
-      title: 'To do',
-      taskIds: ['task-1', 'task-2'],
-    },
-
-    'in-progress': {
-      id: 'in-progress',
-      title: 'In progress',
-      taskIds: ['task-3'],
-    },
-
-    done: {
-      id: 'done',
-      title: 'Done',
-      taskIds: ['task-5'],
-    },
-  },
-
-  columnOrder: ['backlog', 'todo', 'in-progress', 'done'],
-
-  schemaVersion: BOARD_SCHEMA_VERSION,
-} satisfies BoardState;
-
-export function createDemoBoardState(): BoardState {
-  return structuredClone(demoBoardState);
+export function createDemoAppState(): AppState {
+  return structuredClone(demoAppState);
 }

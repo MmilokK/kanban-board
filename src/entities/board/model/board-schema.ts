@@ -1,128 +1,229 @@
 import { z } from 'zod';
 
-import { COLUMN_IDS } from '../../column/model/types';
+import type { AppState } from './app-state';
+import { APP_SCHEMA_VERSION } from './app-state';
 
-import { BOARD_SCHEMA_VERSION, type BoardState } from './types';
+const entityIdSchema = z.string().trim().min(1);
 
-const columnIdSchema = z.enum(COLUMN_IDS);
-
-const taskPrioritySchema = z.enum(['low', 'medium', 'high']);
-
-const taskSchema = z.object({
-  id: z.string().min(1),
-
-  title: z.string().trim().min(1).max(80),
-
-  description: z.string().trim().max(500),
-
-  priority: taskPrioritySchema,
-
-  tags: z
-    .array(z.string().trim().min(1).max(20))
-    .max(5)
-    .refine((tags) => new Set(tags).size === tags.length, 'Теги задачи должны быть уникальными'),
-
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
+export const taskSchema = z.object({
+  id: entityIdSchema,
+  title: z.string(),
+  description: z.string(),
+  priority: z.enum(['low', 'medium', 'high']),
+  tags: z.array(z.string()),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 });
 
-const columnSchema = z.object({
-  id: columnIdSchema,
+export const columnSchema = z.object({
+  id: entityIdSchema,
+  boardId: entityIdSchema,
   title: z.string().trim().min(1),
-  taskIds: z.array(z.string().min(1)),
+  taskIds: z.array(entityIdSchema),
+  isCompleted: z.boolean(),
 });
 
-const columnsSchema = z.object({
-  backlog: columnSchema.extend({
-    id: z.literal('backlog'),
-  }),
-
-  todo: columnSchema.extend({
-    id: z.literal('todo'),
-  }),
-
-  'in-progress': columnSchema.extend({
-    id: z.literal('in-progress'),
-  }),
-
-  done: columnSchema.extend({
-    id: z.literal('done'),
-  }),
+export const boardSchema = z.object({
+  id: entityIdSchema,
+  title: z.string().trim().min(1),
+  columnIds: z.array(entityIdSchema),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 });
 
-const columnOrderSchema = z
-  .array(columnIdSchema)
-  .length(COLUMN_IDS.length)
-  .refine(
-    (columnIds) => new Set(columnIds).size === COLUMN_IDS.length,
-    'Колонки не должны повторяться',
-  );
-
-export const boardStateSchema = z
+export const appStateSchema = z
   .object({
-    tasks: z.record(z.string().min(1), taskSchema),
-    columns: columnsSchema,
-    columnOrder: columnOrderSchema,
-    schemaVersion: z.literal(BOARD_SCHEMA_VERSION),
+    boards: z.record(entityIdSchema, boardSchema),
+    boardOrder: z.array(entityIdSchema),
+    activeBoardId: entityIdSchema.nullable(),
+    columns: z.record(entityIdSchema, columnSchema),
+    tasks: z.record(entityIdSchema, taskSchema),
+    schemaVersion: z.literal(APP_SCHEMA_VERSION),
   })
-  .superRefine((board, context) => {
-    const placedTaskIds = new Set<string>();
+  .superRefine((state, context) => {
+    const boardIds = Object.keys(state.boards);
+    const orderedBoardIds = new Set<string>();
 
-    for (const [taskKey, task] of Object.entries(board.tasks)) {
-      if (taskKey !== task.id) {
+    for (const boardId of state.boardOrder) {
+      if (orderedBoardIds.has(boardId)) {
         context.addIssue({
           code: 'custom',
-          path: ['tasks', taskKey, 'id'],
-          message: 'Ключ задачи должен совпадать с её id',
+          path: ['boardOrder'],
+          message: `Board "${boardId}" appears more than once`,
+        });
+      }
+
+      orderedBoardIds.add(boardId);
+
+      if (!state.boards[boardId]) {
+        context.addIssue({
+          code: 'custom',
+          path: ['boardOrder'],
+          message: `Board "${boardId}" does not exist`,
         });
       }
     }
 
-    for (const columnId of board.columnOrder) {
-      const column = board.columns[columnId];
+    for (const [boardKey, board] of Object.entries(state.boards)) {
+      if (board.id !== boardKey) {
+        context.addIssue({
+          code: 'custom',
+          path: ['boards', boardKey, 'id'],
+          message: 'Board ID does not match its record key',
+        });
+      }
 
-      column.taskIds.forEach((taskId, index) => {
-        if (!board.tasks[taskId]) {
-          context.addIssue({
-            code: 'custom',
-            path: ['columns', columnId, 'taskIds', index],
-            message: 'Колонка ссылается на несуществующую задачу',
-          });
+      if (!orderedBoardIds.has(boardKey)) {
+        context.addIssue({
+          code: 'custom',
+          path: ['boards', boardKey],
+          message: `Board "${boardKey}" is missing from boardOrder`,
+        });
+      }
+    }
 
-          return;
-        }
-
-        if (placedTaskIds.has(taskId)) {
-          context.addIssue({
-            code: 'custom',
-            path: ['columns', columnId, 'taskIds', index],
-            message: 'Задача не может находиться в нескольких колонках',
-          });
-
-          return;
-        }
-
-        placedTaskIds.add(taskId);
+    if (boardIds.length === 0) {
+      if (state.activeBoardId !== null) {
+        context.addIssue({
+          code: 'custom',
+          path: ['activeBoardId'],
+          message: 'activeBoardId must be null when there are no boards',
+        });
+      }
+    } else if (state.activeBoardId === null || !state.boards[state.activeBoardId]) {
+      context.addIssue({
+        code: 'custom',
+        path: ['activeBoardId'],
+        message: 'activeBoardId must reference an existing board',
       });
     }
 
-    for (const taskId of Object.keys(board.tasks)) {
-      if (!placedTaskIds.has(taskId)) {
+    const referencedColumnIds = new Set<string>();
+    const referencedTaskIds = new Set<string>();
+
+    for (const [boardId, board] of Object.entries(state.boards)) {
+      const boardColumnIds = new Set<string>();
+
+      for (const columnId of board.columnIds) {
+        if (boardColumnIds.has(columnId)) {
+          context.addIssue({
+            code: 'custom',
+            path: ['boards', boardId, 'columnIds'],
+            message: `Column "${columnId}" appears more than once`,
+          });
+        }
+
+        boardColumnIds.add(columnId);
+
+        if (referencedColumnIds.has(columnId)) {
+          context.addIssue({
+            code: 'custom',
+            path: ['boards', boardId, 'columnIds'],
+            message: `Column "${columnId}" belongs to more than one board`,
+          });
+        }
+
+        referencedColumnIds.add(columnId);
+
+        const column = state.columns[columnId];
+
+        if (!column) {
+          context.addIssue({
+            code: 'custom',
+            path: ['boards', boardId, 'columnIds'],
+            message: `Column "${columnId}" does not exist`,
+          });
+
+          continue;
+        }
+
+        if (column.boardId !== boardId) {
+          context.addIssue({
+            code: 'custom',
+            path: ['columns', columnId, 'boardId'],
+            message: 'Column boardId does not match its parent board',
+          });
+        }
+      }
+    }
+
+    for (const [columnKey, column] of Object.entries(state.columns)) {
+      if (column.id !== columnKey) {
         context.addIssue({
           code: 'custom',
-          path: ['tasks', taskId],
-          message: 'Задача должна находиться в одной из колонок',
+          path: ['columns', columnKey, 'id'],
+          message: 'Column ID does not match its record key',
+        });
+      }
+
+      if (!referencedColumnIds.has(columnKey)) {
+        context.addIssue({
+          code: 'custom',
+          path: ['columns', columnKey],
+          message: `Column "${columnKey}" is not assigned to a board`,
+        });
+      }
+
+      const columnTaskIds = new Set<string>();
+
+      for (const taskId of column.taskIds) {
+        if (columnTaskIds.has(taskId)) {
+          context.addIssue({
+            code: 'custom',
+            path: ['columns', columnKey, 'taskIds'],
+            message: `Task "${taskId}" appears more than once in the column`,
+          });
+        }
+
+        columnTaskIds.add(taskId);
+
+        if (!state.tasks[taskId]) {
+          context.addIssue({
+            code: 'custom',
+            path: ['columns', columnKey, 'taskIds'],
+            message: `Task "${taskId}" does not exist`,
+          });
+
+          continue;
+        }
+
+        if (referencedTaskIds.has(taskId)) {
+          context.addIssue({
+            code: 'custom',
+            path: ['columns', columnKey, 'taskIds'],
+            message: `Task "${taskId}" belongs to more than one column`,
+          });
+        }
+
+        referencedTaskIds.add(taskId);
+      }
+    }
+
+    for (const [taskKey, task] of Object.entries(state.tasks)) {
+      if (task.id !== taskKey) {
+        context.addIssue({
+          code: 'custom',
+          path: ['tasks', taskKey, 'id'],
+          message: 'Task ID does not match its record key',
+        });
+      }
+
+      if (!referencedTaskIds.has(taskKey)) {
+        context.addIssue({
+          code: 'custom',
+          path: ['tasks', taskKey],
+          message: `Task "${taskKey}" is not assigned to a column`,
         });
       }
     }
   });
 
-export function parseBoardState(value: unknown): BoardState | null {
-  const result = boardStateSchema.safeParse(value);
+export function parseAppState(value: unknown): AppState {
+  return appStateSchema.parse(value);
+}
 
-  if (!result.success) {
-    return null;
-  }
+export function safeParseAppState(value: unknown): AppState | null {
+  const result = appStateSchema.safeParse(value);
 
-  return result.data;
+  return result.success ? result.data : null;
 }

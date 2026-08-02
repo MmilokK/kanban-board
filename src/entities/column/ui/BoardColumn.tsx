@@ -1,5 +1,5 @@
-import type { Column, ColumnId } from '../model/types';
-import type { Task, TaskId } from '../../task/model/types';
+import type { Column } from '../model/types';
+import type { Task } from '../../task/model/types';
 
 import { CollisionPriority } from '@dnd-kit/abstract';
 import { useDroppable } from '@dnd-kit/react';
@@ -8,6 +8,7 @@ import clsx from 'clsx';
 import { SortableTaskCard } from '../../../features/task-dnd/ui/SortableTaskCard';
 
 import styles from './BoardColumn.module.scss';
+import type { ColumnId, TaskId } from '../../../shared/model/entity-ids';
 
 type BoardColumnProps = {
   column: Column;

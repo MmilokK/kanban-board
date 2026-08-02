@@ -1,76 +1,63 @@
 import { describe, expect, it } from 'vitest';
+import { parseAppState } from './board-schema';
+import { createDemoAppState } from './demo-board';
 
-import { boardStateSchema } from './board-schema';
-import { createDemoBoardState } from './demo-board';
-
-describe('boardStateSchema', () => {
+describe('appStateSchema', () => {
   it('принимает демонстрационное состояние', () => {
-    const board = createDemoBoardState();
-
-    const result = boardStateSchema.safeParse(board);
-
-    expect(result.success).toBe(true);
+    expect(() => parseAppState(createDemoAppState())).not.toThrow();
   });
 
-  it('отклоняет ссылку на несуществующую задачу', () => {
-    const board = createDemoBoardState();
+  it('отклоняет неизвестную активную доску', () => {
+    const state = createDemoAppState();
 
-    board.columns.todo.taskIds.push('missing-task');
+    state.activeBoardId = 'missing-board';
 
-    const result = boardStateSchema.safeParse(board);
-
-    expect(result.success).toBe(false);
+    expect(() => parseAppState(state)).toThrow();
   });
 
-  it('отклоняет задачу в двух колонках', () => {
-    const board = createDemoBoardState();
+  it('отклоняет отсутствующую колонку', () => {
+    const state = createDemoAppState();
 
-    const sourceColumnId = board.columnOrder.find(
-      (columnId) => board.columns[columnId].taskIds.length > 0,
-    );
+    delete state.columns.todo;
 
-    if (!sourceColumnId) {
-      throw new Error('В демонстрационной доске нет задач');
-    }
+    expect(() => parseAppState(state)).toThrow();
+  });
 
-    const taskId = board.columns[sourceColumnId].taskIds[0];
+  it('отклоняет колонку, назначенную другой доске', () => {
+    const state = createDemoAppState();
+
+    state.columns.todo!.boardId = 'another-board';
+
+    expect(() => parseAppState(state)).toThrow();
+  });
+
+  it('отклоняет непривязанную задачу', () => {
+    const state = createDemoAppState();
+
+    state.tasks['orphan-task'] = {
+      id: 'orphan-task',
+      title: 'Orphan',
+      description: '',
+      priority: 'low',
+      tags: [],
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    };
+
+    expect(() => parseAppState(state)).toThrow();
+  });
+
+  it('отклоняет задачу, на которую ссылаются дважды', () => {
+    const state = createDemoAppState();
+
+    const taskId = state.columns.backlog?.taskIds[0];
 
     if (!taskId) {
-      throw new Error('Не удалось получить задачу');
+      throw new Error('Test requires a backlog task');
     }
 
-    const targetColumnId = board.columnOrder.find((columnId) => columnId !== sourceColumnId);
+    state.columns.todo?.taskIds.push(taskId);
 
-    if (!targetColumnId) {
-      throw new Error('Не удалось получить целевую колонку');
-    }
-
-    board.columns[targetColumnId].taskIds.push(taskId);
-
-    const result = boardStateSchema.safeParse(board);
-
-    expect(result.success).toBe(false);
-  });
-
-  it('отклоняет несовпадение ключа и id задачи', () => {
-    const board = createDemoBoardState();
-
-    const taskId = Object.keys(board.tasks)[0];
-
-    if (!taskId) {
-      throw new Error('В демонстрационной доске нет задач');
-    }
-
-    const task = board.tasks[taskId];
-
-    if (!task) {
-      throw new Error('Не удалось получить задачу');
-    }
-
-    task.id = 'different-task-id';
-
-    const result = boardStateSchema.safeParse(board);
-
-    expect(result.success).toBe(false);
+    expect(() => parseAppState(state)).toThrow();
   });
 });
