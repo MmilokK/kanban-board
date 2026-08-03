@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 
-import type { Task } from '../../../entities/task/model/types';
+import type { CreateTaskInput, Task } from '../../../entities/task/model/types';
 
-import type { TaskFormValues } from '../model/task-form';
+import { parseTaskTags, type TaskFormValues } from '../model/task-form';
 
 import { TaskForm } from './TaskForm';
 
@@ -12,7 +12,7 @@ type TaskDialogProps = {
   task: Task | null;
   title: string;
   submitLabel: string;
-  onSubmit: (values: TaskFormValues) => void;
+  onSubmit: (values: CreateTaskInput) => void;
   onClose: () => void;
 };
 
@@ -28,7 +28,8 @@ export function TaskDialog({ task, title, submitLabel, onSubmit, onClose }: Task
   }, []);
 
   function handleSubmit(values: TaskFormValues): void {
-    onSubmit(values);
+    const input = { ...values, tags: parseTaskTags(values.tags) };
+    onSubmit(input);
     dialogRef.current?.close();
   }
 
