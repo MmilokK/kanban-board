@@ -4,19 +4,22 @@ import { move } from '@dnd-kit/helpers';
 import { DragDropProvider } from '@dnd-kit/react';
 import { useShallow } from 'zustand/react/shallow';
 
-import type { Column } from '../../../entities/column/model/types';
-import { BoardColumn } from '../../../entities/column/ui/BoardColumn';
 import { useBoardStore } from '../../../entities/board/model/board-store';
 import {
   selectTaskIdsByColumn,
   type TaskIdsByColumn,
 } from '../../../entities/board/model/task-order';
-import type { ColumnId, TaskId } from '../../../shared/model/entity-ids';
-import type { Task } from '../../../entities/task/model/types';
+import type { Board as BoardEntity } from '../../../entities/board/model/types';
+import type { Column } from '../../../entities/column/model/types';
+import { BoardColumn } from '../../../entities/column/ui/BoardColumn';
+import type { CreateTaskInput, Task } from '../../../entities/task/model/types';
+import type { BoardFormValues } from '../../../features/board-management/model/board-form';
+import { BoardDialog } from '../../../features/board-management/ui/BoardDialog';
+import { BoardToolbar } from '../../../features/board-management/ui/BoardToolbar';
 import { TaskDialog } from '../../../features/task-editor/ui/TaskDialog';
+import type { BoardId, ColumnId, TaskId } from '../../../shared/model/entity-ids';
 
 import styles from './Board.module.scss';
-import { parseTaskTags, type TaskFormValues } from '../../../features/task-editor/model/task-form';
 
 type TaskEditorState =
   | {
@@ -29,6 +32,20 @@ type TaskEditorState =
     }
   | null;
 
+type BoardEditorState =
+  | {
+      mode: 'create';
+    }
+  | {
+      mode: 'rename';
+      boardId: BoardId;
+    }
+  | null;
+
+function isBoard(board: BoardEntity | undefined): board is BoardEntity {
+  return board !== undefined;
+}
+
 function isColumn(column: Column | undefined): column is Column {
   return column !== undefined;
 }
@@ -39,20 +56,34 @@ function isTask(task: Task | undefined): task is Task {
 
 export function Board() {
   const {
-    activeBoardId,
     boards,
+    boardOrder,
+    activeBoardId,
     columns,
     tasks,
+
+    createBoard,
+    setActiveBoard,
+    renameBoard,
+    deleteBoard,
+
     addTask,
     updateTask,
     deleteTask,
     replaceTaskOrder,
   } = useBoardStore(
     useShallow((state) => ({
-      activeBoardId: state.activeBoardId,
       boards: state.boards,
+      boardOrder: state.boardOrder,
+      activeBoardId: state.activeBoardId,
       columns: state.columns,
       tasks: state.tasks,
+
+      createBoard: state.createBoard,
+      setActiveBoard: state.setActiveBoard,
+      renameBoard: state.renameBoard,
+      deleteBoard: state.deleteBoard,
+
       addTask: state.addTask,
       updateTask: state.updateTask,
       deleteTask: state.deleteTask,
@@ -60,9 +91,16 @@ export function Board() {
     })),
   );
 
-  const [editorState, setEditorState] = useState<TaskEditorState>(null);
+  const [taskEditorState, setTaskEditorState] = useState<TaskEditorState>(null);
+
+  const [boardEditorState, setBoardEditorState] = useState<BoardEditorState>(null);
 
   const taskOrderSnapshotRef = useRef<TaskIdsByColumn>({});
+
+  const orderedBoards = useMemo(
+    () => boardOrder.map((boardId) => boards[boardId]).filter(isBoard),
+    [boardOrder, boards],
+  );
 
   const activeBoard = activeBoardId ? boards[activeBoardId] : undefined;
 
@@ -74,10 +112,81 @@ export function Board() {
     return activeBoard.columnIds.map((columnId) => columns[columnId]).filter(isColumn);
   }, [activeBoard, columns]);
 
-  const editingTask = editorState?.mode === 'edit' ? (tasks[editorState.taskId] ?? null) : null;
+  const editingTask =
+    taskEditorState?.mode === 'edit' ? (tasks[taskEditorState.taskId] ?? null) : null;
+
+  const editingBoard =
+    boardEditorState?.mode === 'rename' ? boards[boardEditorState.boardId] : undefined;
+
+  function handleSelectBoard(boardId: BoardId) {
+    setTaskEditorState(null);
+    setBoardEditorState(null);
+    setActiveBoard(boardId);
+  }
+
+  function handleOpenCreateBoard() {
+    setBoardEditorState({
+      mode: 'create',
+    });
+  }
+
+  function handleOpenRenameBoard() {
+    if (!activeBoard) {
+      return;
+    }
+
+    setBoardEditorState({
+      mode: 'rename',
+      boardId: activeBoard.id,
+    });
+  }
+
+  function handleCloseBoardDialog() {
+    setBoardEditorState(null);
+  }
+
+  function handleCreateBoard(values: BoardFormValues) {
+    const createdBoardId = createBoard(values.title);
+
+    if (!createdBoardId) {
+      return;
+    }
+
+    setTaskEditorState(null);
+    setBoardEditorState(null);
+  }
+
+  function handleRenameBoard(values: BoardFormValues) {
+    if (boardEditorState?.mode !== 'rename') {
+      return;
+    }
+
+    renameBoard(boardEditorState.boardId, values.title);
+
+    setBoardEditorState(null);
+  }
+
+  function handleDeleteBoard() {
+    if (!activeBoard) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Удалить доску «${activeBoard.title}» вместе со всеми её задачами?`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setTaskEditorState(null);
+    setBoardEditorState(null);
+
+    deleteBoard(activeBoard.id);
+  }
 
   function handleOpenCreateTask(columnId: ColumnId) {
-    setEditorState({
+    setTaskEditorState({
       mode: 'create',
       columnId,
     });
@@ -90,105 +199,144 @@ export function Board() {
       return;
     }
 
-    setEditorState({
+    setTaskEditorState({
       mode: 'edit',
       taskId,
     });
   }
 
   function handleCloseTaskDialog() {
-    setEditorState(null);
+    setTaskEditorState(null);
   }
 
-  function handleTaskSubmit(input: TaskFormValues) {
-    if (!editorState) {
+  function handleTaskSubmit(input: CreateTaskInput) {
+    if (!taskEditorState) {
       return;
     }
-    const values = { ...input, tags: parseTaskTags(input.tags) };
 
-    if (editorState.mode === 'create') {
-      addTask(editorState.columnId, values);
+    if (taskEditorState.mode === 'create') {
+      addTask(taskEditorState.columnId, input);
     } else {
-      updateTask(editorState.taskId, values);
+      updateTask(taskEditorState.taskId, input);
     }
 
-    setEditorState(null);
+    setTaskEditorState(null);
   }
 
   function handleDeleteTask(taskId: TaskId) {
     deleteTask(taskId);
 
-    if (editorState?.mode === 'edit' && editorState.taskId === taskId) {
-      setEditorState(null);
+    if (taskEditorState?.mode === 'edit' && taskEditorState.taskId === taskId) {
+      setTaskEditorState(null);
     }
-  }
-
-  if (!activeBoard) {
-    return (
-      <section className={styles.board} aria-labelledby="empty-board-title">
-        <div className={styles.emptyState}>
-          <h1 id="empty-board-title">Доска не найдена</h1>
-
-          <p>Создай новую доску, чтобы начать работу с задачами.</p>
-        </div>
-      </section>
-    );
   }
 
   return (
     <>
-      <DragDropProvider
-        onDragStart={() => {
-          taskOrderSnapshotRef.current = selectTaskIdsByColumn(useBoardStore.getState());
-        }}
-        onDragOver={(event) => {
-          const currentTaskOrder = selectTaskIdsByColumn(useBoardStore.getState());
-
-          const nextTaskOrder = move(currentTaskOrder, event);
-
-          replaceTaskOrder(nextTaskOrder);
-        }}
-        onDragEnd={(event) => {
-          if (!event.canceled) {
-            return;
-          }
-
-          replaceTaskOrder(taskOrderSnapshotRef.current);
-        }}
+      <section
+        className={styles.board}
+        aria-label="Kanban-доска"
+        aria-labelledby={activeBoard ? 'board-title' : 'empty-board-title'}
       >
-        <section className={styles.board} aria-label="Kanban-доска" aria-labelledby="board-title">
-          <header className={styles.header}>
-            <div>
-              <h1 id="board-title">{activeBoard.title}</h1>
-            </div>
-          </header>
+        <BoardToolbar
+          boards={orderedBoards}
+          activeBoardId={activeBoardId}
+          onSelectBoard={handleSelectBoard}
+          onCreateBoard={handleOpenCreateBoard}
+          onRenameBoard={handleOpenRenameBoard}
+          onDeleteBoard={handleDeleteBoard}
+        />
 
-          <div className={styles.columns}>
-            {orderedColumns.map((column) => {
-              const columnTasks = column.taskIds.map((taskId) => tasks[taskId]).filter(isTask);
+        {activeBoard ? (
+          <>
+            <header className={styles.header}>
+              <div>
+                <h1 id="board-title">{activeBoard.title}</h1>
+              </div>
+            </header>
 
-              return (
-                <BoardColumn
-                  key={column.id}
-                  column={column}
-                  tasks={columnTasks}
-                  onCreateTask={() => {
-                    handleOpenCreateTask(column.id);
-                  }}
-                  onEditTask={handleOpenEditTask}
-                  onDeleteTask={handleDeleteTask}
-                />
-              );
-            })}
+            <DragDropProvider
+              onDragStart={() => {
+                taskOrderSnapshotRef.current = selectTaskIdsByColumn(useBoardStore.getState());
+              }}
+              onDragOver={(event) => {
+                const currentTaskOrder = selectTaskIdsByColumn(useBoardStore.getState());
+
+                const nextTaskOrder = move(currentTaskOrder, event);
+
+                replaceTaskOrder(nextTaskOrder);
+              }}
+              onDragEnd={(event) => {
+                if (event.canceled) {
+                  replaceTaskOrder(taskOrderSnapshotRef.current);
+                }
+
+                taskOrderSnapshotRef.current = {};
+              }}
+            >
+              <div className={styles.columns}>
+                {orderedColumns.map((column) => {
+                  const columnTasks = column.taskIds.map((taskId) => tasks[taskId]).filter(isTask);
+
+                  return (
+                    <BoardColumn
+                      key={column.id}
+                      column={column}
+                      tasks={columnTasks}
+                      onCreateTask={() => {
+                        handleOpenCreateTask(column.id);
+                      }}
+                      onEditTask={handleOpenEditTask}
+                      onDeleteTask={handleDeleteTask}
+                    />
+                  );
+                })}
+              </div>
+            </DragDropProvider>
+          </>
+        ) : (
+          <div className={styles.emptyState}>
+            <h1 id="empty-board-title">Пока нет досок</h1>
+
+            <p>Создай первую доску, чтобы начать работу с задачами.</p>
+
+            <button type="button" onClick={handleOpenCreateBoard}>
+              Создать доску
+            </button>
           </div>
-        </section>
-      </DragDropProvider>
+        )}
+      </section>
 
-      {editorState && (
+      {boardEditorState?.mode === 'create' && (
+        <BoardDialog
+          title="Новая доска"
+          submitLabel="Создать"
+          defaultValues={{
+            title: '',
+          }}
+          onSubmit={handleCreateBoard}
+          onClose={handleCloseBoardDialog}
+        />
+      )}
+
+      {boardEditorState?.mode === 'rename' && editingBoard && (
+        <BoardDialog
+          key={editingBoard.id}
+          title="Переименование доски"
+          submitLabel="Сохранить"
+          defaultValues={{
+            title: editingBoard.title,
+          }}
+          onSubmit={handleRenameBoard}
+          onClose={handleCloseBoardDialog}
+        />
+      )}
+
+      {taskEditorState && (
         <TaskDialog
           task={editingTask}
-          title={editorState.mode === 'create' ? 'Новая задача' : 'Редактирование задачи'}
-          submitLabel={editorState.mode === 'create' ? 'Создать задачу' : 'Сохранить изменения'}
+          title={taskEditorState.mode === 'create' ? 'Новая задача' : 'Редактирование задачи'}
+          submitLabel={taskEditorState.mode === 'create' ? 'Создать задачу' : 'Сохранить изменения'}
           onClose={handleCloseTaskDialog}
           onSubmit={handleTaskSubmit}
         />

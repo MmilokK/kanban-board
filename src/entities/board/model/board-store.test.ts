@@ -21,6 +21,35 @@ const FIRST_TASK_ID = '00000000-0000-4000-8000-000000000002';
 
 const SECOND_TASK_ID = '00000000-0000-4000-8000-000000000003';
 
+const CREATED_BOARD_ID = '00000000-0000-4000-8000-000000000100';
+
+const CREATED_BOARD_COLUMN_IDS = {
+  backlog: '00000000-0000-4000-8000-000000000101',
+  todo: '00000000-0000-4000-8000-000000000102',
+  inProgress: '00000000-0000-4000-8000-000000000103',
+  done: '00000000-0000-4000-8000-000000000104',
+};
+
+const SECOND_BOARD_ID = '00000000-0000-4000-8000-000000000010';
+
+const SECOND_BOARD_COLUMN_IDS = {
+  backlog: '00000000-0000-4000-8000-000000000011',
+  todo: '00000000-0000-4000-8000-000000000012',
+  inProgress: '00000000-0000-4000-8000-000000000013',
+  done: '00000000-0000-4000-8000-000000000014',
+};
+
+const SECOND_BOARD_TASK_ID = '00000000-0000-4000-8000-000000000015';
+
+const THIRD_BOARD_ID = '00000000-0000-4000-8000-000000000020';
+
+const THIRD_BOARD_COLUMN_IDS = {
+  backlog: '00000000-0000-4000-8000-000000000021',
+  todo: '00000000-0000-4000-8000-000000000022',
+  inProgress: '00000000-0000-4000-8000-000000000023',
+  done: '00000000-0000-4000-8000-000000000024',
+};
+
 const randomUUIDMock = vi.fn((): string => CREATED_TASK_ID);
 
 const taskInput = {
@@ -29,6 +58,25 @@ const taskInput = {
   priority: 'high' as const,
   tags: ['test', 'zustand'],
 };
+
+type TestBoardIds = {
+  boardId: BoardId;
+  columnIds: {
+    backlog: ColumnId;
+    todo: ColumnId;
+    inProgress: ColumnId;
+    done: ColumnId;
+  };
+};
+
+function mockCreateBoardIds({ boardId, columnIds }: TestBoardIds) {
+  randomUUIDMock
+    .mockReturnValueOnce(boardId)
+    .mockReturnValueOnce(columnIds.backlog)
+    .mockReturnValueOnce(columnIds.todo)
+    .mockReturnValueOnce(columnIds.inProgress)
+    .mockReturnValueOnce(columnIds.done);
+}
 
 function getBoard(boardId: BoardId) {
   const board = useBoardStore.getState().boards[boardId];
@@ -92,6 +140,8 @@ describe('Хранилище доски', () => {
   });
 
   afterEach(() => {
+    window.localStorage.clear();
+
     vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
@@ -259,6 +309,14 @@ describe('Хранилище доски', () => {
 
     const state = useBoardStore.getState();
 
+    expect(state.createBoard).toEqual(expect.any(Function));
+
+    expect(state.setActiveBoard).toEqual(expect.any(Function));
+
+    expect(state.renameBoard).toEqual(expect.any(Function));
+
+    expect(state.deleteBoard).toEqual(expect.any(Function));
+
     expect(state.addTask).toEqual(expect.any(Function));
 
     expect(state.updateTask).toEqual(expect.any(Function));
@@ -306,5 +364,182 @@ describe('Хранилище доски', () => {
     });
 
     expect(selectDataState()).toEqual(stateBefore);
+  });
+
+  it('создаёт новую доску и делает её активной', () => {
+    mockCreateBoardIds({
+      boardId: CREATED_BOARD_ID,
+      columnIds: CREATED_BOARD_COLUMN_IDS,
+    });
+
+    const boardId = useBoardStore.getState().createBoard('Рабочая доска');
+
+    expect(boardId).toBe(CREATED_BOARD_ID);
+
+    const state = useBoardStore.getState();
+
+    expect(state.activeBoardId).toBe(CREATED_BOARD_ID);
+
+    expect(state.boardOrder).toEqual([DEFAULT_BOARD_ID, CREATED_BOARD_ID]);
+
+    expect(state.boards[CREATED_BOARD_ID]).toMatchObject({
+      id: CREATED_BOARD_ID,
+      title: 'Рабочая доска',
+      columnIds: [
+        CREATED_BOARD_COLUMN_IDS.backlog,
+        CREATED_BOARD_COLUMN_IDS.todo,
+        CREATED_BOARD_COLUMN_IDS.inProgress,
+        CREATED_BOARD_COLUMN_IDS.done,
+      ],
+    });
+
+    expect(randomUUIDMock).toHaveBeenCalledTimes(5);
+  });
+
+  it('не создаёт доску с пустым названием', () => {
+    const stateBefore = structuredClone(selectDataState());
+
+    const result = useBoardStore.getState().createBoard('   ');
+
+    expect(result).toBeNull();
+
+    expect(selectDataState()).toEqual(stateBefore);
+
+    expect(randomUUIDMock).not.toHaveBeenCalled();
+  });
+
+  it('переключает активную доску', () => {
+    mockCreateBoardIds({
+      boardId: SECOND_BOARD_ID,
+      columnIds: SECOND_BOARD_COLUMN_IDS,
+    });
+
+    useBoardStore.getState().createBoard('Вторая доска');
+
+    expect(useBoardStore.getState().activeBoardId).toBe(SECOND_BOARD_ID);
+
+    useBoardStore.getState().setActiveBoard(DEFAULT_BOARD_ID);
+
+    expect(useBoardStore.getState().activeBoardId).toBe(DEFAULT_BOARD_ID);
+  });
+
+  it('переименовывает доску', () => {
+    useBoardStore.getState().renameBoard(DEFAULT_BOARD_ID, 'Личные задачи');
+
+    expect(useBoardStore.getState().boards[DEFAULT_BOARD_ID]?.title).toBe('Личные задачи');
+  });
+
+  it('удаляет доску вместе с колонками и задачами', () => {
+    mockCreateBoardIds({
+      boardId: SECOND_BOARD_ID,
+      columnIds: SECOND_BOARD_COLUMN_IDS,
+    });
+
+    const createdBoardId = useBoardStore.getState().createBoard('Рабочая доска');
+
+    expect(createdBoardId).toBe(SECOND_BOARD_ID);
+
+    randomUUIDMock.mockReturnValueOnce(SECOND_BOARD_TASK_ID);
+
+    useBoardStore.getState().addTask(SECOND_BOARD_COLUMN_IDS.backlog, taskInput);
+
+    const stateBeforeDeletion = useBoardStore.getState();
+
+    expect(stateBeforeDeletion.boards[SECOND_BOARD_ID]).toBeDefined();
+
+    expect(stateBeforeDeletion.tasks[SECOND_BOARD_TASK_ID]).toBeDefined();
+
+    for (const columnId of Object.values(SECOND_BOARD_COLUMN_IDS)) {
+      expect(stateBeforeDeletion.columns[columnId]).toBeDefined();
+    }
+
+    useBoardStore.getState().deleteBoard(SECOND_BOARD_ID);
+
+    const stateAfterDeletion = useBoardStore.getState();
+
+    expect(stateAfterDeletion.boards[SECOND_BOARD_ID]).toBeUndefined();
+
+    expect(stateAfterDeletion.boardOrder).toEqual([DEFAULT_BOARD_ID]);
+
+    for (const columnId of Object.values(SECOND_BOARD_COLUMN_IDS)) {
+      expect(stateAfterDeletion.columns[columnId]).toBeUndefined();
+    }
+
+    expect(stateAfterDeletion.tasks[SECOND_BOARD_TASK_ID]).toBeUndefined();
+
+    expect(stateAfterDeletion.boards[DEFAULT_BOARD_ID]).toBeDefined();
+
+    expect(stateAfterDeletion.activeBoardId).toBe(DEFAULT_BOARD_ID);
+  });
+
+  it('после удаления активной доски выбирает следующую', () => {
+    mockCreateBoardIds({
+      boardId: SECOND_BOARD_ID,
+      columnIds: SECOND_BOARD_COLUMN_IDS,
+    });
+
+    useBoardStore.getState().createBoard('Вторая доска');
+
+    mockCreateBoardIds({
+      boardId: THIRD_BOARD_ID,
+      columnIds: THIRD_BOARD_COLUMN_IDS,
+    });
+
+    useBoardStore.getState().createBoard('Третья доска');
+
+    expect(useBoardStore.getState().boardOrder).toEqual([
+      DEFAULT_BOARD_ID,
+      SECOND_BOARD_ID,
+      THIRD_BOARD_ID,
+    ]);
+
+    useBoardStore.getState().setActiveBoard(SECOND_BOARD_ID);
+
+    expect(useBoardStore.getState().activeBoardId).toBe(SECOND_BOARD_ID);
+
+    useBoardStore.getState().deleteBoard(SECOND_BOARD_ID);
+
+    const state = useBoardStore.getState();
+
+    expect(state.boardOrder).toEqual([DEFAULT_BOARD_ID, THIRD_BOARD_ID]);
+
+    expect(state.activeBoardId).toBe(THIRD_BOARD_ID);
+
+    expect(state.boards[SECOND_BOARD_ID]).toBeUndefined();
+
+    expect(state.boards[THIRD_BOARD_ID]).toBeDefined();
+  });
+
+  it('после удаления последней активной доски выбирает предыдущую', () => {
+    mockCreateBoardIds({
+      boardId: SECOND_BOARD_ID,
+      columnIds: SECOND_BOARD_COLUMN_IDS,
+    });
+
+    useBoardStore.getState().createBoard('Вторая доска');
+
+    expect(useBoardStore.getState().activeBoardId).toBe(SECOND_BOARD_ID);
+
+    useBoardStore.getState().deleteBoard(SECOND_BOARD_ID);
+
+    const state = useBoardStore.getState();
+
+    expect(state.boardOrder).toEqual([DEFAULT_BOARD_ID]);
+
+    expect(state.activeBoardId).toBe(DEFAULT_BOARD_ID);
+  });
+
+  it('после удаления последней доски устанавливает активную доску в null', () => {
+    useBoardStore.getState().deleteBoard(DEFAULT_BOARD_ID);
+
+    const state = useBoardStore.getState();
+
+    expect(state.boardOrder).toEqual([]);
+
+    expect(state.activeBoardId).toBeNull();
+
+    expect(state.boards).toEqual({});
+    expect(state.columns).toEqual({});
+    expect(state.tasks).toEqual({});
   });
 });

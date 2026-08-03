@@ -1,0 +1,63 @@
+import type { BoardId } from '../../../shared/model/entity-ids';
+import type { Board } from '../../../entities/board/model/types';
+
+import styles from './BoardToolbar.module.scss';
+
+type BoardToolbarProps = {
+  boards: Board[];
+  activeBoardId: BoardId | null;
+  onSelectBoard: (boardId: BoardId) => void;
+  onCreateBoard: () => void;
+  onRenameBoard: () => void;
+  onDeleteBoard: () => void;
+};
+
+export function BoardToolbar({
+  boards,
+  activeBoardId,
+  onSelectBoard,
+  onCreateBoard,
+  onRenameBoard,
+  onDeleteBoard,
+}: BoardToolbarProps) {
+  const hasActiveBoard = activeBoardId !== null;
+
+  return (
+    <div className={styles.toolbar} role="toolbar" aria-label="Управление досками">
+      <div className={styles.selector}>
+        <label htmlFor="board-select">Доска</label>
+
+        <select
+          id="board-select"
+          value={activeBoardId ?? ''}
+          disabled={boards.length === 0}
+          onChange={(event) => {
+            onSelectBoard(event.target.value);
+          }}
+        >
+          {boards.length === 0 && <option value="">Нет досок</option>}
+
+          {boards.map((board) => (
+            <option key={board.id} value={board.id}>
+              {board.title}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className={styles.actions}>
+        <button type="button" onClick={onCreateBoard}>
+          Новая доска
+        </button>
+
+        <button type="button" disabled={!hasActiveBoard} onClick={onRenameBoard}>
+          Переименовать
+        </button>
+
+        <button type="button" disabled={!hasActiveBoard} onClick={onDeleteBoard}>
+          Удалить
+        </button>
+      </div>
+    </div>
+  );
+}

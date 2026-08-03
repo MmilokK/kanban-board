@@ -14,8 +14,17 @@ import {
 } from './board-storage';
 import { createDemoAppState } from './demo-board';
 import type { TaskIdsByColumn } from './task-order';
+import { createBoardBundle } from './board-factory';
 
 type BoardActions = {
+  createBoard: (title: string) => BoardId | null;
+
+  setActiveBoard: (boardId: BoardId) => void;
+
+  renameBoard: (boardId: BoardId, title: string) => void;
+
+  deleteBoard: (boardId: BoardId) => void;
+
   addTask: (columnId: ColumnId, input: CreateTaskInput) => void;
 
   updateTask: (taskId: TaskId, input: UpdateTaskInput) => void;
@@ -60,10 +69,171 @@ function updateBoardTimestamp(
   };
 }
 
+function selectNextActiveBoardId(boardOrder: BoardId[], deletedBoardId: BoardId): BoardId | null {
+  const deletedIndex = boardOrder.indexOf(deletedBoardId);
+
+  const nextBoardOrder = boardOrder.filter((boardId) => boardId !== deletedBoardId);
+
+  if (nextBoardOrder.length === 0) {
+    return null;
+  }
+
+  return (
+    nextBoardOrder[deletedIndex] ?? nextBoardOrder[deletedIndex - 1] ?? nextBoardOrder[0] ?? null
+  );
+}
+
 export const useBoardStore = create<BoardStore>()(
   persist<BoardStore, [], [], AppState>(
     (set) => ({
       ...createDemoAppState(),
+
+      createBoard: (title) => {
+        const normalizedTitle = title.trim();
+
+        if (!normalizedTitle) {
+          return null;
+        }
+
+        const boardId = crypto.randomUUID();
+
+        const columnIds = {
+          backlog: crypto.randomUUID(),
+          todo: crypto.randomUUID(),
+          inProgress: crypto.randomUUID(),
+          done: crypto.randomUUID(),
+        };
+
+        const now = new Date().toISOString();
+
+        const { board, columns } = createBoardBundle({
+          boardId,
+          title: normalizedTitle,
+          columnIds,
+          createdAt: now,
+        });
+
+        set((state) => ({
+          boards: {
+            ...state.boards,
+            [board.id]: board,
+          },
+
+          boardOrder: [...state.boardOrder, board.id],
+
+          activeBoardId: board.id,
+
+          columns: {
+            ...state.columns,
+            ...columns,
+          },
+        }));
+
+        return board.id;
+      },
+
+      setActiveBoard: (boardId) => {
+        set((state) => {
+          if (!state.boards[boardId]) {
+            return state;
+          }
+
+          if (state.activeBoardId === boardId) {
+            return state;
+          }
+
+          return {
+            activeBoardId: boardId,
+          };
+        });
+      },
+
+      renameBoard: (boardId, title) => {
+        const normalizedTitle = title.trim();
+
+        if (!normalizedTitle) {
+          return;
+        }
+
+        set((state) => {
+          const board = state.boards[boardId];
+
+          if (!board) {
+            return state;
+          }
+
+          if (board.title === normalizedTitle) {
+            return state;
+          }
+
+          const now = new Date().toISOString();
+
+          return {
+            boards: {
+              ...state.boards,
+
+              [boardId]: {
+                ...board,
+                title: normalizedTitle,
+                updatedAt: now,
+              },
+            },
+          };
+        });
+      },
+
+      deleteBoard: (boardId) => {
+        set((state) => {
+          const board = state.boards[boardId];
+
+          if (!board) {
+            return state;
+          }
+
+          const nextBoards = {
+            ...state.boards,
+          };
+
+          delete nextBoards[boardId];
+
+          const nextColumns = {
+            ...state.columns,
+          };
+
+          const nextTasks = {
+            ...state.tasks,
+          };
+
+          for (const columnId of board.columnIds) {
+            const column = state.columns[columnId];
+
+            if (column) {
+              for (const taskId of column.taskIds) {
+                delete nextTasks[taskId];
+              }
+            }
+
+            delete nextColumns[columnId];
+          }
+
+          const nextBoardOrder = state.boardOrder.filter(
+            (currentBoardId) => currentBoardId !== boardId,
+          );
+
+          const nextActiveBoardId =
+            state.activeBoardId === boardId
+              ? selectNextActiveBoardId(state.boardOrder, boardId)
+              : state.activeBoardId;
+
+          return {
+            boards: nextBoards,
+            boardOrder: nextBoardOrder,
+            activeBoardId: nextActiveBoardId,
+            columns: nextColumns,
+            tasks: nextTasks,
+          };
+        });
+      },
 
       addTask: (columnId, input) => {
         set((state) => {

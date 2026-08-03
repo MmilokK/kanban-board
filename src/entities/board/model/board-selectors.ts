@@ -10,6 +10,12 @@ export function selectActiveBoard(state: Pick<AppState, 'activeBoardId' | 'board
   return state.boards[state.activeBoardId] ?? null;
 }
 
+export function selectOrderedBoards(state: Pick<AppState, 'boards' | 'boardOrder'>): Board[] {
+  return state.boardOrder
+    .map((boardId) => state.boards[boardId])
+    .filter((board): board is Board => board !== undefined);
+}
+
 export function selectActiveBoardColumns(
   state: Pick<AppState, 'activeBoardId' | 'boards' | 'columns'>,
 ): Column[] {
