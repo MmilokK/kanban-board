@@ -8,14 +8,23 @@ import clsx from 'clsx';
 import { SortableTaskCard } from '../../../features/task-dnd/ui/SortableTaskCard';
 
 import styles from './BoardColumn.module.scss';
-import type { ColumnId, TaskId } from '../../../shared/model/entity-ids';
+import type { TaskId } from '../../../shared/model/entity-ids';
 
 type BoardColumnProps = {
   column: Column;
   tasks: Task[];
-  onCreateTask: (columnId: ColumnId) => void;
-  onDeleteTask: (taskId: TaskId) => void;
+
+  onCreateTask: (taskId: TaskId) => void;
   onEditTask: (taskId: TaskId) => void;
+  onDeleteTask: (taskId: TaskId) => void;
+
+  onRenameColumn: () => void;
+  onDeleteColumn: () => void;
+  onMoveColumnLeft: () => void;
+  onMoveColumnRight: () => void;
+
+  canMoveColumnLeft: boolean;
+  canMoveColumnRight: boolean;
 };
 
 export function BoardColumn({
@@ -24,6 +33,13 @@ export function BoardColumn({
   onCreateTask,
   onDeleteTask,
   onEditTask,
+  onRenameColumn,
+  onDeleteColumn,
+  onMoveColumnLeft,
+  onMoveColumnRight,
+
+  canMoveColumnLeft,
+  canMoveColumnRight,
 }: BoardColumnProps) {
   const titleId = `column-${column.id}-title`;
 
@@ -44,13 +60,49 @@ export function BoardColumn({
       aria-labelledby={titleId}
     >
       <header className={styles.header}>
-        <h2 className={styles.title} id={titleId}>
-          {column.title}
-        </h2>
+        <div className={styles.title}>
+          <h2 id={`column-${column.id}-title`}>{column.title}</h2>
 
-        <span className={styles.counter} aria-label={`Количество задач: ${tasks.length}`}>
-          {tasks.length}
-        </span>
+          <span className={styles.counter} aria-label={`Количество задач: ${tasks.length}`}>
+            {tasks.length}
+          </span>
+        </div>
+
+        <div className={styles.columnActions} aria-label={`Управление колонкой ${column.title}`}>
+          <button
+            type="button"
+            aria-label={`Переместить колонку ${column.title} влево`}
+            disabled={!canMoveColumnLeft}
+            onClick={onMoveColumnLeft}
+          >
+            ←
+          </button>
+
+          <button
+            type="button"
+            aria-label={`Переместить колонку ${column.title} вправо`}
+            disabled={!canMoveColumnRight}
+            onClick={onMoveColumnRight}
+          >
+            →
+          </button>
+
+          <button
+            type="button"
+            aria-label={`Переименовать колонку ${column.title}`}
+            onClick={onRenameColumn}
+          >
+            Переименовать
+          </button>
+
+          <button
+            type="button"
+            aria-label={`Удалить колонку ${column.title}`}
+            onClick={onDeleteColumn}
+          >
+            Удалить
+          </button>
+        </div>
       </header>
 
       <button className={styles.addButton} type="button" onClick={handleCreateTask}>

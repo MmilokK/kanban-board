@@ -20,6 +20,8 @@ import { TaskDialog } from '../../../features/task-editor/ui/TaskDialog';
 import type { BoardId, ColumnId, TaskId } from '../../../shared/model/entity-ids';
 
 import styles from './Board.module.scss';
+import { ColumnDialog } from '../../../features/column-managment/ui/ColumnDialog';
+import type { ColumnFormValues } from '../../../features/column-managment/model/column-form';
 
 type TaskEditorState =
   | {
@@ -39,6 +41,17 @@ type BoardEditorState =
   | {
       mode: 'rename';
       boardId: BoardId;
+    }
+  | null;
+
+type ColumnEditorState =
+  | {
+      mode: 'create';
+      boardId: BoardId;
+    }
+  | {
+      mode: 'rename';
+      columnId: ColumnId;
     }
   | null;
 
@@ -67,6 +80,11 @@ export function Board() {
     renameBoard,
     deleteBoard,
 
+    createColumn,
+    renameColumn,
+    deleteColumn,
+    moveColumn,
+
     addTask,
     updateTask,
     deleteTask,
@@ -84,6 +102,11 @@ export function Board() {
       renameBoard: state.renameBoard,
       deleteBoard: state.deleteBoard,
 
+      createColumn: state.createColumn,
+      renameColumn: state.renameColumn,
+      deleteColumn: state.deleteColumn,
+      moveColumn: state.moveColumn,
+
       addTask: state.addTask,
       updateTask: state.updateTask,
       deleteTask: state.deleteTask,
@@ -94,6 +117,8 @@ export function Board() {
   const [taskEditorState, setTaskEditorState] = useState<TaskEditorState>(null);
 
   const [boardEditorState, setBoardEditorState] = useState<BoardEditorState>(null);
+
+  const [columnEditorState, setColumnEditorState] = useState<ColumnEditorState>(null);
 
   const taskOrderSnapshotRef = useRef<TaskIdsByColumn>({});
 
@@ -114,6 +139,9 @@ export function Board() {
 
   const editingTask =
     taskEditorState?.mode === 'edit' ? (tasks[taskEditorState.taskId] ?? null) : null;
+
+  const editingColumn =
+    columnEditorState?.mode === 'rename' ? columns[columnEditorState.columnId] : undefined;
 
   const editingBoard =
     boardEditorState?.mode === 'rename' ? boards[boardEditorState.boardId] : undefined;
@@ -185,6 +213,82 @@ export function Board() {
     deleteBoard(activeBoard.id);
   }
 
+  function handleOpenCreateColumn() {
+    if (!activeBoard) {
+      return;
+    }
+
+    setColumnEditorState({
+      mode: 'create',
+      boardId: activeBoard.id,
+    });
+  }
+
+  function handleOpenRenameColumn(columnId: ColumnId) {
+    if (!columns[columnId]) {
+      return;
+    }
+
+    setColumnEditorState({
+      mode: 'rename',
+      columnId,
+    });
+  }
+
+  function handleCloseColumnDialog() {
+    setColumnEditorState(null);
+  }
+
+  function handleCreateColumn(values: ColumnFormValues) {
+    if (columnEditorState?.mode !== 'create') {
+      return;
+    }
+
+    const columnId = createColumn(columnEditorState.boardId, values.title);
+
+    if (!columnId) {
+      return;
+    }
+
+    setColumnEditorState(null);
+  }
+
+  function handleRenameColumn(values: ColumnFormValues) {
+    if (columnEditorState?.mode !== 'rename') {
+      return;
+    }
+
+    renameColumn(columnEditorState.columnId, values.title);
+
+    setColumnEditorState(null);
+  }
+
+  function handleDeleteColumn(columnId: ColumnId) {
+    const column = columns[columnId];
+
+    if (!column) {
+      return;
+    }
+
+    const taskCount = column.taskIds.length;
+
+    const message =
+      taskCount === 0
+        ? `Удалить колонку «${column.title}»?`
+        : `Удалить колонку «${column.title}» вместе с задачами: ${taskCount}?`;
+
+    const confirmed = window.confirm(message);
+
+    if (!confirmed) {
+      return;
+    }
+
+    setTaskEditorState(null);
+    setColumnEditorState(null);
+
+    deleteColumn(columnId);
+  }
+
   function handleOpenCreateTask(columnId: ColumnId) {
     setTaskEditorState({
       mode: 'create',
@@ -253,6 +357,10 @@ export function Board() {
               <div>
                 <h1 id="board-title">{activeBoard.title}</h1>
               </div>
+
+              <button type="button" onClick={handleOpenCreateColumn}>
+                Новая колонка
+              </button>
             </header>
 
             <DragDropProvider
@@ -274,24 +382,52 @@ export function Board() {
                 taskOrderSnapshotRef.current = {};
               }}
             >
-              <div className={styles.columns}>
-                {orderedColumns.map((column) => {
-                  const columnTasks = column.taskIds.map((taskId) => tasks[taskId]).filter(isTask);
+              {orderedColumns.length ? (
+                <div className={styles.columns}>
+                  {orderedColumns.map((column, columnIndex) => {
+                    const columnTasks = column.taskIds
+                      .map((taskId) => tasks[taskId])
+                      .filter(isTask);
 
-                  return (
-                    <BoardColumn
-                      key={column.id}
-                      column={column}
-                      tasks={columnTasks}
-                      onCreateTask={() => {
-                        handleOpenCreateTask(column.id);
-                      }}
-                      onEditTask={handleOpenEditTask}
-                      onDeleteTask={handleDeleteTask}
-                    />
-                  );
-                })}
-              </div>
+                    return (
+                      <BoardColumn
+                        key={column.id}
+                        column={column}
+                        tasks={columnTasks}
+                        onCreateTask={() => {
+                          handleOpenCreateTask(column.id);
+                        }}
+                        onEditTask={handleOpenEditTask}
+                        onDeleteTask={handleDeleteTask}
+                        onRenameColumn={() => {
+                          handleOpenRenameColumn(column.id);
+                        }}
+                        onDeleteColumn={() => {
+                          handleDeleteColumn(column.id);
+                        }}
+                        onMoveColumnLeft={() => {
+                          moveColumn(column.id, columnIndex - 1);
+                        }}
+                        onMoveColumnRight={() => {
+                          moveColumn(column.id, columnIndex + 1);
+                        }}
+                        canMoveColumnLeft={columnIndex > 0}
+                        canMoveColumnRight={columnIndex < orderedColumns.length - 1}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className={styles.emptyColumns}>
+                  <h2>Пока нет колонок</h2>
+
+                  <p>Добавь первую колонку, чтобы создавать задачи.</p>
+
+                  <button type="button" onClick={handleOpenCreateColumn}>
+                    Создать колонку
+                  </button>
+                </div>
+              )}
             </DragDropProvider>
           </>
         ) : (
@@ -339,6 +475,31 @@ export function Board() {
           submitLabel={taskEditorState.mode === 'create' ? 'Создать задачу' : 'Сохранить изменения'}
           onClose={handleCloseTaskDialog}
           onSubmit={handleTaskSubmit}
+        />
+      )}
+
+      {columnEditorState?.mode === 'create' && (
+        <ColumnDialog
+          title="Новая колонка"
+          submitLabel="Создать"
+          defaultValues={{
+            title: '',
+          }}
+          onSubmit={handleCreateColumn}
+          onClose={handleCloseColumnDialog}
+        />
+      )}
+
+      {columnEditorState?.mode === 'rename' && editingColumn && (
+        <ColumnDialog
+          key={editingColumn.id}
+          title="Переименование колонки"
+          submitLabel="Сохранить"
+          defaultValues={{
+            title: editingColumn.title,
+          }}
+          onSubmit={handleRenameColumn}
+          onClose={handleCloseColumnDialog}
         />
       )}
     </>

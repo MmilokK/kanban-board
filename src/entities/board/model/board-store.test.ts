@@ -50,6 +50,10 @@ const THIRD_BOARD_COLUMN_IDS = {
   done: '00000000-0000-4000-8000-000000000024',
 };
 
+const CREATED_COLUMN_ID = '00000000-0000-4000-8000-000000000200';
+
+const COLUMN_UPDATED_AT = '2026-08-02T14:00:00.000Z';
+
 const randomUUIDMock = vi.fn((): string => CREATED_TASK_ID);
 
 const taskInput = {
@@ -302,6 +306,14 @@ describe('Хранилище доски', () => {
     expect(useBoardStore.getState().activeBoardId).toBe(DEFAULT_BOARD_ID);
 
     expect(useBoardStore.getState().tasks[CREATED_TASK_ID]).toBeUndefined();
+
+    expect(useBoardStore.getState().createColumn).toEqual(expect.any(Function));
+
+    expect(useBoardStore.getState().renameColumn).toEqual(expect.any(Function));
+
+    expect(useBoardStore.getState().deleteColumn).toEqual(expect.any(Function));
+
+    expect(useBoardStore.getState().moveColumn).toEqual(expect.any(Function));
   });
 
   it('сохраняет действия хранилища после сброса', () => {
@@ -541,5 +553,92 @@ describe('Хранилище доски', () => {
     expect(state.boards).toEqual({});
     expect(state.columns).toEqual({});
     expect(state.tasks).toEqual({});
+  });
+
+  it('создаёт колонку в указанной доске', () => {
+    randomUUIDMock.mockReturnValueOnce(CREATED_COLUMN_ID);
+
+    const columnId = useBoardStore.getState().createColumn(DEFAULT_BOARD_ID, 'Проверка');
+
+    expect(columnId).toBe(CREATED_COLUMN_ID);
+
+    const column = getColumn(CREATED_COLUMN_ID);
+
+    expect(column).toEqual({
+      id: CREATED_COLUMN_ID,
+      boardId: DEFAULT_BOARD_ID,
+      title: 'Проверка',
+      taskIds: [],
+      isCompleted: false,
+    });
+
+    expect(getBoard(DEFAULT_BOARD_ID).columnIds).toContain(CREATED_COLUMN_ID);
+  });
+
+  it('не создаёт колонку с пустым названием', () => {
+    const stateBefore = structuredClone(selectDataState());
+
+    const result = useBoardStore.getState().createColumn(DEFAULT_BOARD_ID, '   ');
+
+    expect(result).toBeNull();
+
+    expect(selectDataState()).toEqual(stateBefore);
+
+    expect(randomUUIDMock).not.toHaveBeenCalled();
+  });
+
+  it('не создаёт колонку в несуществующей доске', () => {
+    const stateBefore = structuredClone(selectDataState());
+
+    const result = useBoardStore.getState().createColumn('missing-board', 'Новая колонка');
+
+    expect(result).toBeNull();
+
+    expect(selectDataState()).toEqual(stateBefore);
+
+    expect(randomUUIDMock).not.toHaveBeenCalled();
+  });
+
+  it('переименовывает колонку', () => {
+    vi.setSystemTime(new Date(COLUMN_UPDATED_AT));
+
+    useBoardStore.getState().renameColumn(DEFAULT_COLUMN_IDS.backlog, '   Идеи   ');
+
+    expect(getColumn(DEFAULT_COLUMN_IDS.backlog).title).toBe('Идеи');
+
+    expect(getBoard(DEFAULT_BOARD_ID).updatedAt).toBe(COLUMN_UPDATED_AT);
+  });
+
+  it('удаляет колонку вместе с её задачами', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    expect(useBoardStore.getState().tasks[CREATED_TASK_ID]).toBeDefined();
+
+    useBoardStore.getState().deleteColumn(DEFAULT_COLUMN_IDS.backlog);
+
+    const state = useBoardStore.getState();
+
+    expect(state.columns[DEFAULT_COLUMN_IDS.backlog]).toBeUndefined();
+
+    expect(state.tasks[CREATED_TASK_ID]).toBeUndefined();
+
+    expect(state.boards[DEFAULT_BOARD_ID]?.columnIds).not.toContain(DEFAULT_COLUMN_IDS.backlog);
+  });
+
+  it('изменяет порядок колонок', () => {
+    useBoardStore.getState().moveColumn(DEFAULT_COLUMN_IDS.done, 0);
+
+    expect(getBoard(DEFAULT_BOARD_ID).columnIds).toEqual([
+      DEFAULT_COLUMN_IDS.done,
+      DEFAULT_COLUMN_IDS.backlog,
+      DEFAULT_COLUMN_IDS.todo,
+      DEFAULT_COLUMN_IDS.inProgress,
+    ]);
+  });
+
+  it('ограничивает позицию колонки допустимым диапазоном', () => {
+    useBoardStore.getState().moveColumn(DEFAULT_COLUMN_IDS.backlog, 100);
+
+    expect(getBoard(DEFAULT_BOARD_ID).columnIds.at(-1)).toBe(DEFAULT_COLUMN_IDS.backlog);
   });
 });

@@ -15,6 +15,7 @@ import {
 import { createDemoAppState } from './demo-board';
 import type { TaskIdsByColumn } from './task-order';
 import { createBoardBundle } from './board-factory';
+import { COLUMN_TITLE_MAX_LENGTH } from '../../column/model/column-constants';
 
 type BoardActions = {
   createBoard: (title: string) => BoardId | null;
@@ -24,6 +25,14 @@ type BoardActions = {
   renameBoard: (boardId: BoardId, title: string) => void;
 
   deleteBoard: (boardId: BoardId) => void;
+
+  createColumn: (boardId: BoardId, title: string) => ColumnId | null;
+
+  renameColumn: (columnId: ColumnId, title: string) => void;
+
+  deleteColumn: (columnId: ColumnId) => void;
+
+  moveColumn: (columnId: ColumnId, targetIndex: number) => void;
 
   addTask: (columnId: ColumnId, input: CreateTaskInput) => void;
 
@@ -85,7 +94,7 @@ function selectNextActiveBoardId(boardOrder: BoardId[], deletedBoardId: BoardId)
 
 export const useBoardStore = create<BoardStore>()(
   persist<BoardStore, [], [], AppState>(
-    (set) => ({
+    (set, get) => ({
       ...createDemoAppState(),
 
       createBoard: (title) => {
@@ -231,6 +240,206 @@ export const useBoardStore = create<BoardStore>()(
             activeBoardId: nextActiveBoardId,
             columns: nextColumns,
             tasks: nextTasks,
+          };
+        });
+      },
+
+      createColumn: (boardId, title) => {
+        const normalizedTitle = title.trim();
+
+        if (!normalizedTitle || normalizedTitle.length > COLUMN_TITLE_MAX_LENGTH) {
+          return null;
+        }
+
+        const currentBoard = get().boards[boardId];
+
+        if (!currentBoard) {
+          return null;
+        }
+
+        const columnId = crypto.randomUUID();
+
+        const now = new Date().toISOString();
+
+        set((state) => {
+          const board = state.boards[boardId];
+
+          if (!board) {
+            return state;
+          }
+
+          return {
+            boards: {
+              ...state.boards,
+
+              [boardId]: {
+                ...board,
+                columnIds: [...board.columnIds, columnId],
+                updatedAt: now,
+              },
+            },
+
+            columns: {
+              ...state.columns,
+
+              [columnId]: {
+                id: columnId,
+                boardId,
+                title: normalizedTitle,
+                taskIds: [],
+                isCompleted: false,
+              },
+            },
+          };
+        });
+
+        return columnId;
+      },
+
+      renameColumn: (columnId, title) => {
+        const normalizedTitle = title.trim();
+
+        if (!normalizedTitle || normalizedTitle.length > COLUMN_TITLE_MAX_LENGTH) {
+          return;
+        }
+
+        set((state) => {
+          const column = state.columns[columnId];
+
+          if (!column) {
+            return state;
+          }
+
+          if (column.title === normalizedTitle) {
+            return state;
+          }
+
+          const board = state.boards[column.boardId];
+
+          if (!board) {
+            return state;
+          }
+
+          const now = new Date().toISOString();
+
+          return {
+            columns: {
+              ...state.columns,
+
+              [columnId]: {
+                ...column,
+                title: normalizedTitle,
+              },
+            },
+
+            boards: {
+              ...state.boards,
+
+              [board.id]: {
+                ...board,
+                updatedAt: now,
+              },
+            },
+          };
+        });
+      },
+
+      deleteColumn: (columnId) => {
+        set((state) => {
+          const column = state.columns[columnId];
+
+          if (!column) {
+            return state;
+          }
+
+          const board = state.boards[column.boardId];
+
+          if (!board) {
+            return state;
+          }
+
+          const nextColumns = {
+            ...state.columns,
+          };
+
+          delete nextColumns[columnId];
+
+          const nextTasks = {
+            ...state.tasks,
+          };
+
+          for (const taskId of column.taskIds) {
+            delete nextTasks[taskId];
+          }
+
+          const now = new Date().toISOString();
+
+          return {
+            columns: nextColumns,
+            tasks: nextTasks,
+
+            boards: {
+              ...state.boards,
+
+              [board.id]: {
+                ...board,
+                columnIds: board.columnIds.filter(
+                  (currentColumnId) => currentColumnId !== columnId,
+                ),
+                updatedAt: now,
+              },
+            },
+          };
+        });
+      },
+
+      moveColumn: (columnId, targetIndex) => {
+        set((state) => {
+          const column = state.columns[columnId];
+
+          if (!column) {
+            return state;
+          }
+
+          const board = state.boards[column.boardId];
+
+          if (!board) {
+            return state;
+          }
+
+          const currentIndex = board.columnIds.indexOf(columnId);
+
+          if (currentIndex === -1) {
+            return state;
+          }
+
+          const normalizedTargetIndex = Math.max(
+            0,
+            Math.min(targetIndex, board.columnIds.length - 1),
+          );
+
+          if (currentIndex === normalizedTargetIndex) {
+            return state;
+          }
+
+          const nextColumnIds = [...board.columnIds];
+
+          nextColumnIds.splice(currentIndex, 1);
+
+          nextColumnIds.splice(normalizedTargetIndex, 0, columnId);
+
+          const now = new Date().toISOString();
+
+          return {
+            boards: {
+              ...state.boards,
+
+              [board.id]: {
+                ...board,
+                columnIds: nextColumnIds,
+                updatedAt: now,
+              },
+            },
           };
         });
       },
