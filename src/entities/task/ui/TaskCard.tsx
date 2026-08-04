@@ -77,11 +77,21 @@ export function TaskCard({ task, dragHandle, onDeleteTask, onEditTask }: TaskCar
         </div>
 
         <div className={styles.actions}>
-          <button className={styles.editButton} type="button" onClick={handleEdit}>
+          <button
+            className={styles.editButton}
+            type="button"
+            onClick={handleEdit}
+            aria-label={`Изменить задачу ${task.title}`}
+          >
             Изменить
           </button>
 
-          <button className={styles.deleteButton} type="button" onClick={handleDelete}>
+          <button
+            className={styles.deleteButton}
+            type="button"
+            onClick={handleDelete}
+            aria-label={`Удалить задачу ${task.title}`}
+          >
             Удалить
           </button>
         </div>

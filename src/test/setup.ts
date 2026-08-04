@@ -28,3 +28,19 @@ if (typeof HTMLDialogElement !== 'undefined' && !HTMLDialogElement.prototype.clo
     },
   });
 }
+
+class ResizeObserverMock implements ResizeObserver {
+  observe(): void {
+    // Наблюдение за размерами в jsdom не требуется.
+  }
+
+  unobserve(): void {
+    // Наблюдение за размерами в jsdom не требуется.
+  }
+
+  disconnect(): void {
+    // Наблюдение за размерами в jsdom не требуется.
+  }
+}
+
+globalThis.ResizeObserver = ResizeObserverMock;
