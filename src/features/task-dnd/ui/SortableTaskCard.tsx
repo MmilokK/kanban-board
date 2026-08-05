@@ -11,6 +11,7 @@ type SortableTaskCardProps = {
   task: Task;
   index: number;
   columnId: ColumnId;
+  isDragDisabled?: boolean;
   onDeleteTask: (taskId: TaskId) => void;
   onEditTask: (taskId: TaskId) => void;
 };
@@ -19,6 +20,7 @@ export function SortableTaskCard({
   task,
   index,
   columnId,
+  isDragDisabled = false,
   onDeleteTask,
   onEditTask,
 }: SortableTaskCardProps) {
@@ -28,6 +30,7 @@ export function SortableTaskCard({
     group: columnId,
     type: 'task',
     accept: 'task',
+    disabled: isDragDisabled,
   });
 
   const dragHandle = (
@@ -36,6 +39,7 @@ export function SortableTaskCard({
       ref={handleRef}
       type="button"
       aria-label={`Переместить задачу «${task.title}»`}
+      disabled={isDragDisabled}
     >
       <span aria-hidden="true">⠿</span>
     </button>
