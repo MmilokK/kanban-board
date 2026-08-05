@@ -22,6 +22,15 @@ import type { BoardId, ColumnId, TaskId } from '../../../shared/model/entity-ids
 import styles from './Board.module.scss';
 import { ColumnDialog } from '../../../features/column-managment/ui/ColumnDialog';
 import type { ColumnFormValues } from '../../../features/column-managment/model/column-form';
+import {
+  DEFAULT_TASK_FILTERS,
+  filterAndSortTasks,
+  getAvailableTaskTags,
+  hasActiveTaskFilters,
+  hasModifiedTaskView,
+  type TaskFilterState,
+} from '../../../features/task-filtering/model/task-filter';
+import { TaskFilters } from '../../../features/task-filtering/ui/TaskFilters';
 
 type TaskEditorState =
   | {
@@ -65,6 +74,12 @@ function isColumn(column: Column | undefined): column is Column {
 
 function isTask(task: Task | undefined): task is Task {
   return task !== undefined;
+}
+
+function createDefaultTaskFilters(): TaskFilterState {
+  return {
+    ...DEFAULT_TASK_FILTERS,
+  };
 }
 
 export function Board() {
@@ -120,6 +135,8 @@ export function Board() {
 
   const [columnEditorState, setColumnEditorState] = useState<ColumnEditorState>(null);
 
+  const [taskFilters, setTaskFilters] = useState<TaskFilterState>(createDefaultTaskFilters);
+
   const taskOrderSnapshotRef = useRef<TaskIdsByColumn>({});
 
   const orderedBoards = useMemo(
@@ -137,6 +154,32 @@ export function Board() {
     return activeBoard.columnIds.map((columnId) => columns[columnId]).filter(isColumn);
   }, [activeBoard, columns]);
 
+  const activeBoardTasks = useMemo(() => {
+    return orderedColumns.flatMap((column) =>
+      column.taskIds.map((taskId) => tasks[taskId]).filter(isTask),
+    );
+  }, [orderedColumns, tasks]);
+
+  const availableTaskTags = useMemo(
+    () => getAvailableTaskTags(activeBoardTasks),
+    [activeBoardTasks],
+  );
+
+  const visibleTasksByColumn = useMemo(() => {
+    return Object.fromEntries(
+      orderedColumns.map((column) => {
+        const columnTasks = column.taskIds.map((taskId) => tasks[taskId]).filter(isTask);
+
+        return [column.id, filterAndSortTasks(columnTasks, taskFilters)];
+      }),
+    ) as Record<ColumnId, Task[]>;
+  }, [orderedColumns, tasks, taskFilters]);
+
+  const visibleTaskCount = Object.values(visibleTasksByColumn).reduce(
+    (total, columnTasks) => total + columnTasks.length,
+    0,
+  );
+
   const editingTask =
     taskEditorState?.mode === 'edit' ? (tasks[taskEditorState.taskId] ?? null) : null;
 
@@ -146,10 +189,19 @@ export function Board() {
   const editingBoard =
     boardEditorState?.mode === 'rename' ? boards[boardEditorState.boardId] : undefined;
 
+  const isTaskViewModified = hasModifiedTaskView(taskFilters);
+
+  const isTaskFilterActive = hasActiveTaskFilters(taskFilters);
+
+  function resetTaskFilters() {
+    setTaskFilters(createDefaultTaskFilters());
+  }
+
   function handleSelectBoard(boardId: BoardId) {
     setTaskEditorState(null);
     setBoardEditorState(null);
     setActiveBoard(boardId);
+    resetTaskFilters();
   }
 
   function handleOpenCreateBoard() {
@@ -182,6 +234,7 @@ export function Board() {
 
     setTaskEditorState(null);
     setBoardEditorState(null);
+    resetTaskFilters();
   }
 
   function handleRenameBoard(values: BoardFormValues) {
@@ -209,6 +262,7 @@ export function Board() {
 
     setTaskEditorState(null);
     setBoardEditorState(null);
+    resetTaskFilters();
 
     deleteBoard(activeBoard.id);
   }
@@ -351,6 +405,20 @@ export function Board() {
           onDeleteBoard={handleDeleteBoard}
         />
 
+        <TaskFilters
+          value={taskFilters}
+          availableTags={availableTaskTags}
+          visibleTaskCount={visibleTaskCount}
+          totalTaskCount={activeBoardTasks.length}
+          onChange={setTaskFilters}
+          onReset={resetTaskFilters}
+        />
+        {isTaskViewModified && (
+          <p className={styles.dragNotice} role="status">
+            Перетаскивание задач доступно только при ручном порядке без активных фильтров.
+          </p>
+        )}
+
         {activeBoard ? (
           <>
             <header className={styles.header}>
@@ -365,16 +433,26 @@ export function Board() {
 
             <DragDropProvider
               onDragStart={() => {
+                if (isTaskViewModified) {
+                  return;
+                }
+
                 taskOrderSnapshotRef.current = selectTaskIdsByColumn(useBoardStore.getState());
               }}
               onDragOver={(event) => {
+                if (isTaskViewModified) {
+                  return;
+                }
+
                 const currentTaskOrder = selectTaskIdsByColumn(useBoardStore.getState());
 
-                const nextTaskOrder = move(currentTaskOrder, event);
-
-                replaceTaskOrder(nextTaskOrder);
+                replaceTaskOrder(move(currentTaskOrder, event));
               }}
               onDragEnd={(event) => {
+                if (isTaskViewModified) {
+                  return;
+                }
+
                 if (event.canceled) {
                   replaceTaskOrder(taskOrderSnapshotRef.current);
                 }
@@ -385,15 +463,17 @@ export function Board() {
               {orderedColumns.length ? (
                 <div className={styles.columns}>
                   {orderedColumns.map((column, columnIndex) => {
-                    const columnTasks = column.taskIds
-                      .map((taskId) => tasks[taskId])
-                      .filter(isTask);
+                    const columnTasks = visibleTasksByColumn[column.id] ?? [];
 
                     return (
                       <BoardColumn
                         key={column.id}
                         column={column}
                         tasks={columnTasks}
+                        emptyMessage={
+                          isTaskFilterActive ? 'Нет подходящих задач' : 'В колонке пока нет задач'
+                        }
+                        isTaskDragDisabled={isTaskViewModified}
                         onCreateTask={() => {
                           handleOpenCreateTask(column.id);
                         }}

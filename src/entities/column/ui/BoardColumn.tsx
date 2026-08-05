@@ -14,6 +14,9 @@ type BoardColumnProps = {
   column: Column;
   tasks: Task[];
 
+  emptyMessage?: string;
+  isTaskDragDisabled?: boolean;
+
   onCreateTask: (taskId: TaskId) => void;
   onEditTask: (taskId: TaskId) => void;
   onDeleteTask: (taskId: TaskId) => void;
@@ -30,6 +33,8 @@ type BoardColumnProps = {
 export function BoardColumn({
   column,
   tasks,
+  emptyMessage = 'В колонке пока нет задач',
+  isTaskDragDisabled = false,
   onCreateTask,
   onDeleteTask,
   onEditTask,
@@ -109,7 +114,7 @@ export function BoardColumn({
         Добавить задачу
       </button>
 
-      {tasks.length > 0 ? (
+      {tasks.length ? (
         <ul className={styles.taskList}>
           {tasks.map((task, index) => (
             <SortableTaskCard
@@ -119,11 +124,12 @@ export function BoardColumn({
               task={task}
               onDeleteTask={onDeleteTask}
               onEditTask={onEditTask}
+              isDragDisabled={isTaskDragDisabled}
             />
           ))}
         </ul>
       ) : (
-        <p className={styles.emptyState}>Перетащи задачу сюда</p>
+        <p className={styles.emptyState}>{emptyMessage}</p>
       )}
     </section>
   );

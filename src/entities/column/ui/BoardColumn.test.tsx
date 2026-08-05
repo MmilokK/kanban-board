@@ -33,6 +33,8 @@ const task: Task = {
 type RenderBoardColumnOptions = {
   columnValue?: Column;
   tasks?: Task[];
+  emptyMessage?: string;
+  isTaskDragDisabled?: boolean;
   canMoveColumnLeft?: boolean;
   canMoveColumnRight?: boolean;
 };
@@ -40,6 +42,9 @@ type RenderBoardColumnOptions = {
 function renderBoardColumn({
   columnValue = column,
   tasks = [],
+  emptyMessage = '',
+  isTaskDragDisabled = false,
+
   canMoveColumnLeft = true,
   canMoveColumnRight = true,
 }: RenderBoardColumnOptions = {}) {
@@ -57,6 +62,8 @@ function renderBoardColumn({
       <BoardColumn
         column={columnValue}
         tasks={tasks}
+        emptyMessage={emptyMessage}
+        isTaskDragDisabled={isTaskDragDisabled}
         onCreateTask={onCreateTask}
         onEditTask={onEditTask}
         onDeleteTask={onDeleteTask}
@@ -298,5 +305,31 @@ describe('Колонка доски', () => {
     expect(onDeleteTask).toHaveBeenCalledTimes(1);
 
     expect(onDeleteTask).toHaveBeenCalledWith(TASK_ID);
+  });
+
+  it('показывает сообщение об отсутствии подходящих задач', () => {
+    renderBoardColumn({
+      tasks: [],
+      emptyMessage: 'Нет подходящих задач',
+    });
+
+    expect(screen.getByText('Нет подходящих задач')).toBeInTheDocument();
+  });
+
+  it('отключает перемещение задачи при изменённом представлении', () => {
+    renderBoardColumn({
+      columnValue: {
+        ...column,
+        taskIds: [TASK_ID],
+      },
+      tasks: [task],
+      isTaskDragDisabled: true,
+    });
+
+    expect(
+      screen.getByRole('button', {
+        name: `Переместить задачу «${task.title}»`,
+      }),
+    ).toBeDisabled();
   });
 });
