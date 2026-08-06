@@ -28,7 +28,11 @@ export function TaskDialog({ task, title, submitLabel, onSubmit, onClose }: Task
   }, []);
 
   function handleSubmit(values: TaskFormValues): void {
-    const input = { ...values, tags: parseTaskTags(values.tags) };
+    const input: CreateTaskInput = {
+      ...values,
+      tags: parseTaskTags(values.tags),
+      dueDate: values.dueDate || null,
+    };
     onSubmit(input);
     dialogRef.current?.close();
   }

@@ -11,6 +11,7 @@ export const taskSchema = z.object({
   description: z.string(),
   priority: z.enum(['low', 'medium', 'high']),
   tags: z.array(z.string()),
+  dueDate: z.string().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });

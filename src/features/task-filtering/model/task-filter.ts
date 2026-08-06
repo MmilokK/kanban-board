@@ -1,13 +1,16 @@
+import { getLocalDateValue, getTaskDueStatus } from '../../../entities/task/model/task-due-date';
 import type { Task, TaskPriority } from '../../../entities/task/model/types';
 
 export type TaskPriorityFilter = 'all' | TaskPriority;
+export type TaskDueFilter = 'all' | 'overdue' | 'today' | 'upcoming' | 'without-date';
 
-export type TaskSort = 'manual' | 'newest' | 'oldest' | 'title-asc' | 'priority-desc';
+export type TaskSort = 'manual' | 'newest' | 'oldest' | 'title-asc' | 'priority-desc' | 'due-asc';
 
 export type TaskFilterState = {
   query: string;
   priority: TaskPriorityFilter;
   tag: string;
+  dueDate: TaskDueFilter;
   sort: TaskSort;
 };
 
@@ -15,6 +18,7 @@ export const DEFAULT_TASK_FILTERS: TaskFilterState = {
   query: '',
   priority: 'all',
   tag: '',
+  dueDate: 'all',
   sort: 'manual',
 };
 
@@ -22,6 +26,11 @@ const PRIORITY_WEIGHT: Record<TaskPriority, number> = {
   low: 1,
   medium: 2,
   high: 3,
+};
+
+type TaskFilterContext = {
+  isCompletedColumn: boolean;
+  today?: string;
 };
 
 function normalizeText(value: string): string {
@@ -54,6 +63,37 @@ function taskMatchesTag(task: Task, tag: string): boolean {
   return task.tags.some((taskTag) => normalizeText(taskTag) === normalizedTag);
 }
 
+function taskMatchesDueDate(
+  task: Task,
+  dueFilter: TaskDueFilter,
+  context: TaskFilterContext,
+): boolean {
+  if (dueFilter === 'all') {
+    return true;
+  }
+
+  if (dueFilter === 'without-date') {
+    return task.dueDate === null;
+  }
+
+  const status = getTaskDueStatus(
+    task.dueDate,
+    context.isCompletedColumn,
+    context.today ?? getLocalDateValue(),
+  );
+
+  switch (dueFilter) {
+    case 'overdue':
+      return status === 'overdue';
+
+    case 'today':
+      return status === 'today';
+
+    case 'upcoming':
+      return status === 'upcoming';
+  }
+}
+
 function compareTasks(firstTask: Task, secondTask: Task, sort: TaskSort): number {
   switch (sort) {
     case 'newest':
@@ -70,17 +110,38 @@ function compareTasks(firstTask: Task, secondTask: Task, sort: TaskSort): number
     case 'priority-desc':
       return PRIORITY_WEIGHT[secondTask.priority] - PRIORITY_WEIGHT[firstTask.priority];
 
+    case 'due-asc': {
+      if (firstTask.dueDate === null && secondTask.dueDate === null) {
+        return 0;
+      }
+
+      if (firstTask.dueDate === null) {
+        return 1;
+      }
+
+      if (secondTask.dueDate === null) {
+        return -1;
+      }
+
+      return firstTask.dueDate.localeCompare(secondTask.dueDate);
+    }
+
     case 'manual':
       return 0;
   }
 }
 
-export function filterAndSortTasks(tasks: Task[], filters: TaskFilterState): Task[] {
+export function filterAndSortTasks(
+  tasks: Task[],
+  filters: TaskFilterState,
+  context: TaskFilterContext,
+): Task[] {
   const filteredTasks = tasks.filter(
     (task) =>
       taskMatchesQuery(task, filters.query) &&
       taskMatchesPriority(task, filters.priority) &&
-      taskMatchesTag(task, filters.tag),
+      taskMatchesTag(task, filters.tag) &&
+      taskMatchesDueDate(task, filters.dueDate, context),
   );
 
   if (filters.sort === 'manual') {
@@ -119,7 +180,12 @@ export function getAvailableTaskTags(tasks: Task[]): string[] {
 }
 
 export function hasActiveTaskFilters(filters: TaskFilterState): boolean {
-  return filters.query.trim() !== '' || filters.priority !== 'all' || filters.tag !== '';
+  return (
+    filters.query.trim() !== '' ||
+    filters.priority !== 'all' ||
+    filters.tag !== '' ||
+    filters.dueDate !== 'all'
+  );
 }
 
 export function hasModifiedTaskView(filters: TaskFilterState): boolean {

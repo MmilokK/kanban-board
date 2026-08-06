@@ -170,7 +170,12 @@ export function Board() {
       orderedColumns.map((column) => {
         const columnTasks = column.taskIds.map((taskId) => tasks[taskId]).filter(isTask);
 
-        return [column.id, filterAndSortTasks(columnTasks, taskFilters)];
+        return [
+          column.id,
+          filterAndSortTasks(columnTasks, taskFilters, {
+            isCompletedColumn: column.isCompleted,
+          }),
+        ];
       }),
     ) as Record<ColumnId, Task[]>;
   }, [orderedColumns, tasks, taskFilters]);

@@ -27,6 +27,7 @@ describe('taskFormSchema', () => {
       description: 'Добавить Vitest',
       priority: 'high',
       tags: 'React, Vitest',
+      dueDate: '',
     });
 
     expect(result.success).toBe(true);
@@ -38,6 +39,7 @@ describe('taskFormSchema', () => {
       description: '',
       priority: 'medium',
       tags: '',
+      dueDate: '',
     });
 
     expect(result.success).toBe(false);
@@ -49,6 +51,7 @@ describe('taskFormSchema', () => {
       description: '',
       priority: 'medium',
       tags: 'one, two, three, four, five, six',
+      dueDate: '',
     });
 
     expect(result.success).toBe(false);

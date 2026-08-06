@@ -61,6 +61,7 @@ const taskInput = {
   description: 'Описание новой задачи',
   priority: 'high' as const,
   tags: ['test', 'zustand'],
+  dueDate: null,
 };
 
 type TestBoardIds = {
@@ -168,6 +169,7 @@ describe('Хранилище доски', () => {
       description: 'Описание новой задачи',
       priority: 'high',
       tags: ['test', 'zustand'],
+      dueDate: null,
       createdAt: CREATED_AT,
       updatedAt: CREATED_AT,
     });
@@ -195,6 +197,7 @@ describe('Хранилище доски', () => {
       description: 'Новое описание задачи',
       priority: 'high',
       tags: ['test', 'zustand'],
+      dueDate: null,
       createdAt: CREATED_AT,
       updatedAt: UPDATED_AT,
     });
@@ -640,5 +643,37 @@ describe('Хранилище доски', () => {
     useBoardStore.getState().moveColumn(DEFAULT_COLUMN_IDS.backlog, 100);
 
     expect(getBoard(DEFAULT_BOARD_ID).columnIds.at(-1)).toBe(DEFAULT_COLUMN_IDS.backlog);
+  });
+
+  it('создаёт задачу со сроком выполнения', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, {
+      ...taskInput,
+      dueDate: '2026-08-10',
+    });
+
+    expect(useBoardStore.getState().tasks[CREATED_TASK_ID]?.dueDate).toBe('2026-08-10');
+  });
+
+  it('изменяет срок выполнения задачи', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    useBoardStore.getState().updateTask(CREATED_TASK_ID, {
+      dueDate: '2026-08-15',
+    });
+
+    expect(useBoardStore.getState().tasks[CREATED_TASK_ID]?.dueDate).toBe('2026-08-15');
+  });
+
+  it('удаляет срок выполнения задачи', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, {
+      ...taskInput,
+      dueDate: '2026-08-15',
+    });
+
+    useBoardStore.getState().updateTask(CREATED_TASK_ID, {
+      dueDate: null,
+    });
+
+    expect(useBoardStore.getState().tasks[CREATED_TASK_ID]?.dueDate).toBeNull();
   });
 });

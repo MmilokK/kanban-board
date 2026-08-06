@@ -1,4 +1,9 @@
-import type { TaskFilterState, TaskPriorityFilter, TaskSort } from '../model/task-filter';
+import type {
+  TaskDueFilter,
+  TaskFilterState,
+  TaskPriorityFilter,
+  TaskSort,
+} from '../model/task-filter';
 
 import styles from './TaskFilters.module.scss';
 
@@ -20,7 +25,11 @@ export function TaskFilters({
   onReset,
 }: TaskFiltersProps) {
   const isResetDisabled =
-    value.query === '' && value.priority === 'all' && value.tag === '' && value.sort === 'manual';
+    value.query === '' &&
+    value.priority === 'all' &&
+    value.tag === '' &&
+    value.dueDate === 'all' &&
+    value.sort === 'manual';
 
   return (
     <section className={styles.filters} aria-labelledby="task-filters-title">
@@ -97,6 +106,31 @@ export function TaskFilters({
         </div>
 
         <div className={styles.field}>
+          <label htmlFor="task-due-filter">Срок</label>
+
+          <select
+            id="task-due-filter"
+            value={value.dueDate}
+            onChange={(event) => {
+              onChange({
+                ...value,
+                dueDate: event.currentTarget.value as TaskDueFilter,
+              });
+            }}
+          >
+            <option value="all">Все сроки</option>
+
+            <option value="overdue">Просроченные</option>
+
+            <option value="today">На сегодня</option>
+
+            <option value="upcoming">Предстоящие</option>
+
+            <option value="without-date">Без срока</option>
+          </select>
+        </div>
+
+        <div className={styles.field}>
           <label htmlFor="task-sort">Сортировка</label>
 
           <select
@@ -118,6 +152,8 @@ export function TaskFilters({
             <option value="title-asc">По названию</option>
 
             <option value="priority-desc">По приоритету</option>
+
+            <option value="due-asc">По ближайшему сроку</option>
           </select>
         </div>
 

@@ -11,6 +11,7 @@ type SortableTaskCardProps = {
   task: Task;
   index: number;
   columnId: ColumnId;
+  isCompletedColumn: boolean;
   isDragDisabled?: boolean;
   onDeleteTask: (taskId: TaskId) => void;
   onEditTask: (taskId: TaskId) => void;
@@ -20,6 +21,7 @@ export function SortableTaskCard({
   task,
   index,
   columnId,
+  isCompletedColumn,
   isDragDisabled = false,
   onDeleteTask,
   onEditTask,
@@ -57,6 +59,7 @@ export function SortableTaskCard({
       <TaskCard
         dragHandle={dragHandle}
         task={task}
+        isCompletedColumn={isCompletedColumn}
         onDeleteTask={onDeleteTask}
         onEditTask={onEditTask}
       />

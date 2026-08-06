@@ -6,10 +6,12 @@ import type { Task, TaskPriority } from '../model/types';
 
 import styles from './TaskCard.module.scss';
 import type { TaskId } from '../../../shared/model/entity-ids';
+import { formatTaskDueDate, getTaskDueStatus } from '../model/task-due-date';
 
 type TaskCardProps = {
   task: Task;
   dragHandle?: ReactNode;
+  isCompletedColumn: boolean;
   onDeleteTask: (taskId: TaskId) => void;
   onEditTask: (taskId: TaskId) => void;
 };
@@ -32,8 +34,15 @@ const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
   year: 'numeric',
 });
 
-export function TaskCard({ task, dragHandle, onDeleteTask, onEditTask }: TaskCardProps) {
+export function TaskCard({
+  task,
+  dragHandle,
+  isCompletedColumn,
+  onDeleteTask,
+  onEditTask,
+}: TaskCardProps) {
   const updatedDate = new Date(task.updatedAt);
+  const dueStatus = getTaskDueStatus(task.dueDate, isCompletedColumn);
 
   function handleDelete(): void {
     onDeleteTask(task.id);
@@ -44,7 +53,7 @@ export function TaskCard({ task, dragHandle, onDeleteTask, onEditTask }: TaskCar
   }
 
   return (
-    <article className={styles.card}>
+    <article className={styles.card} data-due-status={dueStatus}>
       <div className={styles.header}>
         <div className={styles.titleGroup}>
           {dragHandle}
@@ -75,6 +84,24 @@ export function TaskCard({ task, dragHandle, onDeleteTask, onEditTask }: TaskCar
 
           <time dateTime={task.updatedAt}>{dateFormatter.format(updatedDate)}</time>
         </div>
+
+        {task.dueDate && (
+          <p
+            className={
+              dueStatus === 'overdue'
+                ? styles.overdue
+                : dueStatus === 'today'
+                  ? styles.dueToday
+                  : styles.dueDate
+            }
+          >
+            <span>Срок: {formatTaskDueDate(task.dueDate)}</span>
+
+            {dueStatus === 'overdue' && <strong>Просрочено</strong>}
+
+            {dueStatus === 'today' && <strong>Сегодня</strong>}
+          </p>
+        )}
 
         <div className={styles.actions}>
           <button
