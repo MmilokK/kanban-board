@@ -1,6 +1,10 @@
 import type { AppState } from './app-state';
 import { legacyBoardStateSchema } from './legacy-board-schema';
-import { migrateBoardStateV1ToV2 } from './board-migration';
+import {
+  migrateBoardStateV1ToV2,
+  migrateBoardStateV2ToV3,
+  type AppStateV2,
+} from './board-migration';
 import { appStateSchema, parseAppState } from './board-schema';
 
 export const BOARD_STORAGE_KEY = 'kanban-board-storage';
@@ -30,8 +34,11 @@ export function migratePersistedBoardState(
     const legacyResult = legacyBoardStateSchema.safeParse(persistedState);
 
     if (legacyResult.success) {
-      return migrateBoardStateV1ToV2(legacyResult.data);
+      return migrateBoardStateV2ToV3(migrateBoardStateV1ToV2(legacyResult.data));
     }
+  }
+  if (persistedVersion === 2) {
+    return migrateBoardStateV2ToV3(persistedState as AppStateV2);
   }
 
   throw new Error(`Unsupported persisted board state version: ${persistedVersion}`);

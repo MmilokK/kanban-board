@@ -18,6 +18,7 @@ const tasks: Task[] = [
     description: 'Описать работу приложения',
     priority: 'medium',
     tags: ['Работа', 'Документация'],
+    dueDate: '2026-08-05',
     createdAt: '2026-08-02T10:00:00.000Z',
     updatedAt: '2026-08-02T10:00:00.000Z',
   },
@@ -27,6 +28,7 @@ const tasks: Task[] = [
     description: 'Проверить drag and drop',
     priority: 'high',
     tags: ['Работа', 'Bug'],
+    dueDate: '2026-08-06',
     createdAt: '2026-08-04T10:00:00.000Z',
     updatedAt: '2026-08-04T10:00:00.000Z',
   },
@@ -36,6 +38,7 @@ const tasks: Task[] = [
     description: 'Зайти в магазин',
     priority: 'low',
     tags: ['Личное'],
+    dueDate: '2026-08-07',
     createdAt: '2026-08-01T10:00:00.000Z',
     updatedAt: '2026-08-01T10:00:00.000Z',
   },
@@ -50,11 +53,11 @@ function createFilters(overrides: Partial<TaskFilterState> = {}): TaskFilterStat
 
 describe('Фильтрация и сортировка задач', () => {
   it('сохраняет ручной порядок без фильтров', () => {
-    expect(filterAndSortTasks(tasks, DEFAULT_TASK_FILTERS).map((task) => task.id)).toEqual([
-      'task-medium',
-      'task-high',
-      'task-low',
-    ]);
+    expect(
+      filterAndSortTasks(tasks, DEFAULT_TASK_FILTERS, { isCompletedColumn: false }).map(
+        (task) => task.id,
+      ),
+    ).toEqual(['task-medium', 'task-high', 'task-low']);
   });
 
   it('ищет по названию без учёта регистра', () => {
@@ -63,6 +66,7 @@ describe('Фильтрация и сортировка задач', () => {
       createFilters({
         query: 'ОШИБКУ',
       }),
+      { isCompletedColumn: false },
     );
 
     expect(result.map((task) => task.id)).toEqual(['task-high']);
@@ -74,6 +78,7 @@ describe('Фильтрация и сортировка задач', () => {
       createFilters({
         query: 'магазин',
       }),
+      { isCompletedColumn: false },
     );
 
     expect(result.map((task) => task.id)).toEqual(['task-low']);
@@ -85,6 +90,7 @@ describe('Фильтрация и сортировка задач', () => {
       createFilters({
         query: 'bug',
       }),
+      { isCompletedColumn: false },
     );
 
     expect(result.map((task) => task.id)).toEqual(['task-high']);
@@ -96,6 +102,7 @@ describe('Фильтрация и сортировка задач', () => {
       createFilters({
         priority: 'medium',
       }),
+      { isCompletedColumn: false },
     );
 
     expect(result.map((task) => task.id)).toEqual(['task-medium']);
@@ -107,6 +114,7 @@ describe('Фильтрация и сортировка задач', () => {
       createFilters({
         tag: 'работа',
       }),
+      { isCompletedColumn: false },
     );
 
     expect(result.map((task) => task.id)).toEqual(['task-medium', 'task-high']);
@@ -120,6 +128,7 @@ describe('Фильтрация и сортировка задач', () => {
         priority: 'high',
         tag: 'Bug',
       }),
+      { isCompletedColumn: false },
     );
 
     expect(result.map((task) => task.id)).toEqual(['task-high']);
@@ -131,6 +140,7 @@ describe('Фильтрация и сортировка задач', () => {
       createFilters({
         sort: 'newest',
       }),
+      { isCompletedColumn: false },
     );
 
     expect(result.map((task) => task.id)).toEqual(['task-high', 'task-medium', 'task-low']);
@@ -142,6 +152,7 @@ describe('Фильтрация и сортировка задач', () => {
       createFilters({
         sort: 'oldest',
       }),
+      { isCompletedColumn: false },
     );
 
     expect(result.map((task) => task.id)).toEqual(['task-low', 'task-medium', 'task-high']);
@@ -153,6 +164,7 @@ describe('Фильтрация и сортировка задач', () => {
       createFilters({
         sort: 'title-asc',
       }),
+      { isCompletedColumn: false },
     );
 
     expect(result.map((task) => task.title)).toEqual([
@@ -168,6 +180,7 @@ describe('Фильтрация и сортировка задач', () => {
       createFilters({
         sort: 'priority-desc',
       }),
+      { isCompletedColumn: false },
     );
 
     expect(result.map((task) => task.priority)).toEqual(['high', 'medium', 'low']);
@@ -181,6 +194,7 @@ describe('Фильтрация и сортировка задач', () => {
       createFilters({
         sort: 'newest',
       }),
+      { isCompletedColumn: false },
     );
 
     expect(tasks.map((task) => task.id)).toEqual(originalOrder);
@@ -225,5 +239,80 @@ describe('Фильтрация и сортировка задач', () => {
         }),
       ),
     ).toBe(true);
+  });
+
+  it('фильтрует просроченные задачи', () => {
+    const result = filterAndSortTasks(
+      tasks,
+      createFilters({
+        dueDate: 'overdue',
+      }),
+      {
+        isCompletedColumn: false,
+        today: '2026-08-06',
+      },
+    );
+
+    expect(result.map((task) => task.id)).toEqual(['task-medium']);
+  });
+
+  it('не считает задачи завершённой колонки просроченными', () => {
+    const result = filterAndSortTasks(
+      tasks,
+      createFilters({
+        dueDate: 'overdue',
+      }),
+      {
+        isCompletedColumn: true,
+        today: '2026-08-06',
+      },
+    );
+
+    expect(result).toEqual([]);
+  });
+
+  it('фильтрует задачи на сегодня', () => {
+    const result = filterAndSortTasks(
+      tasks,
+      createFilters({
+        dueDate: 'today',
+      }),
+      {
+        isCompletedColumn: false,
+        today: '2026-08-06',
+      },
+    );
+
+    expect(result.map((task) => task.id)).toEqual(['task-high']);
+  });
+
+  it('фильтрует задачи без срока', () => {
+    const result = filterAndSortTasks(
+      tasks,
+      createFilters({
+        dueDate: 'without-date',
+      }),
+      {
+        isCompletedColumn: false,
+        today: '2026-08-06',
+      },
+    );
+
+    expect(result.every((task) => task.dueDate === null)).toBe(true);
+  });
+
+  it('сортирует задачи по ближайшему сроку', () => {
+    const result = filterAndSortTasks(
+      tasks,
+      createFilters({
+        sort: 'due-asc',
+      }),
+      {
+        isCompletedColumn: false,
+        today: '2026-08-06',
+      },
+    );
+
+    expect(result.map((task) => task.dueDate)).toEqual(['2026-08-05', '2026-08-06', '2026-08-07']);
   });
 });

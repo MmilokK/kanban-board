@@ -118,6 +118,27 @@ export function TaskForm({ task, submitLabel, onSubmit, onCancel }: TaskFormProp
         )}
       </div>
 
+      <div className={styles.field}>
+        <label className={styles.label} htmlFor="task-due-date">
+          Срок выполнения
+        </label>
+
+        <input
+          className={styles.control}
+          id="task-due-date"
+          type="date"
+          aria-invalid={errors.dueDate ? 'true' : 'false'}
+          aria-describedby={errors.dueDate ? 'task-due-date-error' : undefined}
+          {...register('dueDate')}
+        />
+
+        {errors.dueDate && (
+          <p id="task-due-date-error" className={styles.error} role="alert">
+            {errors.dueDate.message}
+          </p>
+        )}
+      </div>
+
       <div className={styles.actions}>
         <button className={styles.cancelButton} type="button" onClick={onCancel}>
           Отмена

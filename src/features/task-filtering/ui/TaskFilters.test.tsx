@@ -67,6 +67,7 @@ describe('Фильтры задач', () => {
         query: 'отчёт',
         priority: 'high',
         tag: 'Работа',
+        dueDate: 'all',
         sort: 'newest',
       },
     });
@@ -193,6 +194,7 @@ describe('Фильтры задач', () => {
         query: 'задача',
         priority: 'medium',
         tag: 'Работа',
+        dueDate: 'all',
         sort: 'newest',
       },
       onChangeSpy,
@@ -209,6 +211,7 @@ describe('Фильтры задач', () => {
       query: 'задача',
       priority: 'high',
       tag: 'Работа',
+      dueDate: 'all',
       sort: 'newest',
     });
   });
@@ -351,6 +354,7 @@ describe('Фильтры задач', () => {
         query: 'отчёт',
         priority: 'high',
         tag: 'Работа',
+        dueDate: 'all',
         sort: 'newest',
       },
       onResetSpy,
@@ -406,5 +410,27 @@ describe('Фильтры задач', () => {
     await user.click(resetButton);
 
     expect(onResetSpy).not.toHaveBeenCalled();
+  });
+
+  it('изменяет фильтр по сроку', async () => {
+    const user = userEvent.setup();
+    const onChangeSpy = vi.fn();
+
+    renderTaskFilters({
+      onChangeSpy,
+    });
+
+    const dueDateSelect = screen.getByRole('combobox', {
+      name: 'Срок',
+    });
+
+    await user.selectOptions(dueDateSelect, 'overdue');
+
+    expect(dueDateSelect).toHaveValue('overdue');
+
+    expect(onChangeSpy).toHaveBeenLastCalledWith({
+      ...DEFAULT_TASK_FILTERS,
+      dueDate: 'overdue',
+    });
   });
 });

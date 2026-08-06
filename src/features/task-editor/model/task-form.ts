@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { Task } from '../../../entities/task/model/types';
+import { isValidDateValue } from '../../../entities/task/model/task-due-date';
 
 export function parseTaskTags(value: string): string[] {
   const tags = value
@@ -31,6 +32,9 @@ export const taskFormSchema = z.object({
       (value) => parseTaskTags(value).every((tag) => tag.length <= 20),
       'Каждый тег должен быть не длиннее 20 символов',
     ),
+  dueDate: z
+    .string()
+    .refine((value) => value === '' || isValidDateValue(value), 'Введите корректную дату'),
 });
 
 export type TaskFormValues = z.infer<typeof taskFormSchema>;
@@ -41,5 +45,6 @@ export function getTaskFormDefaultValues(task: Task | null): TaskFormValues {
     description: task?.description ?? '',
     priority: task?.priority ?? 'medium',
     tags: task?.tags.join(', ') ?? '',
+    dueDate: task?.dueDate ?? '',
   };
 }

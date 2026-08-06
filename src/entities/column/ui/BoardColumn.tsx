@@ -122,6 +122,7 @@ export function BoardColumn({
               index={index}
               key={task.id}
               task={task}
+              isCompletedColumn={column.isCompleted}
               onDeleteTask={onDeleteTask}
               onEditTask={onEditTask}
               isDragDisabled={isTaskDragDisabled}

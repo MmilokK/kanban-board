@@ -49,6 +49,7 @@ describe('TaskForm', () => {
 
     expect(onSubmit.mock.calls[0]?.[0]).toEqual({
       title: 'Изучить Playwright',
+      dueDate: '',
       description: 'Добавить E2E-тест',
       priority: 'high',
       tags: 'React, Testing',
@@ -64,6 +65,7 @@ describe('TaskForm', () => {
           description: 'Описание задачи',
           priority: 'low',
           tags: ['React', 'CSS'],
+          dueDate: null,
           createdAt: '2026-07-01T10:00:00.000Z',
           updatedAt: '2026-07-01T10:00:00.000Z',
         }}
