@@ -341,6 +341,8 @@ describe('Хранилище доски', () => {
     expect(state.replaceTaskOrder).toEqual(expect.any(Function));
 
     expect(state.resetBoard).toEqual(expect.any(Function));
+
+    expect(state.replaceAppState).toEqual(expect.any(Function));
   });
 
   it('не создаёт задачу в несуществующей колонке', () => {
@@ -742,5 +744,22 @@ describe('Хранилище доски', () => {
     });
 
     expect(selectDataState()).toEqual(stateBefore);
+  });
+
+  it('заменяет данные приложения импортированным состоянием', () => {
+    const importedState = createDemoAppState();
+
+    importedState.boards[DEFAULT_BOARD_ID] = {
+      ...importedState.boards[DEFAULT_BOARD_ID]!,
+      title: 'Импортированная доска',
+    };
+
+    useBoardStore.getState().replaceAppState(importedState);
+
+    expect(useBoardStore.getState().boards[DEFAULT_BOARD_ID]?.title).toBe('Импортированная доска');
+
+    expect(useBoardStore.getState().createBoard).toEqual(expect.any(Function));
+
+    expect(useBoardStore.getState().addTask).toEqual(expect.any(Function));
   });
 });

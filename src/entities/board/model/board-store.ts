@@ -46,6 +46,8 @@ type BoardActions = {
   restoreTask: (snapshot: DeletedTaskSnapshot) => void;
 
   resetBoard: () => void;
+
+  replaceAppState: (state: AppState) => void;
 };
 
 export type BoardStore = AppState & BoardActions;
@@ -669,6 +671,22 @@ export const useBoardStore = create<BoardStore>()(
 
       resetBoard: () => {
         set(createDemoAppState());
+      },
+
+      replaceAppState: (nextState) => {
+        set({
+          boards: nextState.boards,
+
+          boardOrder: nextState.boardOrder,
+
+          activeBoardId: nextState.activeBoardId,
+
+          columns: nextState.columns,
+
+          tasks: nextState.tasks,
+
+          schemaVersion: nextState.schemaVersion,
+        });
       },
     }),
 

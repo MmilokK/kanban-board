@@ -34,6 +34,10 @@ import { TaskFilters } from '../../../features/task-filtering/ui/TaskFilters';
 import { createDeletedTaskSnapshot } from '../../../entities/task/model/deleted-task-snapshot';
 import { UndoSnackbar } from '../../../features/task-undo/ui/UndoSnackbar';
 import { useTaskDeleteUndo } from '../../../features/task-undo/model/use-task-delete-undo';
+import { selectAppState } from '../../../entities/board/model/select-app-state';
+import { exportAppData } from '../../../features/data-transfer/model/export-format';
+import type { AppState } from '../../../entities/board/model/app-state';
+import { DataTransfer } from '../../../features/data-transfer/ui/DataTransfer';
 
 type TaskEditorState =
   | {
@@ -108,6 +112,7 @@ export function Board() {
     deleteTask,
     replaceTaskOrder,
     restoreTask,
+    replaceAppState,
   } = useBoardStore(
     useShallow((state) => ({
       boards: state.boards,
@@ -131,6 +136,7 @@ export function Board() {
       deleteTask: state.deleteTask,
       replaceTaskOrder: state.replaceTaskOrder,
       restoreTask: state.restoreTask,
+      replaceAppState: state.replaceAppState,
     })),
   );
 
@@ -427,6 +433,24 @@ export function Board() {
     }
   }
 
+  function handleExportData() {
+    const state = selectAppState(useBoardStore.getState());
+
+    exportAppData(state);
+  }
+
+  function handleImportData(state: AppState) {
+    dismiss();
+
+    setTaskEditorState(null);
+    setBoardEditorState(null);
+    setColumnEditorState(null);
+
+    resetTaskFilters();
+
+    replaceAppState(state);
+  }
+
   return (
     <>
       <section
@@ -442,6 +466,8 @@ export function Board() {
           onRenameBoard={handleOpenRenameBoard}
           onDeleteBoard={handleDeleteBoard}
         />
+
+        <DataTransfer onExport={handleExportData} onImport={handleImportData} />
 
         <TaskFilters
           value={taskFilters}
