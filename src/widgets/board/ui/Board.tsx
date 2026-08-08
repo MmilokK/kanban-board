@@ -31,6 +31,9 @@ import {
   type TaskFilterState,
 } from '../../../features/task-filtering/model/task-filter';
 import { TaskFilters } from '../../../features/task-filtering/ui/TaskFilters';
+import { createDeletedTaskSnapshot } from '../../../entities/task/model/deleted-task-snapshot';
+import { UndoSnackbar } from '../../../features/task-undo/ui/UndoSnackbar';
+import { useTaskDeleteUndo } from '../../../features/task-undo/model/use-task-delete-undo';
 
 type TaskEditorState =
   | {
@@ -104,6 +107,7 @@ export function Board() {
     updateTask,
     deleteTask,
     replaceTaskOrder,
+    restoreTask,
   } = useBoardStore(
     useShallow((state) => ({
       boards: state.boards,
@@ -126,8 +130,13 @@ export function Board() {
       updateTask: state.updateTask,
       deleteTask: state.deleteTask,
       replaceTaskOrder: state.replaceTaskOrder,
+      restoreTask: state.restoreTask,
     })),
   );
+
+  const { deletedTask, registerDeletion, undo, dismiss } = useTaskDeleteUndo({
+    onRestore: restoreTask,
+  });
 
   const [taskEditorState, setTaskEditorState] = useState<TaskEditorState>(null);
 
@@ -203,10 +212,14 @@ export function Board() {
   }
 
   function handleSelectBoard(boardId: BoardId) {
+    if (boardId === activeBoardId) {
+      return;
+    }
     setTaskEditorState(null);
     setBoardEditorState(null);
     setActiveBoard(boardId);
     resetTaskFilters();
+    dismiss();
   }
 
   function handleOpenCreateBoard() {
@@ -268,7 +281,7 @@ export function Board() {
     setTaskEditorState(null);
     setBoardEditorState(null);
     resetTaskFilters();
-
+    dismiss();
     deleteBoard(activeBoard.id);
   }
 
@@ -344,7 +357,7 @@ export function Board() {
 
     setTaskEditorState(null);
     setColumnEditorState(null);
-
+    dismiss();
     deleteColumn(columnId);
   }
 
@@ -387,7 +400,27 @@ export function Board() {
   }
 
   function handleDeleteTask(taskId: TaskId) {
+    const task = tasks[taskId];
+
+    if (!task) {
+      return;
+    }
+
+    const column = orderedColumns.find((currentColumn) => currentColumn.taskIds.includes(taskId));
+
+    if (!column) {
+      return;
+    }
+
+    const snapshot = createDeletedTaskSnapshot(task, column);
+
+    if (!snapshot) {
+      return;
+    }
+
     deleteTask(taskId);
+
+    registerDeletion(snapshot);
 
     if (taskEditorState?.mode === 'edit' && taskEditorState.taskId === taskId) {
       setTaskEditorState(null);
@@ -586,6 +619,10 @@ export function Board() {
           onSubmit={handleRenameColumn}
           onClose={handleCloseColumnDialog}
         />
+      )}
+
+      {deletedTask && (
+        <UndoSnackbar taskTitle={deletedTask.task.title} onUndo={undo} onDismiss={dismiss} />
       )}
     </>
   );

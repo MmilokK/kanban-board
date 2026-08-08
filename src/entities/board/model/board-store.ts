@@ -16,6 +16,7 @@ import { createDemoAppState } from './demo-board';
 import type { TaskIdsByColumn } from './task-order';
 import { createBoardBundle } from './board-factory';
 import { COLUMN_TITLE_MAX_LENGTH } from '../../column/model/column-constants';
+import type { DeletedTaskSnapshot } from '../../task/model/deleted-task-snapshot';
 
 type BoardActions = {
   createBoard: (title: string) => BoardId | null;
@@ -41,6 +42,8 @@ type BoardActions = {
   deleteTask: (taskId: TaskId) => void;
 
   replaceTaskOrder: (taskIdsByColumn: TaskIdsByColumn) => void;
+
+  restoreTask: (snapshot: DeletedTaskSnapshot) => void;
 
   resetBoard: () => void;
 };
@@ -607,6 +610,59 @@ export const useBoardStore = create<BoardStore>()(
           return {
             columns: nextColumns,
             boards: nextBoards,
+          };
+        });
+      },
+
+      restoreTask: ({ task, columnId, index }) => {
+        set((state) => {
+          const column = state.columns[columnId];
+
+          if (!column) {
+            return state;
+          }
+
+          if (state.tasks[task.id]) {
+            return state;
+          }
+
+          const board = state.boards[column.boardId];
+
+          if (!board) {
+            return state;
+          }
+
+          const nextTaskIds = [...column.taskIds];
+
+          const normalizedIndex = Math.max(0, Math.min(index, nextTaskIds.length));
+
+          nextTaskIds.splice(normalizedIndex, 0, task.id);
+
+          const now = new Date().toISOString();
+
+          return {
+            tasks: {
+              ...state.tasks,
+              [task.id]: task,
+            },
+
+            columns: {
+              ...state.columns,
+
+              [columnId]: {
+                ...column,
+                taskIds: nextTaskIds,
+              },
+            },
+
+            boards: {
+              ...state.boards,
+
+              [board.id]: {
+                ...board,
+                updatedAt: now,
+              },
+            },
           };
         });
       },

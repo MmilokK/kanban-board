@@ -676,4 +676,71 @@ describe('Хранилище доски', () => {
 
     expect(useBoardStore.getState().tasks[CREATED_TASK_ID]?.dueDate).toBeNull();
   });
+
+  it('восстанавливает удалённую задачу на прежнюю позицию', () => {
+    randomUUIDMock.mockReturnValueOnce(FIRST_TASK_ID);
+
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, {
+      ...taskInput,
+      title: 'Первая задача',
+    });
+
+    randomUUIDMock.mockReturnValueOnce(SECOND_TASK_ID);
+
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, {
+      ...taskInput,
+      title: 'Вторая задача',
+    });
+
+    const columnBefore = getColumn(DEFAULT_COLUMN_IDS.backlog);
+
+    const task = structuredClone(getTask(FIRST_TASK_ID));
+
+    const index = columnBefore.taskIds.indexOf(FIRST_TASK_ID);
+
+    useBoardStore.getState().deleteTask(FIRST_TASK_ID);
+
+    expect(useBoardStore.getState().tasks[FIRST_TASK_ID]).toBeUndefined();
+
+    useBoardStore.getState().restoreTask({
+      task,
+      columnId: DEFAULT_COLUMN_IDS.backlog,
+      index,
+    });
+
+    expect(getTask(FIRST_TASK_ID)).toEqual(task);
+
+    expect(getColumn(DEFAULT_COLUMN_IDS.backlog).taskIds).toEqual(columnBefore.taskIds);
+  });
+
+  it('не восстанавливает задачу в несуществующую колонку', () => {
+    const stateBefore = structuredClone(selectDataState());
+
+    useBoardStore.getState().restoreTask({
+      task: {
+        id: CREATED_TASK_ID,
+        ...taskInput,
+        createdAt: CREATED_AT,
+        updatedAt: CREATED_AT,
+      },
+      columnId: 'missing-column',
+      index: 0,
+    });
+
+    expect(selectDataState()).toEqual(stateBefore);
+  });
+
+  it('не восстанавливает задачу с существующим идентификатором', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    const stateBefore = structuredClone(selectDataState());
+
+    useBoardStore.getState().restoreTask({
+      task: getTask(CREATED_TASK_ID),
+      columnId: DEFAULT_COLUMN_IDS.todo,
+      index: 0,
+    });
+
+    expect(selectDataState()).toEqual(stateBefore);
+  });
 });
