@@ -6,7 +6,7 @@
   min-height: 240px;
   padding: var(--space-md);
 
-  background-color: var(--color-column);
+  background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
 
@@ -17,8 +17,8 @@
 }
 
 .dropTarget {
-  background-color: var(--color-accent-soft);
-  border-color: var(--color-accent);
+  background-color: var(--color-primary-text);
+  border-color: var(--color-primary);
 }
 
 .header {
@@ -36,7 +36,7 @@
   margin: 0;
   width: 100%;
 
-  color: var(--color-text-primary);
+  color: var(--color-text);
 
   font-size: 1rem;
   line-height: 1;
@@ -87,7 +87,7 @@
   min-height: 40px;
   padding: 8px 12px;
 
-  color: var(--color-accent);
+  color: var(--color-primary);
   background-color: transparent;
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-sm);
@@ -98,8 +98,8 @@
 }
 
 .addButton:hover {
-  background-color: var(--color-accent-soft);
-  border-color: var(--color-accent);
+  background-color: var(--color-primary-text);
+  border-color: var(--color-primary);
 }
 
 .addButton:focus-visible {

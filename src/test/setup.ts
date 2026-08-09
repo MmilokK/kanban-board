@@ -44,3 +44,31 @@ class ResizeObserverMock implements ResizeObserver {
 }
 
 globalThis.ResizeObserver = ResizeObserverMock;
+
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+
+  value: (query: string): MediaQueryList => ({
+    matches: false,
+    media: query,
+    onchange: null,
+
+    addListener: () => {
+      // Legacy API.
+    },
+
+    removeListener: () => {
+      // Legacy API.
+    },
+
+    addEventListener: () => {
+      // Не требуется по умолчанию.
+    },
+
+    removeEventListener: () => {
+      // Не требуется по умолчанию.
+    },
+
+    dispatchEvent: () => false,
+  }),
+});

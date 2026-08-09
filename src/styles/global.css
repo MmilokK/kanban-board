@@ -1,4 +1,5 @@
-:root {
+:root,
+:root[data-theme='light'] {
   font-family:
     Inter,
     system-ui,
@@ -7,27 +8,41 @@
     'Segoe UI',
     sans-serif;
 
-  color: #1f2328;
-  background-color: #f6f8fa;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-
-  --color-background: #f6f8fa;
+  --color-background: #f6f7f9;
   --color-surface: #ffffff;
-  --color-column: #eef1f4;
-  --color-border: #d0d7de;
+  --color-surface-hover: #f3f4f6;
+  --color-surface-muted: #f9fafb;
 
-  --color-text-primary: #1f2328;
-  --color-text-secondary: #656d76;
+  --color-text: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
 
-  --color-accent: #0969da;
-  --color-accent-soft: #ddf4ff;
+  --color-border: #d1d5db;
+  --color-border-strong: #9ca3af;
 
-  --color-danger: #cf222e;
-  --color-danger-soft: #ffebe9;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-text: #ffffff;
 
-  --color-focus: #0969da;
+  --color-danger: #b91c1c;
+  --color-danger-background: #fef2f2;
+  --color-danger-border: #fecaca;
+
+  --color-success: #166534;
+  --color-success-background: #f0fdf4;
+
+  --color-warning: #92400e;
+  --color-warning-background: #fffbeb;
+
+  --color-focus: rgb(37 99 235 / 30%);
+
+  --color-overlay: rgb(0 0 0 / 40%);
+
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 8%), 0 1px 2px rgb(0 0 0 / 6%);
+
+  --shadow-dialog: 0 24px 64px rgb(0 0 0 / 20%);
+
+  --color-primary-text: #ddf4ff;
 
   --space-xs: 4px;
   --space-sm: 8px;
@@ -38,8 +53,42 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
+}
 
-  --shadow-card: 0 1px 2px rgb(31 35 40 / 8%);
+:root[data-theme='dark'] {
+  --color-background: #111827;
+  --color-surface: #1f2937;
+  --color-surface-hover: #374151;
+  --color-surface-muted: #18212f;
+
+  --color-text: #f9fafb;
+  --color-text-secondary: #d1d5db;
+  --color-text-muted: #9ca3af;
+
+  --color-border: #4b5563;
+  --color-border-strong: #6b7280;
+
+  --color-primary: #60a5fa;
+  --color-primary-hover: #93c5fd;
+  --color-primary-text: #111827;
+
+  --color-danger: #fca5a5;
+  --color-danger-background: #451a1a;
+  --color-danger-border: #7f1d1d;
+
+  --color-success: #86efac;
+  --color-success-background: #052e16;
+
+  --color-warning: #fde68a;
+  --color-warning-background: #422006;
+
+  --color-focus: rgb(96 165 250 / 40%);
+
+  --color-overlay: rgb(0 0 0 / 65%);
+
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 30%), 0 1px 2px rgb(0 0 0 / 24%);
+
+  --shadow-dialog: 0 24px 64px rgb(0 0 0 / 50%);
 }
 
 *,
@@ -50,21 +99,32 @@
 
 html {
   min-width: 320px;
-  min-height: 100%;
+  color-scheme: light dark;
+  background: var(--color-background);
 }
 
 body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
-
-  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  background: var(--color-background);
 }
 
 button,
 input,
 textarea,
 select {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-color: var(--color-border);
   font: inherit;
 }
 

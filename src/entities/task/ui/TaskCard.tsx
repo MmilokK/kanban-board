@@ -79,29 +79,31 @@ export function TaskCard({
       )}
 
       <footer className={styles.footer}>
-        <div className={styles.updatedAt}>
-          <span>Обновлено</span>
+        <div className={styles.dates}>
+          <div className={styles.updatedAt}>
+            <span>Обновлено</span>
 
-          <time dateTime={task.updatedAt}>{dateFormatter.format(updatedDate)}</time>
+            <time dateTime={task.updatedAt}>{dateFormatter.format(updatedDate)}</time>
+          </div>
+
+          {task.dueDate && (
+            <p
+              className={
+                dueStatus === 'overdue'
+                  ? styles.overdue
+                  : dueStatus === 'today'
+                    ? styles.dueToday
+                    : styles.dueDate
+              }
+            >
+              <span>Срок: {formatTaskDueDate(task.dueDate)}</span>
+
+              {dueStatus === 'overdue' && <strong>Просрочено</strong>}
+
+              {dueStatus === 'today' && <strong>Сегодня</strong>}
+            </p>
+          )}
         </div>
-
-        {task.dueDate && (
-          <p
-            className={
-              dueStatus === 'overdue'
-                ? styles.overdue
-                : dueStatus === 'today'
-                  ? styles.dueToday
-                  : styles.dueDate
-            }
-          >
-            <span>Срок: {formatTaskDueDate(task.dueDate)}</span>
-
-            {dueStatus === 'overdue' && <strong>Просрочено</strong>}
-
-            {dueStatus === 'today' && <strong>Сегодня</strong>}
-          </p>
-        )}
 
         <div className={styles.actions}>
           <button

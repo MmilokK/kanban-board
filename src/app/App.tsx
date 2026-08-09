@@ -1,4 +1,6 @@
 import { useBoardStore } from '../entities/board/model/board-store';
+import { useTheme } from '../features/theme/model/use-theme';
+import { ThemeSwitcher } from '../features/theme/ui/ThemeSwitcher';
 
 import { Board } from '../widgets/board/ui/Board';
 
@@ -6,24 +8,23 @@ import styles from './App.module.scss';
 
 export function App() {
   const resetBoard = useBoardStore((state) => state.resetBoard);
+  const { theme, setTheme } = useTheme();
 
   return (
-    <main className={styles.page}>
+    <div className={styles.application}>
       <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Kanban Board</h1>
-        </div>
+        <h1 className={styles.title}>Kanban Board</h1>
 
         <div className={styles.headerActions}>
-          <p className={styles.description}>Простая доска для управления задачами.</p>
-
+          <ThemeSwitcher value={theme} onChange={setTheme} />
           <button className={styles.resetButton} type="button" onClick={resetBoard}>
-            Сбросить доску
+            Сбросить приложение
           </button>
         </div>
       </header>
-
-      <Board />
-    </main>
+      <main className={styles.main}>
+        <Board />
+      </main>
+    </div>
   );
 }
