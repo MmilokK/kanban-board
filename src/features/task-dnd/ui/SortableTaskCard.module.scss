@@ -15,7 +15,7 @@
 }
 
 .dropTarget {
-  box-shadow: 0 0 0 2px var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-primary);
 }
 
 .dragHandle {
@@ -42,8 +42,8 @@
 }
 
 .dragHandle:hover {
-  color: var(--color-text-primary);
-  background-color: var(--color-column);
+  color: var(--color-text);
+  background-color: var(--color-surface);
 }
 
 .dragHandle:active {

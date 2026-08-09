@@ -88,13 +88,13 @@
 }
 
 .error {
-  color: #b91c1c;
-  background: #fef2f2;
+  color: var(--color-danger);
+  background: var(--color-danger-background);
 }
 
 .success {
-  color: #166534;
-  background: #f0fdf4;
+  color: var(--color-success);
+  background: var(--color-success-background);
 }
 
 @media (width <= 700px) {

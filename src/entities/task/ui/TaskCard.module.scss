@@ -5,6 +5,7 @@
 
   padding: var(--space-md);
 
+  color: var(--color-text);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -23,7 +24,7 @@
 .title {
   margin: 0;
 
-  color: var(--color-text-primary);
+  color: var(--color-text);
 
   font-size: 1rem;
   line-height: 1.4;
@@ -41,18 +42,18 @@
 }
 
 .priorityLow {
-  color: #216e39;
-  background-color: #dafbe1;
+  color: var(--color-success);
+  background-color: var(--color-success-background);
 }
 
 .priorityMedium {
-  color: #7d4e00;
-  background-color: #fff8c5;
+  color: var(--color-warning);
+  background-color: var(--color-warning-background);
 }
 
 .priorityHigh {
-  color: #a40e26;
-  background-color: #ffebe9;
+  color: var(--color-danger);
+  background-color: var(--color-danger-background);
 }
 
 .description {
@@ -78,8 +79,8 @@
 .tag {
   padding: 4px 8px;
 
-  color: var(--color-accent);
-  background-color: var(--color-accent-soft);
+  color: var(--color-primary);
+  background-color: var(--color-primary-text);
   border-radius: var(--radius-sm);
 
   font-size: 0.75rem;
@@ -108,6 +109,7 @@
 
 .actions {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: var(--space-xs);
 }
@@ -122,16 +124,17 @@
 
   font-size: 0.75rem;
   font-weight: 600;
+  white-space: nowrap;
 
   cursor: pointer;
 }
 
 .editButton {
-  color: var(--color-accent);
+  color: var(--color-primary);
 }
 
 .editButton:hover {
-  background-color: var(--color-accent-soft);
+  background-color: var(--color-primary-text);
 }
 
 .deleteButton {
@@ -155,6 +158,12 @@
   min-width: 0;
 }
 
+.dates {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
 .dueDate,
 .dueToday,
 .overdue {
@@ -168,19 +177,20 @@
 
   font-size: 0.8125rem;
   border-radius: 6px;
+  white-space: nowrap;
 }
 
 .dueDate {
   color: var(--color-text-secondary, #6b7280);
-  background: #f3f4f6;
+  border: 1px solid var(--color-border);
 }
 
 .dueToday {
-  color: #854d0e;
-  background: #fef9c3;
+  color: var(--color-warning);
+  background: var(--color-warning-background);
 }
 
 .overdue {
-  color: #991b1b;
-  background: #fee2e2;
+  color: var(--color-danger);
+  background: var(--color-danger-background);
 }

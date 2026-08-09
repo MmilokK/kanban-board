@@ -486,9 +486,7 @@ export function Board() {
         {activeBoard ? (
           <>
             <header className={styles.header}>
-              <div>
-                <h1 id="board-title">{activeBoard.title}</h1>
-              </div>
+              <h1 id="board-title">{activeBoard.title}</h1>
 
               <button type="button" onClick={handleOpenCreateColumn}>
                 Новая колонка
