@@ -70,10 +70,11 @@ export function TaskArchive({ tasks, columns, onRestore, onDelete, onClose }: Ta
                     value={selectedColumnId ?? ''}
                     disabled={columns.length === 0}
                     onChange={(event) => {
+                      console.log({ event, restoreColumnByTask });
                       setRestoreColumnByTask((current) => ({
                         ...current,
 
-                        [task.id]: event.currentTarget.value as ColumnId,
+                        [task.id]: event.target.value as ColumnId,
                       }));
                     }}
                   >
