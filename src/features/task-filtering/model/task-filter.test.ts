@@ -21,6 +21,7 @@ const tasks: Task[] = [
     dueDate: '2026-08-05',
     createdAt: '2026-08-02T10:00:00.000Z',
     updatedAt: '2026-08-02T10:00:00.000Z',
+    archivedAt: null,
   },
   {
     id: 'task-high',
@@ -31,6 +32,7 @@ const tasks: Task[] = [
     dueDate: '2026-08-06',
     createdAt: '2026-08-04T10:00:00.000Z',
     updatedAt: '2026-08-04T10:00:00.000Z',
+    archivedAt: null,
   },
   {
     id: 'task-low',
@@ -41,6 +43,7 @@ const tasks: Task[] = [
     dueDate: '2026-08-07',
     createdAt: '2026-08-01T10:00:00.000Z',
     updatedAt: '2026-08-01T10:00:00.000Z',
+    archivedAt: null,
   },
 ];
 

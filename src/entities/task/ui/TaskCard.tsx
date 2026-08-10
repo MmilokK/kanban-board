@@ -14,6 +14,7 @@ type TaskCardProps = {
   isCompletedColumn: boolean;
   onDeleteTask: (taskId: TaskId) => void;
   onEditTask: (taskId: TaskId) => void;
+  onArchive: () => void;
 };
 
 const priorityLabels: Record<TaskPriority, string> = {
@@ -40,6 +41,7 @@ export function TaskCard({
   isCompletedColumn,
   onDeleteTask,
   onEditTask,
+  onArchive,
 }: TaskCardProps) {
   const updatedDate = new Date(task.updatedAt);
   const dueStatus = getTaskDueStatus(task.dueDate, isCompletedColumn);
@@ -122,6 +124,13 @@ export function TaskCard({
             aria-label={`Удалить задачу ${task.title}`}
           >
             Удалить
+          </button>
+          <button
+            type="button"
+            aria-label={`Архивировать задачу ${task.title}`}
+            onClick={onArchive}
+          >
+            В архив
           </button>
         </div>
       </footer>

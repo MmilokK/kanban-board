@@ -20,6 +20,7 @@ type BoardColumnProps = {
   onCreateTask: (taskId: TaskId) => void;
   onEditTask: (taskId: TaskId) => void;
   onDeleteTask: (taskId: TaskId) => void;
+  onArchiveTask: (taskId: TaskId) => void;
 
   onRenameColumn: () => void;
   onDeleteColumn: () => void;
@@ -38,6 +39,7 @@ export function BoardColumn({
   onCreateTask,
   onDeleteTask,
   onEditTask,
+  onArchiveTask,
   onRenameColumn,
   onDeleteColumn,
   onMoveColumnLeft,
@@ -125,6 +127,9 @@ export function BoardColumn({
               isCompletedColumn={column.isCompleted}
               onDeleteTask={onDeleteTask}
               onEditTask={onEditTask}
+              onArchive={() => {
+                onArchiveTask(task.id);
+              }}
               isDragDisabled={isTaskDragDisabled}
             />
           ))}

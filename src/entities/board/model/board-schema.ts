@@ -14,6 +14,7 @@ export const taskSchema = z.object({
   dueDate: z.string().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
+  archivedAt: z.string().datetime().nullable(),
 });
 
 export const columnSchema = z.object({
@@ -22,6 +23,7 @@ export const columnSchema = z.object({
   title: z.string().trim().min(1),
   taskIds: z.array(entityIdSchema),
   isCompleted: z.boolean(),
+  isArchive: z.boolean(),
 });
 
 export const boardSchema = z.object({

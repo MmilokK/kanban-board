@@ -14,6 +14,7 @@ const demoAppState: AppState = {
         DEFAULT_COLUMN_IDS.todo,
         DEFAULT_COLUMN_IDS.inProgress,
         DEFAULT_COLUMN_IDS.done,
+        DEFAULT_COLUMN_IDS.archive,
       ],
       createdAt: DEMO_CREATED_AT,
       updatedAt: DEMO_CREATED_AT,
@@ -31,6 +32,7 @@ const demoAppState: AppState = {
       title: 'Backlog',
       taskIds: ['task-4'],
       isCompleted: false,
+      isArchive: false,
     },
 
     [DEFAULT_COLUMN_IDS.todo]: {
@@ -39,6 +41,7 @@ const demoAppState: AppState = {
       title: 'To do',
       taskIds: ['task-1', 'task-2'],
       isCompleted: false,
+      isArchive: false,
     },
 
     [DEFAULT_COLUMN_IDS.inProgress]: {
@@ -47,6 +50,7 @@ const demoAppState: AppState = {
       title: 'In progress',
       taskIds: ['task-3'],
       isCompleted: false,
+      isArchive: false,
     },
 
     [DEFAULT_COLUMN_IDS.done]: {
@@ -55,6 +59,16 @@ const demoAppState: AppState = {
       title: 'Done',
       taskIds: ['task-5'],
       isCompleted: true,
+      isArchive: false,
+    },
+
+    [DEFAULT_COLUMN_IDS.archive]: {
+      id: DEFAULT_COLUMN_IDS.archive,
+      boardId: DEFAULT_BOARD_ID,
+      title: 'Archive',
+      taskIds: [],
+      isCompleted: false,
+      isArchive: true,
     },
   },
 
@@ -68,6 +82,7 @@ const demoAppState: AppState = {
       dueDate: null,
       createdAt: '2026-07-20T09:00:00.000Z',
       updatedAt: '2026-07-21T10:30:00.000Z',
+      archivedAt: null,
     },
 
     'task-2': {
@@ -79,6 +94,7 @@ const demoAppState: AppState = {
       dueDate: null,
       createdAt: '2026-07-21T11:00:00.000Z',
       updatedAt: '2026-07-21T11:00:00.000Z',
+      archivedAt: null,
     },
 
     'task-3': {
@@ -90,6 +106,7 @@ const demoAppState: AppState = {
       dueDate: null,
       createdAt: '2026-07-22T08:45:00.000Z',
       updatedAt: '2026-07-23T14:15:00.000Z',
+      archivedAt: null,
     },
 
     'task-4': {
@@ -101,6 +118,7 @@ const demoAppState: AppState = {
       dueDate: null,
       createdAt: '2026-07-23T12:00:00.000Z',
       updatedAt: '2026-07-24T16:20:00.000Z',
+      archivedAt: null,
     },
 
     'task-5': {
@@ -112,6 +130,7 @@ const demoAppState: AppState = {
       dueDate: null,
       createdAt: '2026-07-19T10:00:00.000Z',
       updatedAt: '2026-07-20T18:00:00.000Z',
+      archivedAt: null,
     },
   },
 

@@ -13,6 +13,7 @@ type SortableTaskCardProps = {
   columnId: ColumnId;
   isCompletedColumn: boolean;
   isDragDisabled?: boolean;
+  onArchive: () => void;
   onDeleteTask: (taskId: TaskId) => void;
   onEditTask: (taskId: TaskId) => void;
 };
@@ -23,6 +24,7 @@ export function SortableTaskCard({
   columnId,
   isCompletedColumn,
   isDragDisabled = false,
+  onArchive,
   onDeleteTask,
   onEditTask,
 }: SortableTaskCardProps) {
@@ -62,6 +64,7 @@ export function SortableTaskCard({
         isCompletedColumn={isCompletedColumn}
         onDeleteTask={onDeleteTask}
         onEditTask={onEditTask}
+        onArchive={onArchive}
       />
     </li>
   );

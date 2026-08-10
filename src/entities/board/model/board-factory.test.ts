@@ -11,6 +11,7 @@ const COLUMN_IDS = {
   todo: 'column-todo',
   inProgress: 'column-in-progress',
   done: 'column-done',
+  archive: 'column-archive',
 };
 
 function createTestBoardBundle() {
@@ -29,7 +30,13 @@ describe('Фабрика доски', () => {
     expect(board).toEqual({
       id: BOARD_ID,
       title: 'Рабочая доска',
-      columnIds: [COLUMN_IDS.backlog, COLUMN_IDS.todo, COLUMN_IDS.inProgress, COLUMN_IDS.done],
+      columnIds: [
+        COLUMN_IDS.backlog,
+        COLUMN_IDS.todo,
+        COLUMN_IDS.inProgress,
+        COLUMN_IDS.done,
+        COLUMN_IDS.archive,
+      ],
       createdAt: CREATED_AT,
       updatedAt: CREATED_AT,
     });
@@ -38,7 +45,7 @@ describe('Фабрика доски', () => {
   it('создаёт четыре стандартные колонки', () => {
     const { columns } = createTestBoardBundle();
 
-    expect(Object.keys(columns)).toHaveLength(4);
+    expect(Object.keys(columns)).toHaveLength(5);
 
     expect(Object.keys(columns)).toEqual(
       expect.arrayContaining([
@@ -46,6 +53,7 @@ describe('Фабрика доски', () => {
         COLUMN_IDS.todo,
         COLUMN_IDS.inProgress,
         COLUMN_IDS.done,
+        COLUMN_IDS.archive,
       ]),
     );
   });
@@ -58,6 +66,7 @@ describe('Фабрика доски', () => {
       COLUMN_IDS.todo,
       COLUMN_IDS.inProgress,
       COLUMN_IDS.done,
+      COLUMN_IDS.archive,
     ]);
   });
 
