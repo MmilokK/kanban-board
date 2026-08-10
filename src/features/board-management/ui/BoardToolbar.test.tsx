@@ -40,6 +40,7 @@ function renderBoardToolbar({
   const onCreateBoard = vi.fn();
   const onRenameBoard = vi.fn();
   const onDeleteBoard = vi.fn();
+  const openArchive = vi.fn();
 
   render(
     <BoardToolbar
@@ -49,6 +50,8 @@ function renderBoardToolbar({
       onCreateBoard={onCreateBoard}
       onRenameBoard={onRenameBoard}
       onDeleteBoard={onDeleteBoard}
+      openArchive={openArchive}
+      archivedTasks={[]}
     />,
   );
 

@@ -2,6 +2,7 @@ import type { BoardId } from '../../../shared/model/entity-ids';
 import type { Board } from '../../../entities/board/model/types';
 
 import styles from './BoardToolbar.module.scss';
+import type { Task } from '../../../entities/task/model/types';
 
 type BoardToolbarProps = {
   boards: Board[];
@@ -10,6 +11,8 @@ type BoardToolbarProps = {
   onCreateBoard: () => void;
   onRenameBoard: () => void;
   onDeleteBoard: () => void;
+  openArchive: () => void;
+  archivedTasks: Task[];
 };
 
 export function BoardToolbar({
@@ -19,6 +22,8 @@ export function BoardToolbar({
   onCreateBoard,
   onRenameBoard,
   onDeleteBoard,
+  openArchive,
+  archivedTasks,
 }: BoardToolbarProps) {
   const hasActiveBoard = activeBoardId !== null;
 
@@ -56,6 +61,10 @@ export function BoardToolbar({
 
         <button type="button" disabled={!hasActiveBoard} onClick={onDeleteBoard}>
           Удалить
+        </button>
+
+        <button type="button" onClick={openArchive} aria-controls="task-archive">
+          Архив ({archivedTasks.length})
         </button>
       </div>
     </div>

@@ -17,6 +17,8 @@ import type { TaskIdsByColumn } from './task-order';
 import { createBoardBundle } from './board-factory';
 import { COLUMN_TITLE_MAX_LENGTH } from '../../column/model/column-constants';
 import type { DeletedTaskSnapshot } from '../../task/model/deleted-task-snapshot';
+import { findTaskColumn } from './find-task-column';
+import { findArchiveColumn } from './find-archive-column';
 
 type BoardActions = {
   createBoard: (title: string) => BoardId | null;
@@ -45,22 +47,16 @@ type BoardActions = {
 
   restoreTask: (snapshot: DeletedTaskSnapshot) => void;
 
+  archiveTask: (taskId: TaskId) => void;
+
+  restoreArchivedTask: (taskId: TaskId, columnId: ColumnId) => void;
+
   resetBoard: () => void;
 
   replaceAppState: (state: AppState) => void;
 };
 
 export type BoardStore = AppState & BoardActions;
-
-function findTaskColumnId(state: AppState, taskId: TaskId): ColumnId | null {
-  for (const column of Object.values(state.columns)) {
-    if (column.taskIds.includes(taskId)) {
-      return column.id;
-    }
-  }
-
-  return null;
-}
 
 function updateBoardTimestamp(
   boards: AppState['boards'],
@@ -116,6 +112,7 @@ export const useBoardStore = create<BoardStore>()(
           todo: crypto.randomUUID(),
           inProgress: crypto.randomUUID(),
           done: crypto.randomUUID(),
+          archive: crypto.randomUUID(),
         };
 
         const now = new Date().toISOString();
@@ -293,6 +290,7 @@ export const useBoardStore = create<BoardStore>()(
                 title: normalizedTitle,
                 taskIds: [],
                 isCompleted: false,
+                isArchive: false,
               },
             },
           };
@@ -311,7 +309,7 @@ export const useBoardStore = create<BoardStore>()(
         set((state) => {
           const column = state.columns[columnId];
 
-          if (!column) {
+          if (!column || column.isArchive) {
             return state;
           }
 
@@ -353,7 +351,7 @@ export const useBoardStore = create<BoardStore>()(
         set((state) => {
           const column = state.columns[columnId];
 
-          if (!column) {
+          if (!column || column.isArchive) {
             return state;
           }
 
@@ -402,7 +400,7 @@ export const useBoardStore = create<BoardStore>()(
         set((state) => {
           const column = state.columns[columnId];
 
-          if (!column) {
+          if (!column || column.isArchive) {
             return state;
           }
 
@@ -412,26 +410,41 @@ export const useBoardStore = create<BoardStore>()(
             return state;
           }
 
-          const currentIndex = board.columnIds.indexOf(columnId);
+          const regularColumnIds = board.columnIds.filter((currentColumnId) => {
+            const currentColumn = state.columns[currentColumnId];
+
+            return currentColumn !== undefined && !currentColumn.isArchive;
+          });
+
+          const archiveColumnIds = board.columnIds.filter((currentColumnId) => {
+            const currentColumn = state.columns[currentColumnId];
+
+            return currentColumn !== undefined && currentColumn.isArchive;
+          });
+
+          const currentIndex = regularColumnIds.indexOf(columnId);
 
           if (currentIndex === -1) {
             return state;
           }
 
-          const normalizedTargetIndex = Math.max(
-            0,
-            Math.min(targetIndex, board.columnIds.length - 1),
-          );
-
-          if (currentIndex === normalizedTargetIndex) {
+          if (targetIndex < 0 || targetIndex >= regularColumnIds.length) {
             return state;
           }
 
-          const nextColumnIds = [...board.columnIds];
+          if (currentIndex === targetIndex) {
+            return state;
+          }
 
-          nextColumnIds.splice(currentIndex, 1);
+          const nextRegularColumnIds = [...regularColumnIds];
 
-          nextColumnIds.splice(normalizedTargetIndex, 0, columnId);
+          const [movedColumnId] = nextRegularColumnIds.splice(currentIndex, 1);
+
+          if (!movedColumnId) {
+            return state;
+          }
+
+          nextRegularColumnIds.splice(targetIndex, 0, movedColumnId);
 
           const now = new Date().toISOString();
 
@@ -441,7 +454,9 @@ export const useBoardStore = create<BoardStore>()(
 
               [board.id]: {
                 ...board,
-                columnIds: nextColumnIds,
+
+                columnIds: [...nextRegularColumnIds, ...archiveColumnIds],
+
                 updatedAt: now,
               },
             },
@@ -453,7 +468,7 @@ export const useBoardStore = create<BoardStore>()(
         set((state) => {
           const column = state.columns[columnId];
 
-          if (!column) {
+          if (!column || column.isArchive) {
             return state;
           }
 
@@ -470,6 +485,7 @@ export const useBoardStore = create<BoardStore>()(
                 ...input,
                 createdAt: now,
                 updatedAt: now,
+                archivedAt: null,
               },
             },
 
@@ -497,9 +513,7 @@ export const useBoardStore = create<BoardStore>()(
 
           const now = new Date().toISOString();
 
-          const columnId = findTaskColumnId(state, taskId);
-
-          const column = columnId ? state.columns[columnId] : undefined;
+          const column = findTaskColumn(state.columns, taskId);
 
           return {
             tasks: {
@@ -525,13 +539,7 @@ export const useBoardStore = create<BoardStore>()(
             return state;
           }
 
-          const columnId = findTaskColumnId(state, taskId);
-
-          if (!columnId) {
-            return state;
-          }
-
-          const column = state.columns[columnId];
+          const column = findTaskColumn(state.columns, taskId);
 
           if (!column) {
             return state;
@@ -551,7 +559,7 @@ export const useBoardStore = create<BoardStore>()(
             columns: {
               ...state.columns,
 
-              [columnId]: {
+              [column.id]: {
                 ...column,
 
                 taskIds: column.taskIds.filter((currentTaskId) => currentTaskId !== taskId),
@@ -574,7 +582,7 @@ export const useBoardStore = create<BoardStore>()(
           for (const [columnId, taskIds] of Object.entries(taskIdsByColumn)) {
             const column = state.columns[columnId];
 
-            if (!column) {
+            if (!column || column.isArchive) {
               continue;
             }
 
@@ -654,6 +662,146 @@ export const useBoardStore = create<BoardStore>()(
               [columnId]: {
                 ...column,
                 taskIds: nextTaskIds,
+              },
+            },
+
+            boards: {
+              ...state.boards,
+
+              [board.id]: {
+                ...board,
+                updatedAt: now,
+              },
+            },
+          };
+        });
+      },
+
+      archiveTask: (taskId) => {
+        set((state) => {
+          const task = state.tasks[taskId];
+
+          if (!task || task.archivedAt) {
+            return state;
+          }
+
+          const sourceColumn = findTaskColumn(state.columns, taskId);
+
+          if (!sourceColumn || sourceColumn.isArchive) {
+            return state;
+          }
+
+          const archiveColumn = findArchiveColumn(state.columns, sourceColumn.boardId);
+
+          if (!archiveColumn) {
+            return state;
+          }
+
+          const board = state.boards[sourceColumn.boardId];
+
+          if (!board) {
+            return state;
+          }
+
+          const now = new Date().toISOString();
+
+          return {
+            tasks: {
+              ...state.tasks,
+
+              [taskId]: {
+                ...task,
+
+                archivedAt: now,
+                updatedAt: now,
+              },
+            },
+
+            columns: {
+              ...state.columns,
+
+              [sourceColumn.id]: {
+                ...sourceColumn,
+
+                taskIds: sourceColumn.taskIds.filter((currentTaskId) => currentTaskId !== taskId),
+              },
+
+              [archiveColumn.id]: {
+                ...archiveColumn,
+
+                taskIds: [...archiveColumn.taskIds, taskId],
+              },
+            },
+
+            boards: {
+              ...state.boards,
+
+              [board.id]: {
+                ...board,
+                updatedAt: now,
+              },
+            },
+          };
+        });
+      },
+
+      restoreArchivedTask: (taskId, columnId) => {
+        set((state) => {
+          const task = state.tasks[taskId];
+
+          if (!task || !task.archivedAt) {
+            return state;
+          }
+
+          const archiveColumn = findTaskColumn(state.columns, taskId);
+
+          if (!archiveColumn || !archiveColumn.isArchive) {
+            return state;
+          }
+
+          const targetColumn = state.columns[columnId];
+
+          if (
+            !targetColumn ||
+            targetColumn.isArchive ||
+            targetColumn.boardId !== archiveColumn.boardId
+          ) {
+            return state;
+          }
+
+          const board = state.boards[targetColumn.boardId];
+
+          if (!board) {
+            return state;
+          }
+
+          const now = new Date().toISOString();
+
+          return {
+            tasks: {
+              ...state.tasks,
+
+              [taskId]: {
+                ...task,
+
+                archivedAt: null,
+                updatedAt: now,
+              },
+            },
+
+            columns: {
+              ...state.columns,
+
+              [archiveColumn.id]: {
+                ...archiveColumn,
+
+                taskIds: archiveColumn.taskIds.filter((currentTaskId) => currentTaskId !== taskId),
+              },
+
+              [targetColumn.id]: {
+                ...targetColumn,
+
+                taskIds: [...targetColumn.taskIds, taskId],
               },
             },
 

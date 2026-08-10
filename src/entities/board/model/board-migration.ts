@@ -1,90 +1,155 @@
-import type { TaskId } from '../../../shared/model/entity-ids';
+import type { BoardId, ColumnId, TaskId } from '../../../shared/model/entity-ids';
+
+import type { Board } from './types';
+import type { Column } from '../../column/model/types';
 import type { Task } from '../../task/model/types';
 import type { AppState } from './app-state';
-import { APP_SCHEMA_VERSION } from './app-state';
-import { DEFAULT_BOARD_ID, DEFAULT_BOARD_TITLE } from './default-board';
-import type { LegacyBoardState } from './legacy-board-schema';
 
-type TaskV2 = Omit<Task, 'dueDate'>;
+type LegacyColumnId = 'backlog' | 'todo' | 'in-progress' | 'done';
 
-export type AppStateV2 = Omit<AppState, 'tasks' | 'schemaVersion'> & {
-  tasks: Record<TaskId, TaskV2>;
-  schemaVersion: 2;
+export type LegacyBoardState = {
+  tasks: Record<
+    string,
+    {
+      id: string;
+      title: string;
+      description: string;
+
+      priority: 'low' | 'medium' | 'high';
+
+      tags: string[];
+
+      createdAt: string;
+      updatedAt: string;
+    }
+  >;
+
+  columns: Record<
+    LegacyColumnId,
+    {
+      id: LegacyColumnId;
+      title: string;
+      taskIds: string[];
+    }
+  >;
+
+  columnOrder: LegacyColumnId[];
+
+  schemaVersion: 1;
 };
 
-const FALLBACK_DATE = '1970-01-01T00:00:00.000Z';
+const MIGRATED_BOARD_ID = 'board-default' as BoardId;
 
-function selectBoardDates(state: LegacyBoardState): {
-  createdAt: string;
-  updatedAt: string;
-} {
-  const tasks = Object.values(state.tasks);
+const ARCHIVE_COLUMN_ID = 'board-default-archive' as ColumnId;
 
-  const createdDates = tasks.map((task) => task.createdAt).sort();
+function migrateColumnId(legacyColumnId: LegacyColumnId): ColumnId {
+  return `board-default-${legacyColumnId}` as ColumnId;
+}
 
-  const updatedDates = tasks.map((task) => task.updatedAt).sort();
+function isCompletedLegacyColumn(columnId: LegacyColumnId): boolean {
+  return columnId === 'done';
+}
 
-  const createdAt = createdDates[0] ?? FALLBACK_DATE;
+export function migrateLegacyBoardState(legacyState: LegacyBoardState): AppState {
+  const migratedTasks = Object.fromEntries(
+    Object.entries(legacyState.tasks).map(([taskId, task]) => {
+      const migratedTask: Task = {
+        id: task.id as TaskId,
 
-  const updatedAt = updatedDates[updatedDates.length - 1] ?? createdAt;
+        title: task.title,
+        description: task.description,
 
-  return {
+        priority: task.priority,
+
+        tags: [...task.tags],
+
+        dueDate: null,
+        archivedAt: null,
+
+        createdAt: task.createdAt,
+
+        updatedAt: task.updatedAt,
+      };
+
+      return [taskId, migratedTask];
+    }),
+  ) as Record<TaskId, Task>;
+
+  const migratedColumns = Object.fromEntries(
+    legacyState.columnOrder.map((legacyColumnId) => {
+      const legacyColumn = legacyState.columns[legacyColumnId];
+
+      const columnId = migrateColumnId(legacyColumnId);
+
+      const migratedColumn: Column = {
+        id: columnId,
+
+        boardId: MIGRATED_BOARD_ID,
+
+        title: legacyColumn.title,
+
+        taskIds: legacyColumn.taskIds.map((taskId) => taskId as TaskId),
+
+        isCompleted: isCompletedLegacyColumn(legacyColumnId),
+
+        isArchive: false,
+      };
+
+      return [columnId, migratedColumn];
+    }),
+  ) as Record<ColumnId, Column>;
+
+  const archiveColumn: Column = {
+    id: ARCHIVE_COLUMN_ID,
+
+    boardId: MIGRATED_BOARD_ID,
+
+    title: 'Archive',
+
+    taskIds: [],
+
+    isCompleted: false,
+    isArchive: true,
+  };
+
+  migratedColumns[ARCHIVE_COLUMN_ID] = archiveColumn;
+
+  const migratedColumnIds = legacyState.columnOrder.map(migrateColumnId);
+
+  const allColumnIds = [...migratedColumnIds, ARCHIVE_COLUMN_ID];
+
+  const timestamps = Object.values(migratedTasks)
+    .flatMap((task) => [task.createdAt, task.updatedAt])
+    .sort();
+
+  const createdAt = timestamps[0] ?? new Date().toISOString();
+
+  const updatedAt = timestamps.at(-1) ?? createdAt;
+
+  const board: Board = {
+    id: MIGRATED_BOARD_ID,
+
+    title: 'Kanban Board',
+
+    columnIds: allColumnIds,
+
     createdAt,
     updatedAt,
   };
-}
-
-export function migrateBoardStateV1ToV2(legacyState: LegacyBoardState): AppStateV2 {
-  const { createdAt, updatedAt } = selectBoardDates(legacyState);
-
-  const columns = Object.fromEntries(
-    Object.entries(legacyState.columns).map(([columnId, column]) => [
-      columnId,
-      {
-        ...column,
-        boardId: DEFAULT_BOARD_ID,
-        isCompleted: columnId === 'done',
-      },
-    ]),
-  );
 
   return {
     boards: {
-      [DEFAULT_BOARD_ID]: {
-        id: DEFAULT_BOARD_ID,
-        title: DEFAULT_BOARD_TITLE,
-        columnIds: [...legacyState.columnOrder],
-        createdAt,
-        updatedAt,
-      },
+      [MIGRATED_BOARD_ID]: board,
     },
 
-    boardOrder: [DEFAULT_BOARD_ID],
+    boardOrder: [MIGRATED_BOARD_ID],
 
-    activeBoardId: DEFAULT_BOARD_ID,
+    activeBoardId: MIGRATED_BOARD_ID,
 
-    columns,
+    columns: migratedColumns,
 
-    tasks: structuredClone(legacyState.tasks),
+    tasks: migratedTasks,
 
     schemaVersion: 2,
-  };
-}
-
-export function migrateBoardStateV2ToV3(state: AppStateV2): AppState {
-  const tasks = Object.fromEntries(
-    Object.entries(state.tasks).map(([taskId, task]) => [
-      taskId,
-      {
-        ...task,
-        dueDate: null,
-      },
-    ]),
-  ) as Record<TaskId, Task>;
-
-  return {
-    ...state,
-    tasks,
-    schemaVersion: APP_SCHEMA_VERSION,
   };
 }

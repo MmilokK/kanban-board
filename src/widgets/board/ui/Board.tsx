@@ -38,6 +38,7 @@ import { selectAppState } from '../../../entities/board/model/select-app-state';
 import { exportAppData } from '../../../features/data-transfer/model/export-format';
 import type { AppState } from '../../../entities/board/model/app-state';
 import { DataTransfer } from '../../../features/data-transfer/ui/DataTransfer';
+import { TaskArchive } from '../../../features/task-archive/ui/TaskArchive';
 
 type TaskEditorState =
   | {
@@ -112,6 +113,9 @@ export function Board() {
     deleteTask,
     replaceTaskOrder,
     restoreTask,
+    archiveTask,
+    restoreArchivedTask,
+
     replaceAppState,
   } = useBoardStore(
     useShallow((state) => ({
@@ -136,6 +140,9 @@ export function Board() {
       deleteTask: state.deleteTask,
       replaceTaskOrder: state.replaceTaskOrder,
       restoreTask: state.restoreTask,
+      archiveTask: state.archiveTask,
+      restoreArchivedTask: state.restoreArchivedTask,
+
       replaceAppState: state.replaceAppState,
     })),
   );
@@ -152,6 +159,8 @@ export function Board() {
 
   const [taskFilters, setTaskFilters] = useState<TaskFilterState>(createDefaultTaskFilters);
 
+  const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+
   const taskOrderSnapshotRef = useRef<TaskIdsByColumn>({});
 
   const orderedBoards = useMemo(
@@ -166,7 +175,10 @@ export function Board() {
       return [];
     }
 
-    return activeBoard.columnIds.map((columnId) => columns[columnId]).filter(isColumn);
+    return activeBoard.columnIds
+      .map((columnId) => columns[columnId])
+      .filter(isColumn)
+      .filter((column) => !column.isArchive);
   }, [activeBoard, columns]);
 
   const activeBoardTasks = useMemo(() => {
@@ -194,6 +206,31 @@ export function Board() {
       }),
     ) as Record<ColumnId, Task[]>;
   }, [orderedColumns, tasks, taskFilters]);
+
+  const archiveColumn = useMemo(() => {
+    console.log(activeBoard);
+    if (!activeBoard) {
+      return undefined;
+    }
+
+    return activeBoard.columnIds
+      .map((columnId) => columns[columnId])
+      .find((column) => column?.isArchive);
+  }, [activeBoard, columns]);
+
+  const archivedTasks = useMemo(() => {
+    console.log(archiveColumn);
+    if (!archiveColumn) {
+      return [];
+    }
+
+    return archiveColumn.taskIds
+      .map((taskId) => tasks[taskId])
+      .filter(isTask)
+      .sort((firstTask, secondTask) =>
+        (secondTask.archivedAt ?? '').localeCompare(firstTask.archivedAt ?? ''),
+      );
+  }, [archiveColumn, tasks]);
 
   const visibleTaskCount = Object.values(visibleTasksByColumn).reduce(
     (total, columnTasks) => total + columnTasks.length,
@@ -226,6 +263,7 @@ export function Board() {
     setActiveBoard(boardId);
     resetTaskFilters();
     dismiss();
+    setIsArchiveOpen(false);
   }
 
   function handleOpenCreateBoard() {
@@ -259,6 +297,7 @@ export function Board() {
     setTaskEditorState(null);
     setBoardEditorState(null);
     resetTaskFilters();
+    setIsArchiveOpen(false);
   }
 
   function handleRenameBoard(values: BoardFormValues) {
@@ -289,6 +328,7 @@ export function Board() {
     resetTaskFilters();
     dismiss();
     deleteBoard(activeBoard.id);
+    setIsArchiveOpen(false);
   }
 
   function handleOpenCreateColumn() {
@@ -445,10 +485,31 @@ export function Board() {
     setTaskEditorState(null);
     setBoardEditorState(null);
     setColumnEditorState(null);
+    setIsArchiveOpen(false);
 
     resetTaskFilters();
 
     replaceAppState(state);
+  }
+
+  function handleOpenArchive() {
+    setIsArchiveOpen((current) => !current);
+  }
+
+  function handleDeleteArchivedTask(taskId: string) {
+    const task = tasks[taskId];
+
+    if (!task) {
+      return;
+    }
+
+    const confirmed = window.confirm(`Окончательно удалить задачу «${task.title}» из архива?`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    deleteTask(taskId);
   }
 
   return (
@@ -465,6 +526,8 @@ export function Board() {
           onCreateBoard={handleOpenCreateBoard}
           onRenameBoard={handleOpenRenameBoard}
           onDeleteBoard={handleDeleteBoard}
+          openArchive={handleOpenArchive}
+          archivedTasks={archivedTasks}
         />
 
         <DataTransfer onExport={handleExportData} onImport={handleImportData} />
@@ -541,6 +604,7 @@ export function Board() {
                         }}
                         onEditTask={handleOpenEditTask}
                         onDeleteTask={handleDeleteTask}
+                        onArchiveTask={archiveTask}
                         onRenameColumn={() => {
                           handleOpenRenameColumn(column.id);
                         }}
@@ -647,6 +711,18 @@ export function Board() {
 
       {deletedTask && (
         <UndoSnackbar taskTitle={deletedTask.task.title} onUndo={undo} onDismiss={dismiss} />
+      )}
+
+      {isArchiveOpen && (
+        <TaskArchive
+          tasks={archivedTasks}
+          columns={orderedColumns}
+          onRestore={restoreArchivedTask}
+          onDelete={handleDeleteArchivedTask}
+          onClose={() => {
+            setIsArchiveOpen(false);
+          }}
+        />
       )}
     </>
   );

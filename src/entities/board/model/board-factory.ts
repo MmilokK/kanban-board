@@ -25,42 +25,50 @@ export function createBoardBundle({
   const board: Board = {
     id: boardId,
     title,
-    columnIds: [columnIds.backlog, columnIds.todo, columnIds.inProgress, columnIds.done],
+    columnIds: [
+      columnIds.backlog,
+      columnIds.todo,
+      columnIds.inProgress,
+      columnIds.done,
+      columnIds.archive,
+    ],
     createdAt,
     updatedAt: createdAt,
   };
 
   const columns: Record<ColumnId, Column> = {
     [columnIds.backlog]: {
+      ...DEFAULT_COLUMN_TEMPLATES.backlog,
       id: columnIds.backlog,
       boardId,
-      title: DEFAULT_COLUMN_TEMPLATES.backlog.title,
       taskIds: [],
-      isCompleted: DEFAULT_COLUMN_TEMPLATES.backlog.isCompleted,
     },
 
     [columnIds.todo]: {
+      ...DEFAULT_COLUMN_TEMPLATES.todo,
       id: columnIds.todo,
       boardId,
-      title: DEFAULT_COLUMN_TEMPLATES.todo.title,
       taskIds: [],
-      isCompleted: DEFAULT_COLUMN_TEMPLATES.todo.isCompleted,
     },
 
     [columnIds.inProgress]: {
+      ...DEFAULT_COLUMN_TEMPLATES.inProgress,
       id: columnIds.inProgress,
       boardId,
-      title: DEFAULT_COLUMN_TEMPLATES.inProgress.title,
       taskIds: [],
-      isCompleted: DEFAULT_COLUMN_TEMPLATES.inProgress.isCompleted,
     },
 
     [columnIds.done]: {
+      ...DEFAULT_COLUMN_TEMPLATES.done,
       id: columnIds.done,
       boardId,
-      title: DEFAULT_COLUMN_TEMPLATES.done.title,
       taskIds: [],
-      isCompleted: DEFAULT_COLUMN_TEMPLATES.done.isCompleted,
+    },
+    [columnIds.archive]: {
+      ...DEFAULT_COLUMN_TEMPLATES.archive,
+      id: columnIds.archive,
+      boardId,
+      taskIds: [],
     },
   };
 

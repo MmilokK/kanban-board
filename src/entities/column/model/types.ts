@@ -6,4 +6,5 @@ export type Column = {
   title: string;
   taskIds: TaskId[];
   isCompleted: boolean;
+  isArchive: boolean;
 };

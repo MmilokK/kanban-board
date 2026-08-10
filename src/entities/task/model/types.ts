@@ -11,6 +11,7 @@ export type Task = {
   dueDate: string | null; //Дата в формате YYYY-MM-DD
   createdAt: string;
   updatedAt: string;
+  archivedAt: string | null;
 };
 
 export type CreateTaskInput = Pick<Task, 'title' | 'description' | 'priority' | 'tags' | 'dueDate'>;

@@ -28,6 +28,7 @@ const CREATED_BOARD_COLUMN_IDS = {
   todo: '00000000-0000-4000-8000-000000000102',
   inProgress: '00000000-0000-4000-8000-000000000103',
   done: '00000000-0000-4000-8000-000000000104',
+  archive: '00000000-0000-4000-8000-000000000105',
 };
 
 const SECOND_BOARD_ID = '00000000-0000-4000-8000-000000000010';
@@ -37,6 +38,7 @@ const SECOND_BOARD_COLUMN_IDS = {
   todo: '00000000-0000-4000-8000-000000000012',
   inProgress: '00000000-0000-4000-8000-000000000013',
   done: '00000000-0000-4000-8000-000000000014',
+  archive: '00000000-0000-4000-8000-000000000015',
 };
 
 const SECOND_BOARD_TASK_ID = '00000000-0000-4000-8000-000000000015';
@@ -48,6 +50,7 @@ const THIRD_BOARD_COLUMN_IDS = {
   todo: '00000000-0000-4000-8000-000000000022',
   inProgress: '00000000-0000-4000-8000-000000000023',
   done: '00000000-0000-4000-8000-000000000024',
+  archive: '00000000-0000-4000-8000-000000000025',
 };
 
 const CREATED_COLUMN_ID = '00000000-0000-4000-8000-000000000200';
@@ -62,6 +65,7 @@ const taskInput = {
   priority: 'high' as const,
   tags: ['test', 'zustand'],
   dueDate: null,
+  archivedAt: null,
 };
 
 type TestBoardIds = {
@@ -71,6 +75,7 @@ type TestBoardIds = {
     todo: ColumnId;
     inProgress: ColumnId;
     done: ColumnId;
+    archive: ColumnId;
   };
 };
 
@@ -80,7 +85,8 @@ function mockCreateBoardIds({ boardId, columnIds }: TestBoardIds) {
     .mockReturnValueOnce(columnIds.backlog)
     .mockReturnValueOnce(columnIds.todo)
     .mockReturnValueOnce(columnIds.inProgress)
-    .mockReturnValueOnce(columnIds.done);
+    .mockReturnValueOnce(columnIds.done)
+    .mockReturnValueOnce(columnIds.archive);
 }
 
 function getBoard(boardId: BoardId) {
@@ -172,6 +178,7 @@ describe('Хранилище доски', () => {
       dueDate: null,
       createdAt: CREATED_AT,
       updatedAt: CREATED_AT,
+      archivedAt: null,
     });
 
     expect(backlogAfter.taskIds).toEqual([...previousTaskIds, CREATED_TASK_ID]);
@@ -200,6 +207,7 @@ describe('Хранилище доски', () => {
       dueDate: null,
       createdAt: CREATED_AT,
       updatedAt: UPDATED_AT,
+      archivedAt: null,
     });
 
     expect(getBoard(DEFAULT_BOARD_ID).updatedAt).toBe(UPDATED_AT);
@@ -407,10 +415,11 @@ describe('Хранилище доски', () => {
         CREATED_BOARD_COLUMN_IDS.todo,
         CREATED_BOARD_COLUMN_IDS.inProgress,
         CREATED_BOARD_COLUMN_IDS.done,
+        CREATED_BOARD_COLUMN_IDS.archive,
       ],
     });
 
-    expect(randomUUIDMock).toHaveBeenCalledTimes(5);
+    expect(randomUUIDMock).toHaveBeenCalledTimes(6);
   });
 
   it('не создаёт доску с пустым названием', () => {
@@ -575,6 +584,7 @@ describe('Хранилище доски', () => {
       title: 'Проверка',
       taskIds: [],
       isCompleted: false,
+      isArchive: false,
     });
 
     expect(getBoard(DEFAULT_BOARD_ID).columnIds).toContain(CREATED_COLUMN_ID);
@@ -638,13 +648,32 @@ describe('Хранилище доски', () => {
       DEFAULT_COLUMN_IDS.backlog,
       DEFAULT_COLUMN_IDS.todo,
       DEFAULT_COLUMN_IDS.inProgress,
+      DEFAULT_COLUMN_IDS.archive,
     ]);
   });
 
   it('ограничивает позицию колонки допустимым диапазоном', () => {
     useBoardStore.getState().moveColumn(DEFAULT_COLUMN_IDS.backlog, 100);
 
-    expect(getBoard(DEFAULT_BOARD_ID).columnIds.at(-1)).toBe(DEFAULT_COLUMN_IDS.backlog);
+    const state = useBoardStore.getState();
+
+    const board = getBoard(DEFAULT_BOARD_ID);
+
+    const regularColumnIds = board.columnIds.filter(
+      (columnId) => !state.columns[columnId]?.isArchive,
+    );
+
+    expect(regularColumnIds.at(-1)).toBe(DEFAULT_COLUMN_IDS.done);
+
+    const archiveColumnId = board.columnIds.at(-1);
+
+    expect(archiveColumnId).toBeDefined();
+
+    if (!archiveColumnId) {
+      throw new Error('Архивная колонка не найдена');
+    }
+
+    expect(state.columns[archiveColumnId]?.isArchive).toBe(true);
   });
 
   it('создаёт задачу со сроком выполнения', () => {
@@ -761,5 +790,71 @@ describe('Хранилище доски', () => {
     expect(useBoardStore.getState().createBoard).toEqual(expect.any(Function));
 
     expect(useBoardStore.getState().addTask).toEqual(expect.any(Function));
+  });
+
+  it('перемещает задачу в архивную колонку', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    useBoardStore.getState().archiveTask(CREATED_TASK_ID);
+
+    const state = useBoardStore.getState();
+
+    const archiveColumn = Object.values(state.columns).find(
+      (column) => column.boardId === DEFAULT_BOARD_ID && column.isArchive,
+    );
+
+    expect(archiveColumn).toBeDefined();
+
+    expect(state.columns[DEFAULT_COLUMN_IDS.backlog]?.taskIds).not.toContain(CREATED_TASK_ID);
+
+    expect(archiveColumn?.taskIds).toContain(CREATED_TASK_ID);
+
+    expect(state.tasks[CREATED_TASK_ID]?.archivedAt).not.toBeNull();
+  });
+
+  it('архивирует незавершённую задачу', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.todo, taskInput);
+
+    useBoardStore.getState().archiveTask(CREATED_TASK_ID);
+
+    expect(useBoardStore.getState().tasks[CREATED_TASK_ID]?.archivedAt).not.toBeNull();
+  });
+
+  it('восстанавливает архивную задачу в выбранную колонку', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    useBoardStore.getState().archiveTask(CREATED_TASK_ID);
+
+    useBoardStore.getState().restoreArchivedTask(CREATED_TASK_ID, DEFAULT_COLUMN_IDS.todo);
+
+    const state = useBoardStore.getState();
+
+    expect(state.columns[DEFAULT_COLUMN_IDS.todo]?.taskIds).toContain(CREATED_TASK_ID);
+
+    expect(state.tasks[CREATED_TASK_ID]?.archivedAt).toBeNull();
+  });
+
+  it('восстанавливает архивную задачу в выбранную колонку', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    useBoardStore.getState().archiveTask(CREATED_TASK_ID);
+
+    useBoardStore.getState().restoreArchivedTask(CREATED_TASK_ID, DEFAULT_COLUMN_IDS.todo);
+
+    const state = useBoardStore.getState();
+
+    expect(state.columns[DEFAULT_COLUMN_IDS.todo]?.taskIds).toContain(CREATED_TASK_ID);
+
+    expect(state.tasks[CREATED_TASK_ID]?.archivedAt).toBeNull();
+  });
+
+  it('окончательно удаляет задачу из архива', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    useBoardStore.getState().archiveTask(CREATED_TASK_ID);
+
+    useBoardStore.getState().deleteTask(CREATED_TASK_ID);
+
+    expect(useBoardStore.getState().tasks[CREATED_TASK_ID]).toBeUndefined();
   });
 });

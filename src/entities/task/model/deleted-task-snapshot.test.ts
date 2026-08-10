@@ -8,6 +8,7 @@ const column = {
   title: 'Проверка',
   taskIds: ['task-before', 'task', 'task-after'],
   isCompleted: false,
+  isArchive: false,
 };
 
 const task = {
@@ -19,6 +20,7 @@ const task = {
   dueDate: null,
   createdAt: '',
   updatedAt: '',
+  archivedAt: null,
 };
 
 describe('Снимок удаляемой задачи', () => {

@@ -18,6 +18,7 @@ const column: Column = {
   title: 'Backlog',
   taskIds: [],
   isCompleted: false,
+  isArchive: false,
 };
 
 const task: Task = {
@@ -29,6 +30,7 @@ const task: Task = {
   dueDate: null,
   createdAt: '2026-08-04T10:00:00.000Z',
   updatedAt: '2026-08-04T10:00:00.000Z',
+  archivedAt: null,
 };
 
 type RenderBoardColumnOptions = {
@@ -52,6 +54,7 @@ function renderBoardColumn({
   const onCreateTask = vi.fn();
   const onEditTask = vi.fn();
   const onDeleteTask = vi.fn();
+  const onArchiveTask = vi.fn();
 
   const onRenameColumn = vi.fn();
   const onDeleteColumn = vi.fn();
@@ -68,6 +71,7 @@ function renderBoardColumn({
         onCreateTask={onCreateTask}
         onEditTask={onEditTask}
         onDeleteTask={onDeleteTask}
+        onArchiveTask={onArchiveTask}
         onRenameColumn={onRenameColumn}
         onDeleteColumn={onDeleteColumn}
         onMoveColumnLeft={onMoveColumnLeft}
