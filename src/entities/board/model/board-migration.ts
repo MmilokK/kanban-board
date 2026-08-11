@@ -55,19 +55,14 @@ export function migrateLegacyBoardState(legacyState: LegacyBoardState): AppState
     Object.entries(legacyState.tasks).map(([taskId, task]) => {
       const migratedTask: Task = {
         id: task.id as TaskId,
-
         title: task.title,
         description: task.description,
-
         priority: task.priority,
-
         tags: [...task.tags],
-
+        subtasks: [],
         dueDate: null,
         archivedAt: null,
-
         createdAt: task.createdAt,
-
         updatedAt: task.updatedAt,
       };
 

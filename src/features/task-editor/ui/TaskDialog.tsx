@@ -1,12 +1,19 @@
 import { useEffect, useRef } from 'react';
 
-import type { CreateTaskInput, Task } from '../../../entities/task/model/types';
+import type {
+  CreateSubtaskInput,
+  CreateTaskInput,
+  Task,
+  UpdateSubtaskInput,
+} from '../../../entities/task/model/types';
 
 import { parseTaskTags, type TaskFormValues } from '../model/task-form';
 
 import { TaskForm } from './TaskForm';
 
 import styles from './TaskDialog.module.scss';
+import type { SubtaskId } from '../../../shared/model/entity-ids';
+import { SubtaskList } from '../../subtask-management/ui/SubtaskList';
 
 type TaskDialogProps = {
   task: Task | null;
@@ -14,9 +21,23 @@ type TaskDialogProps = {
   submitLabel: string;
   onSubmit: (values: CreateTaskInput) => void;
   onClose: () => void;
+  onAddSubtask?: (input: CreateSubtaskInput) => void;
+  onUpdateSubtask?: (subtaskId: SubtaskId, input: UpdateSubtaskInput) => void;
+  onToggleSubtask?: (subtaskId: SubtaskId) => void;
+  onDeleteSubtask?: (subtaskId: SubtaskId) => void;
 };
 
-export function TaskDialog({ task, title, submitLabel, onSubmit, onClose }: TaskDialogProps) {
+export function TaskDialog({
+  task,
+  title,
+  submitLabel,
+  onSubmit,
+  onClose,
+  onAddSubtask,
+  onUpdateSubtask,
+  onToggleSubtask,
+  onDeleteSubtask,
+}: TaskDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -70,6 +91,15 @@ export function TaskDialog({ task, title, submitLabel, onSubmit, onClose }: Task
           onCancel={handleCancel}
           onSubmit={handleSubmit}
         />
+        {task && onAddSubtask && onUpdateSubtask && onToggleSubtask && onDeleteSubtask && (
+          <SubtaskList
+            subtasks={task.subtasks}
+            onAdd={onAddSubtask}
+            onUpdate={onUpdateSubtask}
+            onToggle={onToggleSubtask}
+            onDelete={onDeleteSubtask}
+          />
+        )}
       </div>
     </dialog>
   );

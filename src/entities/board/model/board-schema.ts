@@ -5,12 +5,23 @@ import { APP_SCHEMA_VERSION } from './app-state';
 
 const entityIdSchema = z.string().trim().min(1);
 
+const subtaskSchema = z.object({
+  id: z.string(),
+
+  title: z.string().trim().min(1),
+
+  description: z.string(),
+
+  isCompleted: z.boolean(),
+});
+
 export const taskSchema = z.object({
   id: entityIdSchema,
   title: z.string(),
   description: z.string(),
   priority: z.enum(['low', 'medium', 'high']),
   tags: z.array(z.string()),
+  subtasks: z.array(subtaskSchema),
   dueDate: z.string().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),

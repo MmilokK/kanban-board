@@ -57,6 +57,8 @@ const CREATED_COLUMN_ID = '00000000-0000-4000-8000-000000000200';
 
 const COLUMN_UPDATED_AT = '2026-08-02T14:00:00.000Z';
 
+const SUBTASK_ID = 'subtask-created';
+
 const randomUUIDMock = vi.fn((): string => CREATED_TASK_ID);
 
 const taskInput = {
@@ -64,6 +66,7 @@ const taskInput = {
   description: 'Описание новой задачи',
   priority: 'high' as const,
   tags: ['test', 'zustand'],
+  subtasks: [],
   dueDate: null,
   archivedAt: null,
 };
@@ -175,6 +178,7 @@ describe('Хранилище доски', () => {
       description: 'Описание новой задачи',
       priority: 'high',
       tags: ['test', 'zustand'],
+      subtasks: [],
       dueDate: null,
       createdAt: CREATED_AT,
       updatedAt: CREATED_AT,
@@ -204,6 +208,7 @@ describe('Хранилище доски', () => {
       description: 'Новое описание задачи',
       priority: 'high',
       tags: ['test', 'zustand'],
+      subtasks: [],
       dueDate: null,
       createdAt: CREATED_AT,
       updatedAt: UPDATED_AT,
@@ -856,5 +861,29 @@ describe('Хранилище доски', () => {
     useBoardStore.getState().deleteTask(CREATED_TASK_ID);
 
     expect(useBoardStore.getState().tasks[CREATED_TASK_ID]).toBeUndefined();
+  });
+
+  it('добавляет подзадачу к задаче', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    randomUUIDMock.mockReturnValueOnce(SUBTASK_ID);
+
+    useBoardStore.getState().addSubtask(CREATED_TASK_ID, {
+      title: 'Написать тесты',
+
+      description: 'Проверить store',
+    });
+
+    expect(useBoardStore.getState().tasks[CREATED_TASK_ID]?.subtasks).toEqual([
+      {
+        id: SUBTASK_ID,
+
+        title: 'Написать тесты',
+
+        description: 'Проверить store',
+
+        isCompleted: false,
+      },
+    ]);
   });
 });

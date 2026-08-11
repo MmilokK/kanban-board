@@ -7,6 +7,8 @@ import type { Task, TaskPriority } from '../model/types';
 import styles from './TaskCard.module.scss';
 import type { TaskId } from '../../../shared/model/entity-ids';
 import { formatTaskDueDate, getTaskDueStatus } from '../model/task-due-date';
+import { getSubtaskProgress } from '../model/subtask-progress';
+import { SubtaskProgressIndicator } from './SubtaskProgressIndicator';
 
 type TaskCardProps = {
   task: Task;
@@ -45,6 +47,7 @@ export function TaskCard({
 }: TaskCardProps) {
   const updatedDate = new Date(task.updatedAt);
   const dueStatus = getTaskDueStatus(task.dueDate, isCompletedColumn);
+  const subtaskProgress = getSubtaskProgress(task.subtasks);
 
   function handleDelete(): void {
     onDeleteTask(task.id);
@@ -69,6 +72,15 @@ export function TaskCard({
       </div>
 
       {task.description && <p className={styles.description}>{task.description}</p>}
+
+      {task.subtasks.length > 0 && (
+        <SubtaskProgressIndicator
+          completed={subtaskProgress.completed}
+          total={subtaskProgress.total}
+          percentage={subtaskProgress.percentage}
+          isCompleted={subtaskProgress.isCompleted}
+        />
+      )}
 
       {!!task.tags.length && (
         <ul className={styles.tags} aria-label="Теги задачи">

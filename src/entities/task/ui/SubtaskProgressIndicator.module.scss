@@ -1,0 +1,37 @@
+.progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.circle {
+  --subtask-progress: 0%;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  background: conic-gradient(
+    var(--color-primary) var(--subtask-progress),
+    var(--color-border) var(--subtask-progress)
+  );
+  border-radius: 50%;
+}
+
+.circleInner {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  color: var(--color-primary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  background: var(--color-surface);
+  border-radius: 50%;
+}
+
+.text {
+  white-space: nowrap;
+}
