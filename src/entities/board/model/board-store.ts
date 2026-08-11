@@ -1,8 +1,13 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import type { BoardId, ColumnId, TaskId } from '../../../shared/model/entity-ids';
-import type { CreateTaskInput, UpdateTaskInput } from '../../task/model/types';
+import type { BoardId, ColumnId, SubtaskId, TaskId } from '../../../shared/model/entity-ids';
+import type {
+  CreateSubtaskInput,
+  CreateTaskInput,
+  UpdateSubtaskInput,
+  UpdateTaskInput,
+} from '../../task/model/types';
 
 import type { AppState } from './app-state';
 import { APP_SCHEMA_VERSION } from './app-state';
@@ -50,6 +55,14 @@ type BoardActions = {
   archiveTask: (taskId: TaskId) => void;
 
   restoreArchivedTask: (taskId: TaskId, columnId: ColumnId) => void;
+
+  addSubtask: (taskId: TaskId, input: CreateSubtaskInput) => void;
+
+  updateSubtask: (taskId: TaskId, subtaskId: SubtaskId, input: UpdateSubtaskInput) => void;
+
+  toggleSubtask: (taskId: TaskId, subtaskId: SubtaskId) => void;
+
+  deleteSubtask: (taskId: TaskId, subtaskId: SubtaskId) => void;
 
   resetBoard: () => void;
 
@@ -483,6 +496,7 @@ export const useBoardStore = create<BoardStore>()(
               [taskId]: {
                 id: taskId,
                 ...input,
+                subtasks: [],
                 createdAt: now,
                 updatedAt: now,
                 archivedAt: null,
@@ -810,6 +824,164 @@ export const useBoardStore = create<BoardStore>()(
 
               [board.id]: {
                 ...board,
+                updatedAt: now,
+              },
+            },
+          };
+        });
+      },
+
+      addSubtask: (taskId, input) => {
+        const title = input.title.trim();
+
+        const description = input.description.trim();
+
+        if (!title) {
+          return;
+        }
+
+        set((state) => {
+          const task = state.tasks[taskId];
+
+          if (!task) {
+            return state;
+          }
+
+          const subtaskId = crypto.randomUUID() as SubtaskId;
+
+          const now = new Date().toISOString();
+
+          return {
+            tasks: {
+              ...state.tasks,
+
+              [taskId]: {
+                ...task,
+
+                subtasks: [
+                  ...task.subtasks,
+
+                  {
+                    id: subtaskId,
+
+                    title,
+                    description,
+
+                    isCompleted: false,
+                  },
+                ],
+
+                updatedAt: now,
+              },
+            },
+          };
+        });
+      },
+
+      updateSubtask: (taskId, subtaskId, input) => {
+        set((state) => {
+          const task = state.tasks[taskId];
+
+          if (!task) {
+            return state;
+          }
+
+          const subtaskExists = task.subtasks.some((subtask) => subtask.id === subtaskId);
+
+          if (!subtaskExists) {
+            return state;
+          }
+
+          const now = new Date().toISOString();
+
+          return {
+            tasks: {
+              ...state.tasks,
+
+              [taskId]: {
+                ...task,
+
+                subtasks: task.subtasks.map((subtask) =>
+                  subtask.id === subtaskId
+                    ? {
+                        ...subtask,
+                        ...input,
+                      }
+                    : subtask,
+                ),
+
+                updatedAt: now,
+              },
+            },
+          };
+        });
+      },
+
+      toggleSubtask: (taskId, subtaskId) => {
+        set((state) => {
+          const task = state.tasks[taskId];
+
+          if (!task) {
+            return state;
+          }
+
+          const subtaskExists = task.subtasks.some((subtask) => subtask.id === subtaskId);
+
+          if (!subtaskExists) {
+            return state;
+          }
+
+          const now = new Date().toISOString();
+
+          return {
+            tasks: {
+              ...state.tasks,
+
+              [taskId]: {
+                ...task,
+
+                subtasks: task.subtasks.map((subtask) =>
+                  subtask.id === subtaskId
+                    ? {
+                        ...subtask,
+
+                        isCompleted: !subtask.isCompleted,
+                      }
+                    : subtask,
+                ),
+
+                updatedAt: now,
+              },
+            },
+          };
+        });
+      },
+
+      deleteSubtask: (taskId, subtaskId) => {
+        set((state) => {
+          const task = state.tasks[taskId];
+
+          if (!task) {
+            return state;
+          }
+
+          const subtaskExists = task.subtasks.some((subtask) => subtask.id === subtaskId);
+
+          if (!subtaskExists) {
+            return state;
+          }
+
+          const now = new Date().toISOString();
+
+          return {
+            tasks: {
+              ...state.tasks,
+
+              [taskId]: {
+                ...task,
+
+                subtasks: task.subtasks.filter((subtask) => subtask.id !== subtaskId),
+
                 updatedAt: now,
               },
             },

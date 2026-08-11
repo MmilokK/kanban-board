@@ -27,6 +27,7 @@ const task: Task = {
   description: 'Собрать данные за месяц',
   priority: 'high',
   tags: ['работа', 'отчёт'],
+  subtasks: [],
   dueDate: null,
   createdAt: '2026-08-04T10:00:00.000Z',
   updatedAt: '2026-08-04T10:00:00.000Z',

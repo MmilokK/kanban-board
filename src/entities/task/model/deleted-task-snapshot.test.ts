@@ -17,6 +17,7 @@ const task = {
   description: 'Проверка',
   priority: 'high',
   tags: [],
+  subtasks: [],
   dueDate: null,
   createdAt: '',
   updatedAt: '',

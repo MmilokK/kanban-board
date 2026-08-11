@@ -13,22 +13,16 @@ const columns: Column[] = [
   {
     id: 'backlog',
     boardId: 'board-1',
-
     title: 'Backlog',
-
     taskIds: [],
-
     isCompleted: false,
     isArchive: false,
   },
   {
     id: 'done',
     boardId: 'board-1',
-
     title: 'Done',
-
     taskIds: [],
-
     isCompleted: true,
     isArchive: false,
   },
@@ -36,21 +30,14 @@ const columns: Column[] = [
 
 const task: Task = {
   id: 'task-1',
-
   title: 'Архивированная задача',
-
   description: 'Описание задачи',
-
   priority: 'medium',
-
   tags: ['Работа'],
-
+  subtasks: [],
   dueDate: null,
-
   archivedAt: '2026-08-10T10:00:00.000Z',
-
   createdAt: '2026-08-01T10:00:00.000Z',
-
   updatedAt: '2026-08-10T10:00:00.000Z',
 };
 

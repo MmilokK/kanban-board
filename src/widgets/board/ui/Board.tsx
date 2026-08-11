@@ -116,6 +116,11 @@ export function Board() {
     archiveTask,
     restoreArchivedTask,
 
+    addSubtask,
+    updateSubtask,
+    toggleSubtask,
+    deleteSubtask,
+
     replaceAppState,
   } = useBoardStore(
     useShallow((state) => ({
@@ -142,6 +147,11 @@ export function Board() {
       restoreTask: state.restoreTask,
       archiveTask: state.archiveTask,
       restoreArchivedTask: state.restoreArchivedTask,
+
+      addSubtask: state.addSubtask,
+      updateSubtask: state.updateSubtask,
+      toggleSubtask: state.toggleSubtask,
+      deleteSubtask: state.deleteSubtask,
 
       replaceAppState: state.replaceAppState,
     })),
@@ -681,6 +691,22 @@ export function Board() {
           submitLabel={taskEditorState.mode === 'create' ? 'Создать задачу' : 'Сохранить изменения'}
           onClose={handleCloseTaskDialog}
           onSubmit={handleTaskSubmit}
+          {...(editingTask
+            ? {
+                onAddSubtask: (input) => {
+                  addSubtask(editingTask.id, input);
+                },
+                onUpdateSubtask: (subtaskId, input) => {
+                  updateSubtask(editingTask.id, subtaskId, input);
+                },
+                onToggleSubtask: (subtaskId) => {
+                  toggleSubtask(editingTask.id, subtaskId);
+                },
+                onDeleteSubtask: (subtaskId) => {
+                  deleteSubtask(editingTask.id, subtaskId);
+                },
+              }
+            : {})}
         />
       )}
 

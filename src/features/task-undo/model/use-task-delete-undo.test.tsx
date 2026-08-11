@@ -14,6 +14,7 @@ const snapshot: DeletedTaskSnapshot = {
     description: '',
     priority: 'medium',
     tags: [],
+    subtasks: [],
     dueDate: null,
     createdAt: '2026-08-08T10:00:00.000Z',
     updatedAt: '2026-08-08T10:00:00.000Z',

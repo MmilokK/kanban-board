@@ -1,0 +1,214 @@
+.container {
+  display: grid;
+  gap: 16px;
+
+  padding-top: 18px;
+
+  border-top: 1px solid var(--color-border);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  h3 {
+    margin: 0;
+  }
+
+  span {
+    color: var(--color-text-secondary);
+
+    font-size: 0.875rem;
+  }
+}
+
+.emptyState {
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 0.875rem;
+}
+
+.list {
+  display: grid;
+  gap: 10px;
+
+  padding: 0;
+  margin: 0;
+
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+
+  padding: 12px;
+
+  background: var(--color-surface-muted);
+
+  border: 1px solid var(--color-border);
+
+  border-radius: 10px;
+}
+
+.subtask {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  min-width: 0;
+
+  input {
+    margin-top: 3px;
+  }
+}
+
+.subtaskContent {
+  display: grid;
+  gap: 3px;
+
+  min-width: 0;
+
+  cursor: pointer;
+}
+
+.title {
+  color: var(--color-text);
+
+  font-weight: 500;
+
+  overflow-wrap: anywhere;
+}
+
+.completedTitle {
+  color: var(--color-text-muted);
+
+  font-weight: 500;
+
+  text-decoration: line-through;
+
+  overflow-wrap: anywhere;
+}
+
+.description,
+.completedDescription {
+  font-size: 0.8125rem;
+
+  overflow-wrap: anywhere;
+}
+
+.description {
+  color: var(--color-text-secondary);
+}
+
+.completedDescription {
+  color: var(--color-text-muted);
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+
+  flex-shrink: 0;
+}
+
+.actions button,
+.editActions button,
+.create button {
+  min-height: 36px;
+
+  padding: 6px 10px;
+
+  color: var(--color-text);
+
+  font: inherit;
+
+  cursor: pointer;
+
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
+
+  border-radius: 8px;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.editForm,
+.create {
+  display: grid;
+  gap: 10px;
+
+  width: 100%;
+
+  label {
+    display: grid;
+    gap: 5px;
+
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  input,
+  textarea {
+    width: 100%;
+
+    padding: 8px 10px;
+
+    color: var(--color-text);
+
+    font: inherit;
+
+    background: var(--color-surface);
+
+    border: 1px solid var(--color-border);
+
+    border-radius: 8px;
+  }
+
+  textarea {
+    min-height: 70px;
+
+    resize: vertical;
+  }
+}
+
+.editActions {
+  display: flex;
+  gap: 8px;
+}
+
+.create {
+  padding-top: 4px;
+
+  h4 {
+    margin: 0;
+  }
+
+  > button {
+    justify-self: start;
+  }
+}
+
+@media (width <= 650px) {
+  .item {
+    flex-direction: column;
+  }
+
+  .actions {
+    width: 100%;
+
+    button {
+      flex: 1;
+    }
+  }
+}
