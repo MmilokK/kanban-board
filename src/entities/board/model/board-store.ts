@@ -1,11 +1,19 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import type { BoardId, ColumnId, SubtaskId, TaskId } from '../../../shared/model/entity-ids';
+import type {
+  BoardId,
+  ColumnId,
+  CommentId,
+  SubtaskId,
+  TaskId,
+} from '../../../shared/model/entity-ids';
 import type {
   CreateSubtaskInput,
+  CreateTaskCommentInput,
   CreateTaskInput,
   UpdateSubtaskInput,
+  UpdateTaskCommentInput,
   UpdateTaskInput,
 } from '../../task/model/types';
 
@@ -63,6 +71,12 @@ type BoardActions = {
   toggleSubtask: (taskId: TaskId, subtaskId: SubtaskId) => void;
 
   deleteSubtask: (taskId: TaskId, subtaskId: SubtaskId) => void;
+
+  addTaskComment: (taskId: TaskId, input: CreateTaskCommentInput) => void;
+
+  updateTaskComment: (taskId: TaskId, commentId: CommentId, input: UpdateTaskCommentInput) => void;
+
+  deleteTaskComment: (taskId: TaskId, commentId: CommentId) => void;
 
   resetBoard: () => void;
 
@@ -497,6 +511,7 @@ export const useBoardStore = create<BoardStore>()(
                 id: taskId,
                 ...input,
                 subtasks: [],
+                comments: [],
                 createdAt: now,
                 updatedAt: now,
                 archivedAt: null,
@@ -981,6 +996,122 @@ export const useBoardStore = create<BoardStore>()(
                 ...task,
 
                 subtasks: task.subtasks.filter((subtask) => subtask.id !== subtaskId),
+
+                updatedAt: now,
+              },
+            },
+          };
+        });
+      },
+
+      addTaskComment: (taskId, input) => {
+        const text = input.text.trim();
+
+        if (!text) {
+          return;
+        }
+
+        set((state) => {
+          const task = state.tasks[taskId];
+
+          if (!task) {
+            return state;
+          }
+
+          const commentId = crypto.randomUUID() as CommentId;
+
+          const now = new Date().toISOString();
+
+          return {
+            tasks: {
+              ...state.tasks,
+
+              [taskId]: {
+                ...task,
+
+                comments: [
+                  ...task.comments,
+
+                  {
+                    id: commentId,
+                    text,
+
+                    createdAt: now,
+                    updatedAt: now,
+                  },
+                ],
+
+                updatedAt: now,
+              },
+            },
+          };
+        });
+      },
+
+      updateTaskComment: (taskId, commentId, input) => {
+        set((state) => {
+          const task = state.tasks[taskId];
+
+          if (!task) {
+            return state;
+          }
+
+          const commentExists = task.comments.some((comment) => comment.id === commentId);
+
+          if (!commentExists) {
+            return state;
+          }
+
+          const now = new Date().toISOString();
+
+          return {
+            tasks: {
+              ...state.tasks,
+
+              [taskId]: {
+                ...task,
+
+                comments: task.comments.map((comment) =>
+                  comment.id === commentId
+                    ? {
+                        ...comment,
+                        ...input,
+                        updatedAt: now,
+                      }
+                    : comment,
+                ),
+
+                updatedAt: now,
+              },
+            },
+          };
+        });
+      },
+
+      deleteTaskComment: (taskId, commentId) => {
+        set((state) => {
+          const task = state.tasks[taskId];
+
+          if (!task) {
+            return state;
+          }
+
+          const commentExists = task.comments.some((comment) => comment.id === commentId);
+
+          if (!commentExists) {
+            return state;
+          }
+
+          const now = new Date().toISOString();
+
+          return {
+            tasks: {
+              ...state.tasks,
+
+              [taskId]: {
+                ...task,
+
+                comments: task.comments.filter((comment) => comment.id !== commentId),
 
                 updatedAt: now,
               },

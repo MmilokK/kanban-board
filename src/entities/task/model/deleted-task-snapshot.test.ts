@@ -18,6 +18,7 @@ const task = {
   priority: 'high',
   tags: [],
   subtasks: [],
+  comments: [],
   dueDate: null,
   createdAt: '',
   updatedAt: '',

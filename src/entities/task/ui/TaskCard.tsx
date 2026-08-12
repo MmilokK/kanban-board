@@ -82,6 +82,12 @@ export function TaskCard({
         />
       )}
 
+      {task.comments.length > 0 && (
+        <span className={styles.commentCount} aria-label={`Комментариев: ${task.comments.length}`}>
+          {task.comments.length} комм.
+        </span>
+      )}
+
       {!!task.tags.length && (
         <ul className={styles.tags} aria-label="Теги задачи">
           {task.tags.map((tag) => (

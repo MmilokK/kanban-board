@@ -2,9 +2,11 @@ import { useEffect, useRef } from 'react';
 
 import type {
   CreateSubtaskInput,
+  CreateTaskCommentInput,
   CreateTaskInput,
   Task,
   UpdateSubtaskInput,
+  UpdateTaskCommentInput,
 } from '../../../entities/task/model/types';
 
 import { parseTaskTags, type TaskFormValues } from '../model/task-form';
@@ -12,8 +14,9 @@ import { parseTaskTags, type TaskFormValues } from '../model/task-form';
 import { TaskForm } from './TaskForm';
 
 import styles from './TaskDialog.module.scss';
-import type { SubtaskId } from '../../../shared/model/entity-ids';
+import type { CommentId, SubtaskId } from '../../../shared/model/entity-ids';
 import { SubtaskList } from '../../subtask-management/ui/SubtaskList';
+import { TaskComments } from '../../task-comments/ui/TaskComments';
 
 type TaskDialogProps = {
   task: Task | null;
@@ -25,6 +28,9 @@ type TaskDialogProps = {
   onUpdateSubtask?: (subtaskId: SubtaskId, input: UpdateSubtaskInput) => void;
   onToggleSubtask?: (subtaskId: SubtaskId) => void;
   onDeleteSubtask?: (subtaskId: SubtaskId) => void;
+  onAddComment?: (input: CreateTaskCommentInput) => void;
+  onUpdateComment?: (commentId: CommentId, input: UpdateTaskCommentInput) => void;
+  onDeleteComment?: (commentId: CommentId) => void;
 };
 
 export function TaskDialog({
@@ -37,6 +43,9 @@ export function TaskDialog({
   onUpdateSubtask,
   onToggleSubtask,
   onDeleteSubtask,
+  onAddComment,
+  onUpdateComment,
+  onDeleteComment,
 }: TaskDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -98,6 +107,15 @@ export function TaskDialog({
             onUpdate={onUpdateSubtask}
             onToggle={onToggleSubtask}
             onDelete={onDeleteSubtask}
+          />
+        )}
+
+        {task && onAddComment && onUpdateComment && onDeleteComment && (
+          <TaskComments
+            comments={task.comments}
+            onAdd={onAddComment}
+            onUpdate={onUpdateComment}
+            onDelete={onDeleteComment}
           />
         )}
       </div>

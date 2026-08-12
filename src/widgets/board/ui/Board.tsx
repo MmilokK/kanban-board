@@ -121,6 +121,10 @@ export function Board() {
     toggleSubtask,
     deleteSubtask,
 
+    addTaskComment,
+    updateTaskComment,
+    deleteTaskComment,
+
     replaceAppState,
   } = useBoardStore(
     useShallow((state) => ({
@@ -152,6 +156,10 @@ export function Board() {
       updateSubtask: state.updateSubtask,
       toggleSubtask: state.toggleSubtask,
       deleteSubtask: state.deleteSubtask,
+
+      addTaskComment: state.addTaskComment,
+      updateTaskComment: state.updateTaskComment,
+      deleteTaskComment: state.deleteTaskComment,
 
       replaceAppState: state.replaceAppState,
     })),
@@ -704,6 +712,15 @@ export function Board() {
                 },
                 onDeleteSubtask: (subtaskId) => {
                   deleteSubtask(editingTask.id, subtaskId);
+                },
+                onAddComment: (input) => {
+                  addTaskComment(editingTask.id, input);
+                },
+                onUpdateComment: (commentId, input) => {
+                  updateTaskComment(editingTask.id, commentId, input);
+                },
+                onDeleteComment: (commentId) => {
+                  deleteTaskComment(editingTask.id, commentId);
                 },
               }
             : {})}
