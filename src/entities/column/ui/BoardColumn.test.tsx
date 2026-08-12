@@ -28,6 +28,7 @@ const task: Task = {
   priority: 'high',
   tags: ['работа', 'отчёт'],
   subtasks: [],
+  comments: [],
   dueDate: null,
   createdAt: '2026-08-04T10:00:00.000Z',
   updatedAt: '2026-08-04T10:00:00.000Z',

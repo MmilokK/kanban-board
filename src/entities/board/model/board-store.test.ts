@@ -67,6 +67,7 @@ const taskInput = {
   priority: 'high' as const,
   tags: ['test', 'zustand'],
   subtasks: [],
+  comments: [],
   dueDate: null,
   archivedAt: null,
 };
@@ -179,6 +180,7 @@ describe('Хранилище доски', () => {
       priority: 'high',
       tags: ['test', 'zustand'],
       subtasks: [],
+      comments: [],
       dueDate: null,
       createdAt: CREATED_AT,
       updatedAt: CREATED_AT,
@@ -209,6 +211,7 @@ describe('Хранилище доски', () => {
       priority: 'high',
       tags: ['test', 'zustand'],
       subtasks: [],
+      comments: [],
       dueDate: null,
       createdAt: CREATED_AT,
       updatedAt: UPDATED_AT,
@@ -885,5 +888,59 @@ describe('Хранилище доски', () => {
         isCompleted: false,
       },
     ]);
+  });
+
+  it('добавляет комментарий к задаче', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    randomUUIDMock.mockReturnValueOnce('comment-created');
+
+    useBoardStore.getState().addTaskComment(CREATED_TASK_ID, {
+      text: 'Нужно проверить API',
+    });
+
+    const comment = useBoardStore.getState().tasks[CREATED_TASK_ID]?.comments[0];
+
+    expect(comment).toMatchObject({
+      id: 'comment-created',
+
+      text: 'Нужно проверить API',
+    });
+
+    expect(comment?.createdAt).toBeDefined();
+
+    expect(comment?.updatedAt).toBe(comment?.createdAt);
+  });
+
+  it('редактирует комментарий', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    randomUUIDMock.mockReturnValueOnce('comment-created');
+
+    useBoardStore.getState().addTaskComment(CREATED_TASK_ID, {
+      text: 'Нужно проверить API',
+    });
+
+    useBoardStore.getState().updateTaskComment(CREATED_TASK_ID, 'comment-created', {
+      text: 'Обновлённый комментарий',
+    });
+
+    expect(useBoardStore.getState().tasks[CREATED_TASK_ID]?.comments[0]?.text).toBe(
+      'Обновлённый комментарий',
+    );
+  });
+
+  it('удаляет комментарий', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    randomUUIDMock.mockReturnValueOnce('comment-created');
+
+    useBoardStore.getState().addTaskComment(CREATED_TASK_ID, {
+      text: 'Нужно проверить API',
+    });
+
+    useBoardStore.getState().deleteTaskComment(CREATED_TASK_ID, 'comment-created');
+
+    expect(useBoardStore.getState().tasks[CREATED_TASK_ID]?.comments).toEqual([]);
   });
 });

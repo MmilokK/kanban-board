@@ -15,6 +15,13 @@ const subtaskSchema = z.object({
   isCompleted: z.boolean(),
 });
 
+const taskCommentSchema = z.object({
+  id: z.string(),
+  text: z.string().trim().min(1),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+
 export const taskSchema = z.object({
   id: entityIdSchema,
   title: z.string(),
@@ -22,6 +29,7 @@ export const taskSchema = z.object({
   priority: z.enum(['low', 'medium', 'high']),
   tags: z.array(z.string()),
   subtasks: z.array(subtaskSchema),
+  comments: z.array(taskCommentSchema),
   dueDate: z.string().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),

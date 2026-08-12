@@ -60,6 +60,7 @@ export function migrateLegacyBoardState(legacyState: LegacyBoardState): AppState
         priority: task.priority,
         tags: [...task.tags],
         subtasks: [],
+        comments: [],
         dueDate: null,
         archivedAt: null,
         createdAt: task.createdAt,
