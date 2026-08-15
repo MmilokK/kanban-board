@@ -68,6 +68,7 @@ const taskInput = {
   tags: ['test', 'zustand'],
   subtasks: [],
   comments: [],
+  history: [],
   dueDate: null,
   archivedAt: null,
 };
@@ -181,6 +182,13 @@ describe('Хранилище доски', () => {
       tags: ['test', 'zustand'],
       subtasks: [],
       comments: [],
+      history: [
+        {
+          id: CREATED_TASK_ID,
+          type: 'task-created',
+          createdAt: '2026-08-02T10:00:00.000Z',
+        },
+      ],
       dueDate: null,
       createdAt: CREATED_AT,
       updatedAt: CREATED_AT,
@@ -212,6 +220,28 @@ describe('Хранилище доски', () => {
       tags: ['test', 'zustand'],
       subtasks: [],
       comments: [],
+      history: [
+        {
+          createdAt: '2026-08-02T10:00:00.000Z',
+          id: '00000000-0000-4000-8000-000000000001',
+          type: 'task-created',
+        },
+        {
+          changes: {
+            description: {
+              from: 'Описание новой задачи',
+              to: 'Новое описание задачи',
+            },
+            title: {
+              from: 'Новая задача',
+              to: 'Обновлённая задача',
+            },
+          },
+          createdAt: '2026-08-02T11:00:00.000Z',
+          id: '00000000-0000-4000-8000-000000000001',
+          type: 'task-updated',
+        },
+      ],
       dueDate: null,
       createdAt: CREATED_AT,
       updatedAt: UPDATED_AT,
@@ -264,7 +294,11 @@ describe('Хранилище доски', () => {
   });
 
   it('изменяет порядок задач и переносит задачу между колонками', () => {
-    randomUUIDMock.mockReturnValueOnce(FIRST_TASK_ID).mockReturnValueOnce(SECOND_TASK_ID);
+    randomUUIDMock
+      .mockReturnValueOnce(FIRST_TASK_ID)
+      .mockReturnValueOnce('history-first-task')
+      .mockReturnValueOnce(SECOND_TASK_ID)
+      .mockReturnValueOnce('history-second-task');
 
     useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, {
       ...taskInput,
@@ -277,7 +311,6 @@ describe('Хранилище доски', () => {
     });
 
     const backlogBefore = getColumn(DEFAULT_COLUMN_IDS.backlog);
-
     const todoBefore = getColumn(DEFAULT_COLUMN_IDS.todo);
 
     const nextBacklogTaskIds = backlogBefore.taskIds.filter((taskId) => taskId !== FIRST_TASK_ID);
@@ -288,7 +321,6 @@ describe('Хранилище доски', () => {
 
     useBoardStore.getState().replaceTaskOrder({
       [DEFAULT_COLUMN_IDS.backlog]: nextBacklogTaskIds,
-
       [DEFAULT_COLUMN_IDS.todo]: nextTodoTaskIds,
     });
 
@@ -942,5 +974,87 @@ describe('Хранилище доски', () => {
     useBoardStore.getState().deleteTaskComment(CREATED_TASK_ID, 'comment-created');
 
     expect(useBoardStore.getState().tasks[CREATED_TASK_ID]?.comments).toEqual([]);
+  });
+
+  it('добавляет событие создания задачи в историю', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    const task = useBoardStore.getState().tasks[CREATED_TASK_ID];
+
+    expect(task?.history).toEqual([
+      expect.objectContaining({
+        type: 'task-created',
+      }),
+    ]);
+  });
+
+  it('записывает изменение приоритета в историю', () => {
+    randomUUIDMock
+      .mockReturnValueOnce(CREATED_TASK_ID)
+      .mockReturnValueOnce('history-created')
+      .mockReturnValueOnce('history-updated');
+
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    useBoardStore.getState().updateTask(CREATED_TASK_ID, {
+      priority: 'medium',
+    });
+
+    const task = useBoardStore.getState().tasks[CREATED_TASK_ID];
+
+    expect(task?.history).toHaveLength(2);
+
+    expect(task?.history.at(0)).toMatchObject({
+      type: 'task-created',
+    });
+
+    expect(task?.history.at(1)).toMatchObject({
+      type: 'task-updated',
+
+      changes: {
+        priority: {
+          from: 'high',
+          to: 'medium',
+        },
+      },
+    });
+  });
+
+  it('не добавляет событие если данные задачи не изменились', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    const historyBefore = useBoardStore.getState().tasks[CREATED_TASK_ID]?.history.length;
+
+    useBoardStore.getState().updateTask(CREATED_TASK_ID, {
+      title: taskInput.title,
+    });
+
+    expect(useBoardStore.getState().tasks[CREATED_TASK_ID]?.history.length).toBe(historyBefore);
+  });
+
+  it('записывает архивирование задачи в историю', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    useBoardStore.getState().archiveTask(CREATED_TASK_ID);
+
+    expect(useBoardStore.getState().tasks[CREATED_TASK_ID]?.history.at(-1)).toMatchObject({
+      type: 'task-archived',
+
+      fromColumn: { id: DEFAULT_COLUMN_IDS.backlog, title: 'Backlog' },
+    });
+  });
+
+  it('записывает восстановление задачи из архива', () => {
+    useBoardStore.getState().addTask(DEFAULT_COLUMN_IDS.backlog, taskInput);
+
+    useBoardStore.getState().archiveTask(CREATED_TASK_ID);
+
+    useBoardStore.getState().restoreArchivedTask(CREATED_TASK_ID, DEFAULT_COLUMN_IDS.todo);
+
+    expect(useBoardStore.getState().tasks[CREATED_TASK_ID]?.history.at(-1)).toMatchObject({
+      type: 'task-restored',
+
+      toColumn: { id: DEFAULT_COLUMN_IDS.todo, title: 'To do' },
+    });
   });
 });

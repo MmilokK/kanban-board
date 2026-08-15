@@ -22,6 +22,182 @@ const taskCommentSchema = z.object({
   updatedAt: z.string().datetime(),
 });
 
+const taskHistoryBaseSchema = z.object({
+  id: z.string(),
+
+  createdAt: z.string().datetime(),
+});
+
+const taskCreatedHistorySchema = taskHistoryBaseSchema.extend({
+  type: z.literal('task-created'),
+});
+
+const taskUpdatedHistorySchema = taskHistoryBaseSchema.extend({
+  type: z.literal('task-updated'),
+
+  changes: z.object({
+    title: z
+      .object({
+        from: z.string(),
+        to: z.string(),
+      })
+      .optional(),
+
+    description: z
+      .object({
+        from: z.string(),
+        to: z.string(),
+      })
+      .optional(),
+
+    priority: z
+      .object({
+        from: z.enum(['low', 'medium', 'high']),
+
+        to: z.enum(['low', 'medium', 'high']),
+      })
+      .optional(),
+
+    dueDate: z
+      .object({
+        from: z.string().nullable(),
+
+        to: z.string().nullable(),
+      })
+      .optional(),
+
+    tags: z
+      .object({
+        from: z.array(z.string()),
+
+        to: z.array(z.string()),
+      })
+      .optional(),
+  }),
+});
+
+const taskMovedHistorySchema = taskHistoryBaseSchema.extend({
+  type: z.literal('task-moved'),
+
+  fromColumn: z.object({
+    id: entityIdSchema,
+    title: z.string(),
+  }),
+
+  toColumn: z.object({
+    id: entityIdSchema,
+    title: z.string(),
+  }),
+});
+
+const taskArchivedHistorySchema = taskHistoryBaseSchema.extend({
+  type: z.literal('task-archived'),
+
+  fromColumn: z.object({
+    id: entityIdSchema,
+    title: z.string(),
+  }),
+});
+
+const taskRestoredHistorySchema = taskHistoryBaseSchema.extend({
+  type: z.literal('task-restored'),
+
+  toColumn: z.object({
+    id: entityIdSchema,
+    title: z.string(),
+  }),
+});
+
+const subtaskAddedHistorySchema = taskHistoryBaseSchema.extend({
+  type: z.literal('subtask-added'),
+
+  subtaskId: z.string(),
+
+  title: z.string(),
+});
+
+const subtaskUpdatedHistorySchema = taskHistoryBaseSchema.extend({
+  type: z.literal('subtask-updated'),
+
+  subtaskId: z.string(),
+
+  changes: z.object({
+    title: z
+      .object({
+        from: z.string(),
+        to: z.string(),
+      })
+      .optional(),
+
+    description: z
+      .object({
+        from: z.string(),
+        to: z.string(),
+      })
+      .optional(),
+  }),
+});
+
+const subtaskCompletedHistorySchema = taskHistoryBaseSchema.extend({
+  type: z.literal('subtask-completed'),
+
+  subtaskId: z.string(),
+
+  title: z.string(),
+});
+
+const subtaskReopenedHistorySchema = taskHistoryBaseSchema.extend({
+  type: z.literal('subtask-reopened'),
+
+  subtaskId: z.string(),
+
+  title: z.string(),
+});
+
+const subtaskDeletedHistorySchema = taskHistoryBaseSchema.extend({
+  type: z.literal('subtask-deleted'),
+
+  subtaskId: z.string(),
+
+  title: z.string(),
+});
+
+const commentAddedHistorySchema = taskHistoryBaseSchema.extend({
+  type: z.literal('comment-added'),
+
+  commentId: z.string(),
+});
+
+const commentUpdatedHistorySchema = taskHistoryBaseSchema.extend({
+  type: z.literal('comment-updated'),
+
+  commentId: z.string(),
+});
+
+const commentDeletedHistorySchema = taskHistoryBaseSchema.extend({
+  type: z.literal('comment-deleted'),
+
+  commentId: z.string(),
+});
+
+const taskHistoryEventSchema = z.discriminatedUnion('type', [
+  taskCreatedHistorySchema,
+  taskUpdatedHistorySchema,
+  taskMovedHistorySchema,
+  taskArchivedHistorySchema,
+  taskRestoredHistorySchema,
+
+  subtaskAddedHistorySchema,
+  subtaskUpdatedHistorySchema,
+  subtaskCompletedHistorySchema,
+  subtaskReopenedHistorySchema,
+  subtaskDeletedHistorySchema,
+
+  commentAddedHistorySchema,
+  commentUpdatedHistorySchema,
+  commentDeletedHistorySchema,
+]);
+
 export const taskSchema = z.object({
   id: entityIdSchema,
   title: z.string(),
@@ -30,6 +206,7 @@ export const taskSchema = z.object({
   tags: z.array(z.string()),
   subtasks: z.array(subtaskSchema),
   comments: z.array(taskCommentSchema),
+  history: z.array(taskHistoryEventSchema),
   dueDate: z.string().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),

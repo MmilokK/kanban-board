@@ -61,6 +61,7 @@ export function migrateLegacyBoardState(legacyState: LegacyBoardState): AppState
         tags: [...task.tags],
         subtasks: [],
         comments: [],
+        history: [],
         dueDate: null,
         archivedAt: null,
         createdAt: task.createdAt,

@@ -14,12 +14,15 @@ import { parseTaskTags, type TaskFormValues } from '../model/task-form';
 import { TaskForm } from './TaskForm';
 
 import styles from './TaskDialog.module.scss';
-import type { CommentId, SubtaskId } from '../../../shared/model/entity-ids';
+import type { ColumnId, CommentId, SubtaskId } from '../../../shared/model/entity-ids';
 import { SubtaskList } from '../../subtask-management/ui/SubtaskList';
 import { TaskComments } from '../../task-comments/ui/TaskComments';
+import type { Column } from '../../../entities/column/model/types';
+import { TaskHistory } from '../../task-history/ui/TaskHistory';
 
 type TaskDialogProps = {
   task: Task | null;
+  columns?: Record<ColumnId, Column>;
   title: string;
   submitLabel: string;
   onSubmit: (values: CreateTaskInput) => void;
@@ -35,6 +38,7 @@ type TaskDialogProps = {
 
 export function TaskDialog({
   task,
+  columns,
   title,
   submitLabel,
   onSubmit,
@@ -118,6 +122,7 @@ export function TaskDialog({
             onDelete={onDeleteComment}
           />
         )}
+        {task && columns && <TaskHistory events={task.history} />}
       </div>
     </dialog>
   );

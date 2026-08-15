@@ -36,6 +36,7 @@ const task: Task = {
   tags: ['Работа'],
   subtasks: [],
   comments: [],
+  history: [],
   dueDate: null,
   archivedAt: '2026-08-10T10:00:00.000Z',
   createdAt: '2026-08-01T10:00:00.000Z',

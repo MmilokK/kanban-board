@@ -115,6 +115,7 @@ export function Board() {
     restoreTask,
     archiveTask,
     restoreArchivedTask,
+    recordTaskMove,
 
     addSubtask,
     updateSubtask,
@@ -151,6 +152,7 @@ export function Board() {
       restoreTask: state.restoreTask,
       archiveTask: state.archiveTask,
       restoreArchivedTask: state.restoreArchivedTask,
+      recordTaskMove: state.recordTaskMove,
 
       addSubtask: state.addSubtask,
       updateSubtask: state.updateSubtask,
@@ -530,6 +532,36 @@ export function Board() {
     deleteTask(taskId);
   }
 
+  function handleRecordTaskMove() {
+    function findTaskColumnIdInOrder(
+      taskIdsByColumn: TaskIdsByColumn,
+      taskId: TaskId,
+    ): ColumnId | undefined {
+      const entry = Object.entries(taskIdsByColumn).find(([, taskIds]) => taskIds.includes(taskId));
+
+      return entry?.[0] as ColumnId | undefined;
+    }
+    const previousTaskOrder = taskOrderSnapshotRef.current;
+
+    const currentState = useBoardStore.getState();
+
+    const currentTaskOrder = selectTaskIdsByColumn(currentState);
+
+    for (const taskId of Object.keys(currentState.tasks) as TaskId[]) {
+      const previousColumnId = findTaskColumnIdInOrder(previousTaskOrder, taskId);
+
+      const currentColumnId = findTaskColumnIdInOrder(currentTaskOrder, taskId);
+
+      if (!previousColumnId || !currentColumnId || previousColumnId === currentColumnId) {
+        continue;
+      }
+
+      recordTaskMove(taskId, previousColumnId, currentColumnId);
+
+      break;
+    }
+  }
+
   return (
     <>
       <section
@@ -595,6 +627,8 @@ export function Board() {
                 if (isTaskViewModified) {
                   return;
                 }
+
+                handleRecordTaskMove();
 
                 if (event.canceled) {
                   replaceTaskOrder(taskOrderSnapshotRef.current);
@@ -695,6 +729,7 @@ export function Board() {
       {taskEditorState && (
         <TaskDialog
           task={editingTask}
+          columns={columns}
           title={taskEditorState.mode === 'create' ? 'Новая задача' : 'Редактирование задачи'}
           submitLabel={taskEditorState.mode === 'create' ? 'Создать задачу' : 'Сохранить изменения'}
           onClose={handleCloseTaskDialog}

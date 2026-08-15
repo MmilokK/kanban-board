@@ -19,6 +19,7 @@ const task = {
   tags: [],
   subtasks: [],
   comments: [],
+  history: [],
   dueDate: null,
   createdAt: '',
   updatedAt: '',

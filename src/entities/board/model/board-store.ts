@@ -32,6 +32,7 @@ import { COLUMN_TITLE_MAX_LENGTH } from '../../column/model/column-constants';
 import type { DeletedTaskSnapshot } from '../../task/model/deleted-task-snapshot';
 import { findTaskColumn } from './find-task-column';
 import { findArchiveColumn } from './find-archive-column';
+import type { TaskHistoryEvent } from '../../task/model/task-history';
 
 type BoardActions = {
   createBoard: (title: string) => BoardId | null;
@@ -57,6 +58,8 @@ type BoardActions = {
   deleteTask: (taskId: TaskId) => void;
 
   replaceTaskOrder: (taskIdsByColumn: TaskIdsByColumn) => void;
+
+  recordTaskMove: (taskId: TaskId, fromColumnId: ColumnId, toColumnId: ColumnId) => void;
 
   restoreTask: (snapshot: DeletedTaskSnapshot) => void;
 
@@ -502,6 +505,7 @@ export const useBoardStore = create<BoardStore>()(
           const now = new Date().toISOString();
 
           const taskId = crypto.randomUUID();
+          const historyEventId = crypto.randomUUID();
 
           return {
             tasks: {
@@ -512,6 +516,13 @@ export const useBoardStore = create<BoardStore>()(
                 ...input,
                 subtasks: [],
                 comments: [],
+                history: [
+                  {
+                    id: historyEventId,
+                    type: 'task-created',
+                    createdAt: now,
+                  },
+                ],
                 createdAt: now,
                 updatedAt: now,
                 archivedAt: null,
@@ -540,6 +551,46 @@ export const useBoardStore = create<BoardStore>()(
             return state;
           }
 
+          const changes: Extract<
+            TaskHistoryEvent,
+            {
+              type: 'task-updated';
+            }
+          >['changes'] = {};
+
+          if (input.title !== undefined && input.title !== task.title) {
+            changes.title = {
+              from: task.title,
+              to: input.title,
+            };
+          }
+
+          if (input.description !== undefined && input.description !== task.description) {
+            changes.description = {
+              from: task.description,
+
+              to: input.description,
+            };
+          }
+
+          if (input.priority !== undefined && input.priority !== task.priority) {
+            changes.priority = {
+              from: task.priority,
+              to: input.priority,
+            };
+          }
+
+          if (input.dueDate !== undefined && input.dueDate !== task.dueDate) {
+            changes.dueDate = {
+              from: task.dueDate,
+              to: input.dueDate,
+            };
+          }
+
+          const hasChanges = Object.keys(changes).length > 0;
+
+          const historyEventId = crypto.randomUUID();
+
           const now = new Date().toISOString();
 
           const column = findTaskColumn(state.columns, taskId);
@@ -551,6 +602,18 @@ export const useBoardStore = create<BoardStore>()(
               [taskId]: {
                 ...task,
                 ...input,
+                history: hasChanges
+                  ? [
+                      ...task.history,
+
+                      {
+                        id: historyEventId,
+                        type: 'task-updated',
+                        changes,
+                        createdAt: now,
+                      },
+                    ]
+                  : task.history,
                 updatedAt: now,
               },
             },
@@ -653,6 +716,54 @@ export const useBoardStore = create<BoardStore>()(
         });
       },
 
+      recordTaskMove: (taskId, fromColumnId, toColumnId) => {
+        if (fromColumnId === toColumnId) {
+          return;
+        }
+
+        set((state) => {
+          const task = state.tasks[taskId];
+
+          const fromColumn = state.columns[fromColumnId];
+
+          const toColumn = state.columns[toColumnId];
+
+          if (!task || !fromColumn || !toColumn || fromColumn.isArchive || toColumn.isArchive) {
+            return state;
+          }
+
+          if (fromColumn.boardId !== toColumn.boardId) {
+            return state;
+          }
+
+          const now = new Date().toISOString();
+
+          return {
+            tasks: {
+              ...state.tasks,
+
+              [taskId]: {
+                ...task,
+
+                history: [
+                  ...task.history,
+
+                  {
+                    id: crypto.randomUUID(),
+                    type: 'task-moved',
+                    fromColumn,
+                    toColumn,
+                    createdAt: now,
+                  },
+                ],
+
+                updatedAt: now,
+              },
+            },
+          };
+        });
+      },
+
       restoreTask: ({ task, columnId, index }) => {
         set((state) => {
           const column = state.columns[columnId];
@@ -714,19 +825,19 @@ export const useBoardStore = create<BoardStore>()(
             return state;
           }
 
-          const sourceColumn = findTaskColumn(state.columns, taskId);
+          const fromColumn = findTaskColumn(state.columns, taskId);
 
-          if (!sourceColumn || sourceColumn.isArchive) {
+          if (!fromColumn || fromColumn.isArchive) {
             return state;
           }
 
-          const archiveColumn = findArchiveColumn(state.columns, sourceColumn.boardId);
+          const archiveColumn = findArchiveColumn(state.columns, fromColumn.boardId);
 
           if (!archiveColumn) {
             return state;
           }
 
-          const board = state.boards[sourceColumn.boardId];
+          const board = state.boards[fromColumn.boardId];
 
           if (!board) {
             return state;
@@ -740,7 +851,15 @@ export const useBoardStore = create<BoardStore>()(
 
               [taskId]: {
                 ...task,
-
+                history: [
+                  ...task.history,
+                  {
+                    id: crypto.randomUUID(),
+                    type: 'task-archived',
+                    fromColumn,
+                    createdAt: now,
+                  },
+                ],
                 archivedAt: now,
                 updatedAt: now,
               },
@@ -749,10 +868,10 @@ export const useBoardStore = create<BoardStore>()(
             columns: {
               ...state.columns,
 
-              [sourceColumn.id]: {
-                ...sourceColumn,
+              [fromColumn.id]: {
+                ...fromColumn,
 
-                taskIds: sourceColumn.taskIds.filter((currentTaskId) => currentTaskId !== taskId),
+                taskIds: fromColumn.taskIds.filter((currentTaskId) => currentTaskId !== taskId),
               },
 
               [archiveColumn.id]: {
@@ -788,17 +907,13 @@ export const useBoardStore = create<BoardStore>()(
             return state;
           }
 
-          const targetColumn = state.columns[columnId];
+          const toColumn = state.columns[columnId];
 
-          if (
-            !targetColumn ||
-            targetColumn.isArchive ||
-            targetColumn.boardId !== archiveColumn.boardId
-          ) {
+          if (!toColumn || toColumn.isArchive || toColumn.boardId !== archiveColumn.boardId) {
             return state;
           }
 
-          const board = state.boards[targetColumn.boardId];
+          const board = state.boards[toColumn.boardId];
 
           if (!board) {
             return state;
@@ -812,7 +927,15 @@ export const useBoardStore = create<BoardStore>()(
 
               [taskId]: {
                 ...task,
-
+                history: [
+                  ...task.history,
+                  {
+                    id: crypto.randomUUID(),
+                    type: 'task-restored',
+                    toColumn,
+                    createdAt: now,
+                  },
+                ],
                 archivedAt: null,
                 updatedAt: now,
               },
@@ -827,10 +950,10 @@ export const useBoardStore = create<BoardStore>()(
                 taskIds: archiveColumn.taskIds.filter((currentTaskId) => currentTaskId !== taskId),
               },
 
-              [targetColumn.id]: {
-                ...targetColumn,
+              [toColumn.id]: {
+                ...toColumn,
 
-                taskIds: [...targetColumn.taskIds, taskId],
+                taskIds: [...toColumn.taskIds, taskId],
               },
             },
 
@@ -872,6 +995,17 @@ export const useBoardStore = create<BoardStore>()(
 
               [taskId]: {
                 ...task,
+                history: [
+                  ...task.history,
+
+                  {
+                    id: crypto.randomUUID(),
+                    type: 'subtask-added',
+                    subtaskId,
+                    title,
+                    createdAt: now,
+                  },
+                ],
 
                 subtasks: [
                   ...task.subtasks,
@@ -901,10 +1035,30 @@ export const useBoardStore = create<BoardStore>()(
             return state;
           }
 
-          const subtaskExists = task.subtasks.some((subtask) => subtask.id === subtaskId);
+          const subtask = task.subtasks.find((subtask) => subtask.id === subtaskId);
 
-          if (!subtaskExists) {
+          if (!subtask) {
             return state;
+          }
+
+          const changes: Extract<
+            TaskHistoryEvent,
+            {
+              type: 'subtask-updated';
+            }
+          >['changes'] = {};
+
+          if (input.title !== undefined && input.title !== subtask.title) {
+            changes.title = {
+              from: task.title,
+              to: input.title,
+            };
+          }
+          if (input.description !== undefined && input.description !== subtask.description) {
+            changes.description = {
+              from: task.description,
+              to: input.description,
+            };
           }
 
           const now = new Date().toISOString();
@@ -915,7 +1069,17 @@ export const useBoardStore = create<BoardStore>()(
 
               [taskId]: {
                 ...task,
+                history: [
+                  ...task.history,
 
+                  {
+                    id: crypto.randomUUID(),
+                    type: 'subtask-updated',
+                    subtaskId,
+                    changes,
+                    createdAt: now,
+                  },
+                ],
                 subtasks: task.subtasks.map((subtask) =>
                   subtask.id === subtaskId
                     ? {
@@ -940,9 +1104,9 @@ export const useBoardStore = create<BoardStore>()(
             return state;
           }
 
-          const subtaskExists = task.subtasks.some((subtask) => subtask.id === subtaskId);
+          const subtask = task.subtasks.find((subtask) => subtask.id === subtaskId);
 
-          if (!subtaskExists) {
+          if (!subtask) {
             return state;
           }
 
@@ -954,7 +1118,16 @@ export const useBoardStore = create<BoardStore>()(
 
               [taskId]: {
                 ...task,
-
+                history: [
+                  ...task.history,
+                  {
+                    id: crypto.randomUUID(),
+                    type: subtask.isCompleted ? 'subtask-reopened' : 'subtask-completed',
+                    subtaskId: subtask.id,
+                    title: subtask.title,
+                    createdAt: now,
+                  },
+                ],
                 subtasks: task.subtasks.map((subtask) =>
                   subtask.id === subtaskId
                     ? {
@@ -980,9 +1153,9 @@ export const useBoardStore = create<BoardStore>()(
             return state;
           }
 
-          const subtaskExists = task.subtasks.some((subtask) => subtask.id === subtaskId);
+          const subtask = task.subtasks.find((currentSubtask) => currentSubtask.id === subtaskId);
 
-          if (!subtaskExists) {
+          if (!subtask) {
             return state;
           }
 
@@ -996,7 +1169,16 @@ export const useBoardStore = create<BoardStore>()(
                 ...task,
 
                 subtasks: task.subtasks.filter((subtask) => subtask.id !== subtaskId),
-
+                history: [
+                  ...task.history,
+                  {
+                    id: crypto.randomUUID(),
+                    type: 'subtask-deleted',
+                    subtaskId: subtask.id,
+                    title: subtask.title,
+                    createdAt: now,
+                  },
+                ],
                 updatedAt: now,
               },
             },
@@ -1028,7 +1210,15 @@ export const useBoardStore = create<BoardStore>()(
 
               [taskId]: {
                 ...task,
-
+                history: [
+                  ...task.history,
+                  {
+                    id: crypto.randomUUID(),
+                    type: 'comment-added',
+                    commentId,
+                    createdAt: now,
+                  },
+                ],
                 comments: [
                   ...task.comments,
 
@@ -1070,7 +1260,15 @@ export const useBoardStore = create<BoardStore>()(
 
               [taskId]: {
                 ...task,
-
+                history: [
+                  ...task.history,
+                  {
+                    id: crypto.randomUUID(),
+                    type: 'comment-updated',
+                    commentId,
+                    createdAt: now,
+                  },
+                ],
                 comments: task.comments.map((comment) =>
                   comment.id === commentId
                     ? {
@@ -1110,7 +1308,15 @@ export const useBoardStore = create<BoardStore>()(
 
               [taskId]: {
                 ...task,
-
+                history: [
+                  ...task.history,
+                  {
+                    id: crypto.randomUUID(),
+                    type: 'comment-deleted',
+                    commentId,
+                    createdAt: now,
+                  },
+                ],
                 comments: task.comments.filter((comment) => comment.id !== commentId),
 
                 updatedAt: now,
