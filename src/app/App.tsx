@@ -3,6 +3,7 @@ import { useTheme } from '../features/theme/model/use-theme';
 import { ThemeSwitcher } from '../features/theme/ui/ThemeSwitcher';
 
 import { Board } from '../widgets/board/ui/Board';
+import { PwaStatus } from '../features/pwa-update/ui/PwaStatus';
 
 import styles from './App.module.scss';
 
@@ -25,6 +26,7 @@ export function App() {
       <main className={styles.main}>
         <Board />
       </main>
+      <PwaStatus />
     </div>
   );
 }
