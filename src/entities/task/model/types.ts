@@ -1,4 +1,5 @@
 import type { CommentId, SubtaskId, TaskId } from '../../../shared/model/entity-ids';
+import type { TaskHistoryEvent } from './task-history';
 
 export type TaskPriority = 'low' | 'medium' | 'high';
 
@@ -21,6 +22,7 @@ export type Task = {
   tags: string[];
   subtasks: Subtask[];
   comments: TaskComment[];
+  history: TaskHistoryEvent[];
   dueDate: string | null; //Дата в формате YYYY-MM-DD
   createdAt: string;
   updatedAt: string;
