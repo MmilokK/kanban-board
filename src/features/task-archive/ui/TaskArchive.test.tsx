@@ -1,12 +1,8 @@
 import { render, screen } from '@testing-library/react';
-
 import userEvent from '@testing-library/user-event';
-
 import { describe, expect, it, vi } from 'vitest';
-
 import type { Column } from '../../../entities/column/model/types';
 import type { Task } from '../../../entities/task/model/types';
-
 import { TaskArchive } from './TaskArchive';
 
 const columns: Column[] = [

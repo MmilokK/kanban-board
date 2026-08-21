@@ -1,5 +1,4 @@
 import type { ColumnId, CommentId, SubtaskId } from '../../../shared/model/entity-ids';
-
 import type { TaskPriority } from './types';
 
 export type TaskHistoryEventId = string;

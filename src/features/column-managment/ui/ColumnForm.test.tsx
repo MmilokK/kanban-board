@@ -1,10 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-
 import { COLUMN_TITLE_MAX_LENGTH } from '../../../entities/column/model/column-constants';
 import type { ColumnFormValues } from '../model/column-form';
-
 import { ColumnForm } from './ColumnForm';
 
 type RenderColumnFormOptions = {

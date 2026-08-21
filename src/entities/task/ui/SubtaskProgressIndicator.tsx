@@ -1,5 +1,4 @@
 import type { CSSProperties } from 'react';
-
 import styles from './SubtaskProgressIndicator.module.scss';
 
 type SubtaskProgressIndicatorProps = {

@@ -1,12 +1,9 @@
 import type { Column } from '../model/types';
 import type { Task } from '../../task/model/types';
-
 import { CollisionPriority } from '@dnd-kit/abstract';
 import { useDroppable } from '@dnd-kit/react';
 import clsx from 'clsx';
-
 import { SortableTaskCard } from '../../../features/task-dnd/ui/SortableTaskCard';
-
 import styles from './BoardColumn.module.scss';
 import type { TaskId } from '../../../shared/model/entity-ids';
 

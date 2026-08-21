@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-
 import type { DeletedTaskSnapshot } from '../../../entities/task/model/deleted-task-snapshot';
 
 const UNDO_TIMEOUT_MS = 5000;

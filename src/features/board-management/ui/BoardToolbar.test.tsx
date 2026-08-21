@@ -1,10 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-
 import type { Board } from '../../../entities/board/model/types';
 import type { BoardId } from '../../../shared/model/entity-ids';
-
 import { BoardToolbar } from './BoardToolbar';
 
 const FIRST_BOARD_ID: BoardId = 'board-1';

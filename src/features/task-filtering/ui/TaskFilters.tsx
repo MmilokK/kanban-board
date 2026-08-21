@@ -4,7 +4,6 @@ import type {
   TaskPriorityFilter,
   TaskSort,
 } from '../model/task-filter';
-
 import styles from './TaskFilters.module.scss';
 
 type TaskFiltersProps = {

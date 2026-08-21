@@ -1,8 +1,6 @@
 import { useEffect, useRef } from 'react';
-
 import type { ColumnFormValues } from '../model/column-form';
 import { ColumnForm } from './ColumnForm';
-
 import styles from './ColumnDialog.module.scss';
 
 type ColumnDialogProps = {

@@ -1,9 +1,7 @@
 import { useState } from 'react';
-
 import type { Column } from '../../../entities/column/model/types';
 import type { Task } from '../../../entities/task/model/types';
 import type { ColumnId, TaskId } from '../../../shared/model/entity-ids';
-
 import styles from './TaskArchive.module.scss';
 
 type TaskArchiveProps = {

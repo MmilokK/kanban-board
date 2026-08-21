@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import type { Subtask } from './types';
 import { getSubtaskProgress } from './subtask-progress';
 

@@ -1,6 +1,5 @@
 import type { ColumnId } from '../../../shared/model/entity-ids';
 import type { Column } from '../../column/model/types';
-
 import type { Task } from './types';
 
 export type DeletedTaskSnapshot = {

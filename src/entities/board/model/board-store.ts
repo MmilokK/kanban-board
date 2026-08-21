@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-
 import type {
   BoardId,
   ColumnId,
@@ -16,7 +15,6 @@ import type {
   UpdateTaskCommentInput,
   UpdateTaskInput,
 } from '../../task/model/types';
-
 import type { AppState } from './app-state';
 import { APP_SCHEMA_VERSION } from './app-state';
 import { safeParseAppState } from './board-schema';

@@ -1,9 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
-
 import { afterEach, describe, expect, it } from 'vitest';
-
 import { THEME_STORAGE_KEY } from '../lib/theme-storage';
-
 import { useTheme } from './use-theme';
 
 describe('Управление темой', () => {

@@ -1,13 +1,10 @@
 import { useState } from 'react';
-
 import type {
   CreateTaskCommentInput,
   TaskComment,
   UpdateTaskCommentInput,
 } from '../../../entities/task/model/types';
-
 import type { CommentId } from '../../../shared/model/entity-ids';
-
 import styles from './TaskComments.module.scss';
 
 type TaskCommentsProps = {

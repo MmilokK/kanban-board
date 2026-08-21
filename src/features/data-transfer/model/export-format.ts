@@ -1,5 +1,4 @@
 import { z } from 'zod';
-
 import { APP_SCHEMA_VERSION, type AppState } from '../../../entities/board/model/app-state';
 import { createExportFilename, downloadJson } from '../lib/download-json';
 import { migratePersistedBoardState } from '../../../entities/board/model/board-storage';

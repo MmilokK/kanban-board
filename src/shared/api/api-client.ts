@@ -1,5 +1,4 @@
 import { ApiError, type ApiErrorData } from './api-error';
-
 import { API_URL } from './config';
 
 type RequestOptions = Omit<RequestInit, 'body'> & {

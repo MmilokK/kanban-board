@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
-
 import type { Task } from '../../../entities/task/model/types';
-
 import {
   DEFAULT_TASK_FILTERS,
   filterAndSortTasks,
