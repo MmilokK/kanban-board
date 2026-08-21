@@ -1,9 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-
 import { BOARD_TITLE_MAX_LENGTH, type BoardFormValues } from '../model/board-form';
-
 import { BoardForm } from './BoardForm';
 
 type RenderBoardFormOptions = {

@@ -1,7 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
 import type { BoardId, ColumnId, TaskId } from '../../../shared/model/entity-ids';
-
 import { APP_SCHEMA_VERSION } from './app-state';
 import { DEFAULT_BOARD_ID, DEFAULT_COLUMN_IDS } from './default-board';
 import { useBoardStore } from './board-store';

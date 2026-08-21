@@ -1,5 +1,4 @@
 import { useRegisterSW } from 'virtual:pwa-register/react';
-
 import styles from './PwaStatus.module.scss';
 
 export function PwaStatus() {

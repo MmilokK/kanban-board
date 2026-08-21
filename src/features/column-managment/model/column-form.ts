@@ -1,5 +1,4 @@
 import { z } from 'zod';
-
 import { COLUMN_TITLE_MAX_LENGTH } from '../../../entities/column/model/column-constants';
 
 export const columnFormSchema = z.object({

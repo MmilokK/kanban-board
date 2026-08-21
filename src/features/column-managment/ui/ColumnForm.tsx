@@ -1,8 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-
 import { columnFormSchema, type ColumnFormValues } from '../model/column-form';
-
 import styles from './ColumnForm.module.scss';
 
 type ColumnFormProps = {

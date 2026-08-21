@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import { createBoardBundle } from './board-factory';
 
 const BOARD_ID = 'board-1';

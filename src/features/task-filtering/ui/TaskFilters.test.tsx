@@ -1,11 +1,8 @@
 import { useState } from 'react';
-
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-
 import { DEFAULT_TASK_FILTERS, type TaskFilterState } from '../model/task-filter';
-
 import { TaskFilters } from './TaskFilters';
 
 const AVAILABLE_TAGS = ['Bug', 'Документация', 'Работа'];

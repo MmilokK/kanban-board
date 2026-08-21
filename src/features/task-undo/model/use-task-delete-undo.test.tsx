@@ -1,9 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
 import type { DeletedTaskSnapshot } from '../../../entities/task/model/deleted-task-snapshot';
-
 import { useTaskDeleteUndo } from './use-task-delete-undo';
 import { act } from 'react';
 

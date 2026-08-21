@@ -2,11 +2,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DragDropProvider } from '@dnd-kit/react';
 import { describe, expect, it, vi } from 'vitest';
-
 import type { ColumnId, TaskId } from '../../../shared/model/entity-ids';
 import type { Task } from '../../task/model/types';
 import type { Column } from '../model/types';
-
 import { BoardColumn } from './BoardColumn';
 
 const COLUMN_ID: ColumnId = 'column-backlog';

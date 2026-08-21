@@ -1,8 +1,6 @@
 import { useEffect, useRef } from 'react';
-
 import type { BoardFormValues } from '../model/board-form';
 import { BoardForm } from './BoardForm';
-
 import styles from './BoardDialog.module.scss';
 
 type BoardDialogProps = {

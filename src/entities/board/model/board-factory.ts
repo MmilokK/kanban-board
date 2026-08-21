@@ -1,6 +1,5 @@
 import type { BoardId, ColumnId } from '../../../shared/model/entity-ids';
 import type { Column } from '../../column/model/types';
-
 import type { Board } from './types';
 import { DEFAULT_COLUMN_TEMPLATES, type DefaultColumnIds } from './default-board';
 

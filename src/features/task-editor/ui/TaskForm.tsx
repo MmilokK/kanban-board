@@ -1,11 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import clsx from 'clsx';
 import { useForm } from 'react-hook-form';
-
 import type { Task } from '../../../entities/task/model/types';
-
 import { getTaskFormDefaultValues, taskFormSchema, type TaskFormValues } from '../model/task-form';
-
 import styles from './TaskForm.module.scss';
 
 type TaskFormProps = {

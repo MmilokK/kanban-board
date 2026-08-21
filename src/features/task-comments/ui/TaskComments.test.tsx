@@ -1,11 +1,7 @@
 import { render, screen } from '@testing-library/react';
-
 import userEvent from '@testing-library/user-event';
-
 import { describe, expect, it, vi } from 'vitest';
-
 import type { TaskComment } from '../../../entities/task/model/types';
-
 import { TaskComments } from './TaskComments';
 
 const comments: TaskComment[] = [

@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
-
 import { APP_SCHEMA_VERSION } from '../../../entities/board/model/app-state';
 import { createDemoAppState } from '../../../entities/board/model/demo-board';
-
 import {
   createExportData,
   EXPORT_FORMAT,

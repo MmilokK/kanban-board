@@ -1,8 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-
 import { boardFormSchema, type BoardFormValues } from '../model/board-form';
-
 import styles from './BoardForm.module.scss';
 
 type BoardFormProps = {

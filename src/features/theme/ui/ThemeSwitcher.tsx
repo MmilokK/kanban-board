@@ -1,5 +1,4 @@
 import type { Theme } from '../model/theme';
-
 import styles from './ThemeSwitcher.module.scss';
 
 type ThemeSwitcherProps = {

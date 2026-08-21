@@ -1,13 +1,10 @@
 import { useState } from 'react';
-
 import type {
   CreateSubtaskInput,
   Subtask,
   UpdateSubtaskInput,
 } from '../../../entities/task/model/types';
-
 import type { SubtaskId } from '../../../shared/model/entity-ids';
-
 import styles from './SubtaskList.module.scss';
 
 type SubtaskListProps = {

@@ -1,9 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
-
 import { move } from '@dnd-kit/helpers';
 import { DragDropProvider } from '@dnd-kit/react';
 import { useShallow } from 'zustand/react/shallow';
-
 import { useBoardStore } from '../../../entities/board/model/board-store';
 import {
   selectTaskIdsByColumn,
@@ -18,7 +16,6 @@ import { BoardDialog } from '../../../features/board-management/ui/BoardDialog';
 import { BoardToolbar } from '../../../features/board-management/ui/BoardToolbar';
 import { TaskDialog } from '../../../features/task-editor/ui/TaskDialog';
 import type { BoardId, ColumnId, TaskId } from '../../../shared/model/entity-ids';
-
 import styles from './Board.module.scss';
 import { ColumnDialog } from '../../../features/column-managment/ui/ColumnDialog';
 import type { ColumnFormValues } from '../../../features/column-managment/model/column-form';

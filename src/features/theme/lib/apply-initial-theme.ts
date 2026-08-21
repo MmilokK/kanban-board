@@ -1,5 +1,4 @@
 import { readStoredTheme } from './theme-storage';
-
 import { resolveTheme } from '../model/theme';
 
 const DARK_MEDIA_QUERY = '(prefers-color-scheme: dark)';

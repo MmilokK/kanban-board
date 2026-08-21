@@ -1,7 +1,5 @@
 import { useRef, useState } from 'react';
-
 import type { AppState } from '../../../entities/board/model/app-state';
-
 import styles from './DataTransfer.module.scss';
 import { readTextFile } from '../lib/download-json';
 import { parseImportData } from '../model/export-format';

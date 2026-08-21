@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import { isTheme, resolveTheme } from './theme';
 
 describe('Тема интерфейса', () => {

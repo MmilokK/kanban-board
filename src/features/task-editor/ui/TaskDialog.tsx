@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-
 import type {
   CreateSubtaskInput,
   CreateTaskCommentInput,
@@ -8,11 +7,8 @@ import type {
   UpdateSubtaskInput,
   UpdateTaskCommentInput,
 } from '../../../entities/task/model/types';
-
 import { parseTaskTags, type TaskFormValues } from '../model/task-form';
-
 import { TaskForm } from './TaskForm';
-
 import styles from './TaskDialog.module.scss';
 import type { ColumnId, CommentId, SubtaskId } from '../../../shared/model/entity-ids';
 import { SubtaskList } from '../../subtask-management/ui/SubtaskList';

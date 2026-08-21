@@ -1,5 +1,4 @@
 import { z } from 'zod';
-
 import type { AppState } from './app-state';
 import { APP_SCHEMA_VERSION } from './app-state';
 

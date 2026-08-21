@@ -1,7 +1,5 @@
 import { formatTaskHistoryEvent } from '../../../entities/task/model/format-task-history-event';
-
 import type { TaskHistoryEvent } from '../../../entities/task/model/task-history';
-
 import styles from './TaskHistory.module.scss';
 
 type TaskHistoryProps = {

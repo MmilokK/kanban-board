@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it } from 'vitest';
-
 import { THEME_STORAGE_KEY, readStoredTheme, writeStoredTheme } from './theme-storage';
 
 describe('Хранение настройки темы', () => {

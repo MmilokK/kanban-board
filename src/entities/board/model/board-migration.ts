@@ -1,5 +1,4 @@
 import type { BoardId, ColumnId, TaskId } from '../../../shared/model/entity-ids';
-
 import type { Board } from './types';
 import type { Column } from '../../column/model/types';
 import type { Task } from '../../task/model/types';

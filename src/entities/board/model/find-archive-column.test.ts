@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
-
 import type { Column } from '../../column/model/types';
-
 import { findArchiveColumn } from './find-archive-column';
 
 describe('Поиск архивной колонки', () => {

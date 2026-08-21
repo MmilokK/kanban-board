@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
-
 import { readStoredTheme, writeStoredTheme } from '../lib/theme-storage';
-
 import { resolveTheme, type ResolvedTheme, type Theme } from './theme';
 
 const DARK_MEDIA_QUERY = '(prefers-color-scheme: dark)';
