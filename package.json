@@ -25,7 +25,13 @@
     "build:server": "npm --prefix server run build",
     "typecheck:server": "npm --prefix server run typecheck",
     "test:server": "npm --prefix server run test:run",
-    "check:server": "npm --prefix server run check"
+    "check:server": "npm --prefix server run check",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:migrate": "npm --prefix server run db:migrate",
+    "db:seed": "npm --prefix server run db:seed",
+    "db:studio": "npm --prefix server run db:studio",
+    "test:server:integration": "npm --prefix server run test:integration"
   },
   "dependencies": {
     "@dnd-kit/abstract": "^0.5.0",
