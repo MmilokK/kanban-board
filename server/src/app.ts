@@ -4,6 +4,7 @@ import type { Env } from './config/env.js';
 import { env as defaultEnv } from './config/env.js';
 import { registerErrorHandler } from './plugins/error-handler.js';
 import { registerHealthRoutes } from './routes/health.js';
+import { db } from './db/client.js';
 
 export type BuildAppOptions = {
   env?: Env;
@@ -20,6 +21,10 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await app.register(cors, {
     origin: currentEnv.CORS_ORIGIN,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  });
+
+  app.addHook('onClose', async () => {
+    await db.$disconnect();
   });
 
   registerErrorHandler(app);
