@@ -65,7 +65,6 @@ model Session {
 
   @@index([userId])
   @@index([expiresAt])
-
   @@map("sessions")
 }
 

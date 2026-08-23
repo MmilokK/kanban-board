@@ -33,7 +33,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
   const requestInit: RequestInit = {
     ...requestOptions,
-
+    credentials: 'include',
     headers: {
       Accept: 'application/json',
       ...(body !== undefined
@@ -43,7 +43,6 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
         : {}),
       ...headers,
     },
-
     ...(body !== undefined
       ? {
           body: JSON.stringify(body),

@@ -4,6 +4,7 @@ import { ThemeSwitcher } from '../features/theme/ui/ThemeSwitcher';
 import { Board } from '../widgets/board/ui/Board';
 import { PwaStatus } from '../features/pwa-update/ui/PwaStatus';
 import styles from './App.module.scss';
+import { AuthControls } from '../features/auth/ui/AuthControls';
 
 export function App() {
   const resetBoard = useBoardStore((state) => state.resetBoard);
@@ -19,6 +20,7 @@ export function App() {
           <button className={styles.resetButton} type="button" onClick={resetBoard}>
             Сбросить приложение
           </button>
+          <AuthControls />
         </div>
       </header>
       <main className={styles.main}>
