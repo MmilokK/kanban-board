@@ -10,6 +10,7 @@ export default defineConfig([
   globalIgnores(['dist']),
   {
     files: ['**/*.{ts,tsx}'],
+    ignores: ['server/src/generated/prisma/**'],
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
