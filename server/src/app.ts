@@ -7,6 +7,9 @@ import { registerHealthRoutes } from './routes/health.js';
 import { db } from './db/client.js';
 import cookie from '@fastify/cookie';
 import { registerAuthRoutes } from './routes/auth.js';
+import { serializerCompiler, validatorCompiler } from '@fastify/type-provider-zod';
+import { registerSwagger } from './plugins/swagger.js';
+import { registerBoardRoutes } from './routes/boards.js';
 
 export type BuildAppOptions = {
   env?: Env;
@@ -19,6 +22,10 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
     logger: currentEnv.NODE_ENV === 'test' ? false : { level: currentEnv.LOG_LEVEL },
     requestTimeout: 120_000,
   });
+
+  app.setValidatorCompiler(validatorCompiler);
+
+  app.setSerializerCompiler(serializerCompiler);
 
   await app.register(cookie);
 
@@ -41,6 +48,8 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
     });
   });
 
+  await registerSwagger(app);
+
   await app.register(registerHealthRoutes, {
     prefix: '/api',
   });
@@ -48,6 +57,10 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await app.register(registerAuthRoutes, {
     prefix: '/api/auth',
     env: currentEnv,
+  });
+
+  await app.register(registerBoardRoutes, {
+    prefix: '/api/boards',
   });
 
   return app;

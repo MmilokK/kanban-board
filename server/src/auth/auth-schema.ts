@@ -10,3 +10,13 @@ export const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   password: z.string().min(1).max(128),
 });
+
+export const authUserSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  name: z.string().nullable(),
+});
+
+export const authResponseSchema = z.object({
+  user: authUserSchema,
+});

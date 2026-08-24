@@ -43,6 +43,21 @@ export type ApiBoard = {
   title: string;
   columns: ApiColumn[];
   tasks: ApiTask[];
+  role: ApiBoardRole;
   createdAt: string;
   updatedAt: string;
+};
+
+export type ApiBoardRole = 'OWNER' | 'EDITOR' | 'VIEWER';
+
+export type ApiBoardListItem = {
+  id: string;
+  title: string;
+  role: ApiBoardRole;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ApiBoardsResponse = {
+  boards: ApiBoardListItem[];
 };
