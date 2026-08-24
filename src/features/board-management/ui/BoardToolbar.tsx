@@ -2,6 +2,7 @@ import type { BoardId } from '../../../shared/model/entity-ids';
 import type { Board } from '../../../entities/board/model/types';
 import styles from './BoardToolbar.module.scss';
 import type { Task } from '../../../entities/task/model/types';
+import { SaveBoardToAccountButton } from '../../cloud-board/ui/SaveBoardToAccountButton';
 
 type BoardToolbarProps = {
   boards: Board[];
@@ -61,6 +62,8 @@ export function BoardToolbar({
         <button type="button" disabled={!hasActiveBoard} onClick={onDeleteBoard}>
           Удалить
         </button>
+
+        <SaveBoardToAccountButton boardId={activeBoardId || ''} />
 
         <button type="button" onClick={openArchive} aria-controls="task-archive">
           Архив ({archivedTasks.length})

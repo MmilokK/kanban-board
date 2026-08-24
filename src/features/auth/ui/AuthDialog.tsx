@@ -9,9 +9,10 @@ type AuthMode = 'login' | 'register';
 
 type AuthDialogProps = {
   onClose: () => void;
+  onAuthenticated?: () => void;
 };
 
-export function AuthDialog({ onClose }: AuthDialogProps) {
+export function AuthDialog({ onClose, onAuthenticated }: AuthDialogProps) {
   const queryClient = useQueryClient();
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
@@ -37,6 +38,7 @@ export function AuthDialog({ onClose }: AuthDialogProps) {
 
     onSuccess: async (response) => {
       queryClient.setQueryData(authQueryKeys.currentUser, response.user);
+      onAuthenticated?.();
       onClose();
     },
 

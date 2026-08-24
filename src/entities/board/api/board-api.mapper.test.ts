@@ -5,6 +5,7 @@ import { mapApiBoardToState } from './board-api.mapper';
 const apiBoard: ApiBoard = {
   id: 'board-1',
   title: 'Рабочая доска',
+  role: 'OWNER',
   columns: [
     {
       id: 'todo',

@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Board } from '../../../entities/board/model/types';
 import type { BoardId } from '../../../shared/model/entity-ids';
 import { BoardToolbar } from './BoardToolbar';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const FIRST_BOARD_ID: BoardId = 'board-1';
 const SECOND_BOARD_ID: BoardId = 'board-2';
@@ -25,6 +26,22 @@ const boards: Board[] = [
   },
 ];
 
+function renderToolbar(ui: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+
+      mutations: {
+        retry: false,
+      },
+    },
+  });
+
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+}
+
 type RenderBoardToolbarOptions = {
   boardItems?: Board[];
   activeBoardId?: BoardId | null;
@@ -40,7 +57,7 @@ function renderBoardToolbar({
   const onDeleteBoard = vi.fn();
   const openArchive = vi.fn();
 
-  render(
+  renderToolbar(
     <BoardToolbar
       boards={boardItems}
       activeBoardId={activeBoardId}
@@ -60,6 +77,14 @@ function renderBoardToolbar({
     onDeleteBoard,
   };
 }
+
+vi.mock('../../../entities/user/api/use-current-user', () => ({
+  useCurrentUser: () => ({
+    data: null,
+    isPending: false,
+    isError: false,
+  }),
+}));
 
 describe('Панель управления досками', () => {
   it('показывает доски в переданном порядке', () => {
