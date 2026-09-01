@@ -1,4 +1,9 @@
-import type { BoardMemberRole, TaskPriority } from '../generated/prisma/client.js';
+import type {
+  BoardMemberRole,
+  Prisma,
+  TaskHistoryEventType,
+  TaskPriority,
+} from '../generated/prisma/client.js';
 import type { BoardDto, BoardListItemDto } from './board-types.js';
 
 function mapPriority(priority: TaskPriority): 'low' | 'medium' | 'high' {
@@ -79,6 +84,16 @@ export function mapBoard(board: {
         createdAt: Date;
         updatedAt: Date;
       }>;
+      historyEvents: Array<{
+        id: string;
+        type: TaskHistoryEventType;
+        payload: Prisma.JsonValue | null;
+        createdAt: Date;
+        actor: {
+          id: string;
+          name: string | null;
+        } | null;
+      }>;
     }>;
   }>;
 }): BoardDto {
@@ -128,6 +143,20 @@ export function mapBoard(board: {
             text: comment.text,
             createdAt: comment.createdAt.toISOString(),
             updatedAt: comment.updatedAt.toISOString(),
+          }))
+          .sort((first, second) => first.createdAt.localeCompare(second.createdAt)),
+        history: task.historyEvents
+          .map((event) => ({
+            id: event.id,
+            type: event.type,
+            payload: event.payload,
+            actor: event.actor
+              ? {
+                  id: event.actor.id,
+                  name: event.actor.name,
+                }
+              : null,
+            createdAt: event.createdAt.toISOString(),
           }))
           .sort((first, second) => first.createdAt.localeCompare(second.createdAt)),
         createdAt: task.createdAt.toISOString(),

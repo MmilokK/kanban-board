@@ -44,6 +44,6 @@ export function getTaskFormDefaultValues(task: Task | null): TaskFormValues {
     description: task?.description ?? '',
     priority: task?.priority ?? 'medium',
     tags: task?.tags.join(', ') ?? '',
-    dueDate: task?.dueDate ?? '',
+    dueDate: task?.dueDate ? task.dueDate.slice(0, 10) : '',
   };
 }

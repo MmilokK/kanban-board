@@ -49,6 +49,19 @@ export const commentResponseSchema = z.object({
   updatedAt: z.string().datetime(),
 });
 
+export const taskHistoryActorSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().nullable(),
+});
+
+export const taskHistoryEventSchema = z.object({
+  id: z.string().uuid(),
+  type: z.string(),
+  payload: z.unknown().nullable(),
+  actor: taskHistoryActorSchema.nullable(),
+  createdAt: z.string().datetime(),
+});
+
 export const taskResponseSchema = z.object({
   id: z.string().uuid(),
   columnId: z.string().uuid(),
@@ -61,6 +74,7 @@ export const taskResponseSchema = z.object({
   position: z.number().int().nonnegative(),
   subtasks: z.array(subtaskResponseSchema),
   comments: z.array(commentResponseSchema),
+  history: z.array(taskHistoryEventSchema),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
