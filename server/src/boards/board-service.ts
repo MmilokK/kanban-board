@@ -117,6 +117,14 @@ export async function createBoard(userId: string, title: string) {
             include: {
               subtasks: true,
               comments: true,
+              historyEvents: {
+                include: {
+                  actor: true,
+                },
+                orderBy: {
+                  createdAt: 'asc',
+                },
+              },
             },
           },
         },
@@ -191,6 +199,27 @@ export async function getBoard(userId: string, boardId: string) {
               comments: {
                 orderBy: {
                   createdAt: 'asc',
+                },
+                include: {
+                  author: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
+                  },
+                },
+              },
+              historyEvents: {
+                orderBy: {
+                  createdAt: 'asc',
+                },
+                include: {
+                  actor: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
+                  },
                 },
               },
             },
@@ -307,6 +336,14 @@ export async function importBoard(userId: string, input: ImportBoardInput) {
             include: {
               subtasks: true,
               comments: true,
+              historyEvents: {
+                include: {
+                  actor: true,
+                },
+                orderBy: {
+                  createdAt: 'asc',
+                },
+              },
             },
           },
         },

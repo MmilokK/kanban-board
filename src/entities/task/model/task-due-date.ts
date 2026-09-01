@@ -53,11 +53,12 @@ export function getTaskDueStatus(
 }
 
 export function formatTaskDueDate(dueDate: string): string {
-  if (!isValidDateValue(dueDate)) {
+  const dateValue = dueDate.slice(0, 10);
+  if (!isValidDateValue(dateValue)) {
     return dueDate;
   }
 
-  const [year, month, day] = dueDate.split('-');
+  const [year, month, day] = dateValue.split('-');
 
   return `${day}.${month}.${year}`;
 }

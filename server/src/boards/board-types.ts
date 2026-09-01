@@ -29,6 +29,19 @@ export type CommentDto = {
   updatedAt: string;
 };
 
+export type TaskHistoryActorDto = {
+  id: string;
+  name: string | null;
+};
+
+export type TaskHistoryEventDto = {
+  id: string;
+  type: string;
+  payload: unknown;
+  actor: TaskHistoryActorDto | null;
+  createdAt: string;
+};
+
 export type TaskDto = {
   id: string;
   columnId: string;
@@ -41,6 +54,7 @@ export type TaskDto = {
   position: number;
   subtasks: SubtaskDto[];
   comments: CommentDto[];
+  history: TaskHistoryEventDto[];
   createdAt: string;
   updatedAt: string;
 };

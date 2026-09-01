@@ -22,6 +22,7 @@ export function TaskForm({ task, submitLabel, onSubmit, onCancel }: TaskFormProp
     mode: 'onBlur',
     defaultValues: getTaskFormDefaultValues(task),
   });
+  console.log(task);
 
   return (
     <form className={styles.form} noValidate onSubmit={handleSubmit(onSubmit)}>

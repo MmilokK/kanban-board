@@ -42,6 +42,7 @@ const apiBoard: ApiBoard = {
       position: 1,
       subtasks: [],
       comments: [],
+      history: [],
       createdAt: '2026-08-01T10:00:00.000Z',
       updatedAt: '2026-08-01T10:00:00.000Z',
     },
@@ -61,6 +62,7 @@ const apiBoard: ApiBoard = {
           title: 'Подзадача',
           description: 'Описание',
           isCompleted: false,
+          position: 1,
         },
       ],
       comments: [
@@ -71,6 +73,7 @@ const apiBoard: ApiBoard = {
           updatedAt: '2026-08-01T11:00:00.000Z',
         },
       ],
+      history: [],
       createdAt: '2026-08-01T10:00:00.000Z',
       updatedAt: '2026-08-01T10:00:00.000Z',
     },
@@ -103,6 +106,7 @@ describe('Преобразование данных доски API', () => {
         title: 'Подзадача',
         description: 'Описание',
         isCompleted: false,
+        position: 1,
       },
     ]);
 
