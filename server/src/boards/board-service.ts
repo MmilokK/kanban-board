@@ -2,6 +2,7 @@ import { BoardMemberRole, TaskPriority } from '../generated/prisma/client.js';
 import { db } from '../db/client.js';
 import { AppError } from '../errors/app-error.js';
 import { mapBoard, mapBoardListItem } from './board-mapper.js';
+import { requireBoardOwner } from './board-access.js';
 
 type ImportBoardInput = {
   title: string;
@@ -29,33 +30,6 @@ type ImportBoardInput = {
     }>;
   }>;
 };
-
-async function requireBoardOwner(userId: string, boardId: string) {
-  const membership = await db.boardMember.findUnique({
-    where: {
-      boardId_userId: {
-        boardId,
-        userId,
-      },
-    },
-  });
-
-  if (!membership) {
-    throw new AppError('Доска не найдена', {
-      statusCode: 404,
-      code: 'BOARD_NOT_FOUND',
-    });
-  }
-
-  if (membership.role !== BoardMemberRole.OWNER) {
-    throw new AppError('Недостаточно прав', {
-      statusCode: 403,
-      code: 'FORBIDDEN',
-    });
-  }
-
-  return membership;
-}
 
 function mapImportedPriority(priority: 'low' | 'medium' | 'high'): TaskPriority {
   switch (priority) {

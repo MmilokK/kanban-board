@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-
 import {
   createCloudBoard,
   deleteCloudBoard,
@@ -14,11 +13,15 @@ import type {
 } from '../../../entities/board/api/board-api.types';
 import { useCloudBoard } from '../../../entities/board/api/use-cloud-board';
 import { useCloudBoards } from '../../../entities/board/api/use-cloud-boards';
+import {
+  canManageBoardMembers,
+  canEditBoard,
+} from '../../../entities/board-member/model/board-member';
 import { BoardDialog } from '../../../features/board-management/ui/BoardDialog';
 import type { BoardFormValues } from '../../../features/board-management/model/board-form';
 import { CloudBoardToolbar } from '../../../features/board-management/ui/CloudBoardToolbar';
-
 import { CloudBoard } from './CloudBoard';
+import { BoardMembersButton } from '../../../features/board-members/ui/BoardMembersButton';
 
 type BoardEditorState =
   | {
@@ -49,7 +52,7 @@ export function CloudBoards() {
   const activeBoardQuery = useCloudBoard(activeBoardId ?? '');
 
   const boards = useMemo<ApiBoardListItem[]>(() => {
-    return boardsQuery.data?.boards ?? [];
+    return boardsQuery.data ?? [];
   }, [boardsQuery.data]);
 
   const effectiveActiveBoardId = useMemo(() => {
@@ -124,7 +127,8 @@ export function CloudBoards() {
   }
 
   function handleOpenRenameBoard() {
-    if (!effectiveActiveBoardId) return;
+    if (!effectiveActiveBoardId || !activeBoard) return;
+    if (!canEditBoard(activeBoard.role)) return;
 
     setBoardEditorState({
       mode: 'rename',
@@ -144,16 +148,17 @@ export function CloudBoards() {
 
   function handleRenameBoard(values: BoardFormValues) {
     if (boardEditorState?.mode !== 'rename') return;
+    if (!activeBoard || !canEditBoard(activeBoard.role)) return;
 
     renameBoardMutation.mutate({
       boardId: boardEditorState.boardId,
-
       title: values.title,
     });
   }
 
   function handleDeleteBoard() {
-    if (!effectiveActiveBoardId) return;
+    if (!effectiveActiveBoardId || !activeBoard) return;
+    if (!canManageBoardMembers(activeBoard.role)) return;
 
     const board = boards.find((currentBoard) => currentBoard.id === effectiveActiveBoardId);
 
@@ -196,6 +201,8 @@ export function CloudBoards() {
       <section aria-label="Облачные доски">
         <CloudBoardToolbar
           boards={boards}
+          canEdit={canEditBoard(activeBoard?.role || 'VIEWER')}
+          canDelete={canManageBoardMembers(activeBoard?.role || 'VIEWER')}
           activeBoardId={effectiveActiveBoardId}
           archivedTaskCount={archivedTaskCount}
           onSelectBoard={handleSelectBoard}
@@ -208,14 +215,20 @@ export function CloudBoards() {
         />
 
         {effectiveActiveBoardId ? (
-          <CloudBoard
-            key={effectiveActiveBoardId}
-            boardId={effectiveActiveBoardId}
-            isArchiveOpen={isArchiveOpen}
-            onCloseArchive={() => {
-              setIsArchiveOpen(false);
-            }}
-          />
+          <>
+            {activeBoard ? (
+              <BoardMembersButton boardId={activeBoard.id} currentUserRole={activeBoard.role} />
+            ) : null}
+
+            <CloudBoard
+              key={effectiveActiveBoardId}
+              boardId={effectiveActiveBoardId}
+              isArchiveOpen={isArchiveOpen}
+              onCloseArchive={() => {
+                setIsArchiveOpen(false);
+              }}
+            />
+          </>
         ) : (
           <div>
             <h2>Пока нет облачных досок</h2>
@@ -237,16 +250,19 @@ export function CloudBoards() {
         />
       )}
 
-      {boardEditorState?.mode === 'rename' && editingBoard && (
-        <BoardDialog
-          key={editingBoard.id}
-          title="Переименование облачной доски"
-          submitLabel="Сохранить"
-          defaultValues={{ title: editingBoard.title }}
-          onSubmit={handleRenameBoard}
-          onClose={handleCloseBoardDialog}
-        />
-      )}
+      {boardEditorState?.mode === 'rename' &&
+        editingBoard &&
+        activeBoard &&
+        canEditBoard(activeBoard.role) && (
+          <BoardDialog
+            key={editingBoard.id}
+            title="Переименование облачной доски"
+            submitLabel="Сохранить"
+            defaultValues={{ title: editingBoard.title }}
+            onSubmit={handleRenameBoard}
+            onClose={handleCloseBoardDialog}
+          />
+        )}
     </>
   );
 }

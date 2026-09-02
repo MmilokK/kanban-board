@@ -9,33 +9,31 @@ import styles from './SubtaskList.module.scss';
 
 type SubtaskListProps = {
   subtasks: Subtask[];
-
+  canEdit?: boolean;
   onAdd: (input: CreateSubtaskInput) => void;
-
   onUpdate: (subtaskId: SubtaskId, input: UpdateSubtaskInput) => void;
-
   onToggle: (subtaskId: SubtaskId) => void;
-
   onDelete: (subtaskId: SubtaskId) => void;
 };
 
-export function SubtaskList({ subtasks, onAdd, onUpdate, onToggle, onDelete }: SubtaskListProps) {
+export function SubtaskList({
+  subtasks,
+  canEdit = true,
+  onAdd,
+  onUpdate,
+  onToggle,
+  onDelete,
+}: SubtaskListProps) {
   const [newTitle, setNewTitle] = useState('');
-
   const [newDescription, setNewDescription] = useState('');
-
   const [editingSubtaskId, setEditingSubtaskId] = useState<SubtaskId | null>(null);
-
   const [editingTitle, setEditingTitle] = useState('');
-
   const [editingDescription, setEditingDescription] = useState('');
 
   const completedCount = subtasks.filter((subtask) => subtask.isCompleted).length;
 
   function handleAdd() {
-    if (!newTitle.trim()) {
-      return;
-    }
+    if (!canEdit || !newTitle.trim()) return;
 
     onAdd({
       title: newTitle,
@@ -47,28 +45,24 @@ export function SubtaskList({ subtasks, onAdd, onUpdate, onToggle, onDelete }: S
   }
 
   function startEditing(subtask: Subtask) {
+    if (!canEdit) return;
+
     setEditingSubtaskId(subtask.id);
-
     setEditingTitle(subtask.title);
-
     setEditingDescription(subtask.description);
   }
 
   function cancelEditing() {
     setEditingSubtaskId(null);
-
     setEditingTitle('');
     setEditingDescription('');
   }
 
   function saveEditing(subtaskId: SubtaskId) {
-    if (!editingTitle.trim()) {
-      return;
-    }
+    if (!canEdit || !editingTitle.trim()) return;
 
     onUpdate(subtaskId, {
       title: editingTitle,
-
       description: editingDescription,
     });
 
@@ -90,7 +84,7 @@ export function SubtaskList({ subtasks, onAdd, onUpdate, onToggle, onDelete }: S
       ) : (
         <ul className={styles.list}>
           {subtasks.map((subtask) => {
-            const isEditing = editingSubtaskId === subtask.id;
+            const isEditing = canEdit && editingSubtaskId === subtask.id;
 
             return (
               <li key={subtask.id} className={styles.item}>
@@ -140,7 +134,9 @@ export function SubtaskList({ subtasks, onAdd, onUpdate, onToggle, onDelete }: S
                         id={`subtask-${subtask.id}`}
                         type="checkbox"
                         checked={subtask.isCompleted}
+                        disabled={!canEdit}
                         onChange={() => {
+                          if (!canEdit) return;
                           onToggle(subtask.id);
                         }}
                       />
@@ -164,27 +160,29 @@ export function SubtaskList({ subtasks, onAdd, onUpdate, onToggle, onDelete }: S
                       </label>
                     </div>
 
-                    <div className={styles.actions}>
-                      <button
-                        type="button"
-                        aria-label={`Редактировать подзадачу ${subtask.title}`}
-                        onClick={() => {
-                          startEditing(subtask);
-                        }}
-                      >
-                        Редактировать
-                      </button>
+                    {canEdit && (
+                      <div className={styles.actions}>
+                        <button
+                          type="button"
+                          aria-label={`Редактировать подзадачу ${subtask.title}`}
+                          onClick={() => {
+                            startEditing(subtask);
+                          }}
+                        >
+                          Редактировать
+                        </button>
 
-                      <button
-                        type="button"
-                        aria-label={`Удалить подзадачу ${subtask.title}`}
-                        onClick={() => {
-                          onDelete(subtask.id);
-                        }}
-                      >
-                        Удалить
-                      </button>
-                    </div>
+                        <button
+                          type="button"
+                          aria-label={`Удалить подзадачу ${subtask.title}`}
+                          onClick={() => {
+                            onDelete(subtask.id);
+                          }}
+                        >
+                          Удалить
+                        </button>
+                      </div>
+                    )}
                   </>
                 )}
               </li>
@@ -193,34 +191,36 @@ export function SubtaskList({ subtasks, onAdd, onUpdate, onToggle, onDelete }: S
         </ul>
       )}
 
-      <div className={styles.create}>
-        <h4>Новая подзадача</h4>
+      {canEdit && (
+        <div className={styles.create}>
+          <h4>Новая подзадача</h4>
 
-        <label>
-          Название
-          <input
-            type="text"
-            value={newTitle}
-            onChange={(event) => {
-              setNewTitle(event.currentTarget.value);
-            }}
-          />
-        </label>
+          <label>
+            Название
+            <input
+              type="text"
+              value={newTitle}
+              onChange={(event) => {
+                setNewTitle(event.currentTarget.value);
+              }}
+            />
+          </label>
 
-        <label>
-          Описание
-          <textarea
-            value={newDescription}
-            onChange={(event) => {
-              setNewDescription(event.currentTarget.value);
-            }}
-          />
-        </label>
+          <label>
+            Описание
+            <textarea
+              value={newDescription}
+              onChange={(event) => {
+                setNewDescription(event.currentTarget.value);
+              }}
+            />
+          </label>
 
-        <button type="button" disabled={!newTitle.trim()} onClick={handleAdd}>
-          Добавить подзадачу
-        </button>
-      </div>
+          <button type="button" disabled={!newTitle.trim()} onClick={handleAdd}>
+            Добавить подзадачу
+          </button>
+        </div>
+      )}
     </section>
   );
 }

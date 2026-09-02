@@ -13,6 +13,7 @@ const boards: Board[] = [
   {
     id: FIRST_BOARD_ID,
     title: 'Рабочая доска',
+    role: 'OWNER',
     columnIds: ['board-1-backlog', 'board-1-todo', 'board-1-in-progress', 'board-1-done'],
     createdAt: '2026-08-03T10:00:00.000Z',
     updatedAt: '2026-08-03T10:00:00.000Z',
@@ -20,6 +21,7 @@ const boards: Board[] = [
   {
     id: SECOND_BOARD_ID,
     title: 'Личные задачи',
+    role: 'OWNER',
     columnIds: ['board-2-backlog', 'board-2-todo', 'board-2-in-progress', 'board-2-done'],
     createdAt: '2026-08-03T11:00:00.000Z',
     updatedAt: '2026-08-03T11:00:00.000Z',

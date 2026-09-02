@@ -11,6 +11,7 @@ import { serializerCompiler, validatorCompiler } from '@fastify/type-provider-zo
 import { registerSwagger } from './plugins/swagger.js';
 import { registerBoardRoutes } from './routes/boards.js';
 import { registerBoardContentRoutes } from './routes/board-content.js';
+import { registerBoardMemberRoutes } from './routes/board-members.js';
 
 export type BuildAppOptions = {
   env?: Env;
@@ -65,6 +66,10 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   });
 
   await app.register(registerBoardContentRoutes, {
+    prefix: '/api/boards',
+  });
+
+  await app.register(registerBoardMemberRoutes, {
     prefix: '/api/boards',
   });
 

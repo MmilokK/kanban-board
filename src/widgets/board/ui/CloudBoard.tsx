@@ -30,6 +30,7 @@ import type {
   UpdateCloudTaskInput,
 } from '../../../entities/board/api/board-api.types';
 import type { TaskIdsByColumn } from '../../../entities/board/model/task-order';
+import { canEditBoard } from '../../../entities/board-member/model/board-member';
 import { BoardView } from './BoardView';
 
 type CloudBoardProps = {
@@ -205,6 +206,7 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
   }
 
   const { board, columns, tasks } = mappedBoard;
+  const canEdit = canEditBoard(boardQuery.data.board.role);
 
   function handleCreateColumn(title: string) {
     createColumnMutation.mutate({
@@ -440,6 +442,7 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
       columns={columns}
       tasks={tasks}
       isArchiveOpen={isArchiveOpen}
+      canEdit={canEdit}
       onCloseArchive={onCloseArchive}
       onCreateColumn={handleCreateColumn}
       onRenameColumn={handleRenameColumn}

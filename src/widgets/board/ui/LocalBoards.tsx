@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-
 import { useBoardStore } from '../../../entities/board/model/board-store';
 import type { TaskIdsByColumn } from '../../../entities/board/model/task-order';
 import type { Board as BoardEntity } from '../../../entities/board/model/types';

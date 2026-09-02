@@ -364,6 +364,7 @@ export function mapCloudBoard(apiBoard: ApiBoard): MappedCloudBoard {
   const board: Board = {
     id: boardId,
     title: apiBoard.title,
+    role: apiBoard.role,
     columnIds: orderedApiColumns.map((column) => column.id as ColumnId),
     createdAt: apiBoard.createdAt,
     updatedAt: apiBoard.updatedAt,

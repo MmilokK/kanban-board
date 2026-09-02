@@ -19,6 +19,11 @@ import {
   importBoard,
   renameBoard,
 } from '../boards/board-service.js';
+import {
+  requireBoardEditor,
+  requireBoardMember,
+  requireBoardOwner,
+} from '../boards/board-access.js';
 
 export async function registerBoardRoutes(app: FastifyInstance): Promise<void> {
   const typedApp = app.withTypeProvider<ZodTypeProvider>();
@@ -114,6 +119,7 @@ export async function registerBoardRoutes(app: FastifyInstance): Promise<void> {
     },
     async (request) => {
       const user = await requireAuth(request);
+      await requireBoardMember(user.id, request.params.boardId);
       const board = await getBoard(user.id, request.params.boardId);
 
       return { board };
@@ -141,6 +147,7 @@ export async function registerBoardRoutes(app: FastifyInstance): Promise<void> {
     },
     async (request) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await renameBoard(user.id, request.params.boardId, request.body.title);
 
       return { board };
@@ -167,7 +174,7 @@ export async function registerBoardRoutes(app: FastifyInstance): Promise<void> {
     },
     async (request, reply) => {
       const user = await requireAuth(request);
-
+      await requireBoardOwner(user.id, request.params.boardId);
       await deleteBoard(user.id, request.params.boardId);
 
       return reply.status(204).send();

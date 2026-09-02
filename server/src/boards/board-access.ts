@@ -1,14 +1,29 @@
-import { BoardMemberRole } from '../generated/prisma/client.js';
+import { $Enums, BoardMemberRole } from '../generated/prisma/client.js';
 import { db } from '../db/client.js';
 import { AppError } from '../errors/app-error.js';
 
-export async function requireBoardMember(userId: string, boardId: string) {
+export type BoardMembership = {
+  boardId: string;
+  userId: string;
+  role: $Enums.BoardMemberRole;
+};
+
+export async function requireBoardMember(
+  userId: string,
+  boardId: string,
+): Promise<BoardMembership> {
   const membership = await db.boardMember.findUnique({
     where: {
       boardId_userId: {
         boardId,
         userId,
       },
+    },
+
+    select: {
+      boardId: true,
+      userId: true,
+      role: true,
     },
   });
 
@@ -22,26 +37,29 @@ export async function requireBoardMember(userId: string, boardId: string) {
   return membership;
 }
 
-export async function requireBoardEditor(userId: string, boardId: string) {
+export async function requireBoardEditor(
+  userId: string,
+  boardId: string,
+): Promise<BoardMembership> {
   const membership = await requireBoardMember(userId, boardId);
 
-  if (membership.role === BoardMemberRole.VIEWER) {
+  if (membership.role !== BoardMemberRole.OWNER && membership.role !== BoardMemberRole.EDITOR) {
     throw new AppError('Недостаточно прав для изменения доски', {
       statusCode: 403,
-      code: 'FORBIDDEN',
+      code: 'BOARD_EDIT_FORBIDDEN',
     });
   }
 
   return membership;
 }
 
-export async function requireBoardOwner(userId: string, boardId: string) {
+export async function requireBoardOwner(userId: string, boardId: string): Promise<BoardMembership> {
   const membership = await requireBoardMember(userId, boardId);
 
   if (membership.role !== BoardMemberRole.OWNER) {
-    throw new AppError('Недостаточно прав', {
+    throw new AppError('Операция доступна только владельцу доски', {
       statusCode: 403,
-      code: 'FORBIDDEN',
+      code: 'BOARD_OWNER_REQUIRED',
     });
   }
 

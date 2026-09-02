@@ -41,6 +41,10 @@ export async function registerSwagger(app: FastifyInstance): Promise<void> {
           name: 'Comments',
           description: 'Комментарии cloud-задач',
         },
+        {
+          name: 'Board members',
+          description: 'Участники cloud-досок и роли доступа',
+        },
       ],
       components: {
         securitySchemes: {

@@ -9,6 +9,7 @@ const demoAppState: AppState = {
     [DEFAULT_BOARD_ID]: {
       id: DEFAULT_BOARD_ID,
       title: DEFAULT_BOARD_TITLE,
+      role: 'OWNER',
       columnIds: [
         DEFAULT_COLUMN_IDS.backlog,
         DEFAULT_COLUMN_IDS.todo,

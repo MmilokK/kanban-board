@@ -29,6 +29,7 @@ describe('Фабрика доски', () => {
     expect(board).toEqual({
       id: BOARD_ID,
       title: 'Рабочая доска',
+      role: 'OWNER',
       columnIds: [
         COLUMN_IDS.backlog,
         COLUMN_IDS.todo,

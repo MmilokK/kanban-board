@@ -6,17 +6,21 @@ import styles from './TaskArchive.module.scss';
 
 type TaskArchiveProps = {
   tasks: Task[];
-
   columns: Column[];
-
+  canEdit?: boolean;
   onRestore: (taskId: TaskId, columnId: ColumnId) => void;
-
   onDelete: (taskId: TaskId) => void;
-
   onClose: () => void;
 };
 
-export function TaskArchive({ tasks, columns, onRestore, onDelete, onClose }: TaskArchiveProps) {
+export function TaskArchive({
+  tasks,
+  columns,
+  canEdit = true,
+  onRestore,
+  onDelete,
+  onClose,
+}: TaskArchiveProps) {
   const [restoreColumnByTask, setRestoreColumnByTask] = useState<Record<string, ColumnId>>({});
 
   function getSelectedColumnId(taskId: TaskId): ColumnId | undefined {
@@ -28,7 +32,6 @@ export function TaskArchive({ tasks, columns, onRestore, onDelete, onClose }: Ta
       <header className={styles.header}>
         <div>
           <h2 id="task-archive-title">Архив задач</h2>
-
           <p>Архивировано: {tasks.length}</p>
         </div>
 
@@ -60,53 +63,50 @@ export function TaskArchive({ tasks, columns, onRestore, onDelete, onClose }: Ta
                   )}
                 </div>
 
-                <div className={styles.restore}>
-                  <label htmlFor={`restore-column-${task.id}`}>Восстановить в</label>
+                {canEdit && (
+                  <div className={styles.restore}>
+                    <label htmlFor={`restore-column-${task.id}`}>Восстановить в</label>
 
-                  <select
-                    id={`restore-column-${task.id}`}
-                    value={selectedColumnId ?? ''}
-                    disabled={columns.length === 0}
-                    onChange={(event) => {
-                      console.log({ event, restoreColumnByTask });
-                      setRestoreColumnByTask((current) => ({
-                        ...current,
+                    <select
+                      id={`restore-column-${task.id}`}
+                      value={selectedColumnId ?? ''}
+                      disabled={columns.length === 0}
+                      onChange={(event) => {
+                        setRestoreColumnByTask((current) => ({
+                          ...current,
+                          [task.id]: event.target.value as ColumnId,
+                        }));
+                      }}
+                    >
+                      {columns.map((column) => (
+                        <option key={column.id} value={column.id}>
+                          {column.title}
+                        </option>
+                      ))}
+                    </select>
 
-                        [task.id]: event.target.value as ColumnId,
-                      }));
-                    }}
-                  >
-                    {columns.map((column) => (
-                      <option key={column.id} value={column.id}>
-                        {column.title}
-                      </option>
-                    ))}
-                  </select>
+                    <button
+                      type="button"
+                      disabled={!selectedColumnId}
+                      onClick={() => {
+                        if (!selectedColumnId) return;
+                        onRestore(task.id, selectedColumnId);
+                      }}
+                    >
+                      Восстановить
+                    </button>
 
-                  <button
-                    type="button"
-                    disabled={!selectedColumnId}
-                    onClick={() => {
-                      if (!selectedColumnId) {
-                        return;
-                      }
-
-                      onRestore(task.id, selectedColumnId);
-                    }}
-                  >
-                    Восстановить
-                  </button>
-
-                  <button
-                    type="button"
-                    aria-label={`Удалить из архива задачу ${task.title}`}
-                    onClick={() => {
-                      onDelete(task.id);
-                    }}
-                  >
-                    Удалить
-                  </button>
-                </div>
+                    <button
+                      type="button"
+                      aria-label={`Удалить из архива задачу ${task.title}`}
+                      onClick={() => {
+                        onDelete(task.id);
+                      }}
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                )}
               </li>
             );
           })}
