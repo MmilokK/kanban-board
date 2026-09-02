@@ -8,11 +8,12 @@ import styles from './TaskForm.module.scss';
 type TaskFormProps = {
   task: Task | null;
   submitLabel: string;
+  canEdit?: boolean;
   onSubmit: (values: TaskFormValues) => void;
   onCancel: () => void;
 };
 
-export function TaskForm({ task, submitLabel, onSubmit, onCancel }: TaskFormProps) {
+export function TaskForm({ task, submitLabel, canEdit = true, onSubmit, onCancel }: TaskFormProps) {
   const {
     register,
     handleSubmit,
@@ -22,10 +23,16 @@ export function TaskForm({ task, submitLabel, onSubmit, onCancel }: TaskFormProp
     mode: 'onBlur',
     defaultValues: getTaskFormDefaultValues(task),
   });
-  console.log(task);
 
   return (
-    <form className={styles.form} noValidate onSubmit={handleSubmit(onSubmit)}>
+    <form
+      className={styles.form}
+      noValidate
+      onSubmit={handleSubmit((values) => {
+        if (!canEdit) return;
+        onSubmit(values);
+      })}
+    >
       <div className={styles.field}>
         <label className={styles.label} htmlFor="task-title">
           Название
@@ -33,13 +40,14 @@ export function TaskForm({ task, submitLabel, onSubmit, onCancel }: TaskFormProp
 
         <input
           {...register('title')}
-          autoFocus
+          autoFocus={canEdit}
           className={clsx(styles.control, {
             [styles.controlError]: errors.title,
           })}
           id="task-title"
           maxLength={80}
           type="text"
+          readOnly={!canEdit}
           aria-describedby={errors.title ? 'task-title-error' : undefined}
           aria-invalid={Boolean(errors.title)}
         />
@@ -64,6 +72,7 @@ export function TaskForm({ task, submitLabel, onSubmit, onCancel }: TaskFormProp
           id="task-description"
           maxLength={500}
           rows={5}
+          readOnly={!canEdit}
           aria-describedby={errors.description ? 'task-description-error' : undefined}
           aria-invalid={Boolean(errors.description)}
         />
@@ -80,7 +89,12 @@ export function TaskForm({ task, submitLabel, onSubmit, onCancel }: TaskFormProp
           Приоритет
         </label>
 
-        <select {...register('priority')} className={styles.control} id="task-priority">
+        <select
+          {...register('priority')}
+          className={styles.control}
+          id="task-priority"
+          disabled={!canEdit}
+        >
           <option value="low">Низкий</option>
           <option value="medium">Средний</option>
           <option value="high">Высокий</option>
@@ -101,6 +115,7 @@ export function TaskForm({ task, submitLabel, onSubmit, onCancel }: TaskFormProp
           maxLength={120}
           placeholder="React, TypeScript, CSS"
           type="text"
+          readOnly={!canEdit}
           aria-describedby={errors.tags ? 'task-tags-hint task-tags-error' : 'task-tags-hint'}
           aria-invalid={Boolean(errors.tags)}
         />
@@ -125,6 +140,7 @@ export function TaskForm({ task, submitLabel, onSubmit, onCancel }: TaskFormProp
           className={styles.control}
           id="task-due-date"
           type="date"
+          disabled={!canEdit}
           aria-invalid={errors.dueDate ? 'true' : 'false'}
           aria-describedby={errors.dueDate ? 'task-due-date-error' : undefined}
           {...register('dueDate')}
@@ -139,12 +155,14 @@ export function TaskForm({ task, submitLabel, onSubmit, onCancel }: TaskFormProp
 
       <div className={styles.actions}>
         <button className={styles.cancelButton} type="button" onClick={onCancel}>
-          Отмена
+          {canEdit ? 'Отмена' : 'Закрыть'}
         </button>
 
-        <button className={styles.submitButton} disabled={isSubmitting} type="submit">
-          {submitLabel}
-        </button>
+        {canEdit && (
+          <button className={styles.submitButton} disabled={isSubmitting} type="submit">
+            {submitLabel}
+          </button>
+        )}
       </div>
     </form>
   );

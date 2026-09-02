@@ -21,6 +21,7 @@ type TaskDialogProps = {
   columns?: Record<ColumnId, Column>;
   title: string;
   submitLabel: string;
+  canEdit?: boolean;
   onSubmit: (values: CreateTaskInput) => void;
   onClose: () => void;
   onAddSubtask?: (input: CreateSubtaskInput) => void;
@@ -37,6 +38,7 @@ export function TaskDialog({
   columns,
   title,
   submitLabel,
+  canEdit = true,
   onSubmit,
   onClose,
   onAddSubtask,
@@ -58,11 +60,14 @@ export function TaskDialog({
   }, []);
 
   function handleSubmit(values: TaskFormValues): void {
+    if (!canEdit) return;
+
     const input: CreateTaskInput = {
       ...values,
       tags: parseTaskTags(values.tags),
       dueDate: values.dueDate || null,
     };
+
     onSubmit(input);
     dialogRef.current?.close();
   }
@@ -97,12 +102,15 @@ export function TaskDialog({
         <TaskForm
           task={task}
           submitLabel={submitLabel}
+          canEdit={canEdit}
           onCancel={handleCancel}
           onSubmit={handleSubmit}
         />
+
         {task && onAddSubtask && onUpdateSubtask && onToggleSubtask && onDeleteSubtask && (
           <SubtaskList
             subtasks={task.subtasks}
+            canEdit={canEdit}
             onAdd={onAddSubtask}
             onUpdate={onUpdateSubtask}
             onToggle={onToggleSubtask}
@@ -113,11 +121,13 @@ export function TaskDialog({
         {task && onAddComment && onUpdateComment && onDeleteComment && (
           <TaskComments
             comments={task.comments}
+            canEdit={canEdit}
             onAdd={onAddComment}
             onUpdate={onUpdateComment}
             onDelete={onDeleteComment}
           />
         )}
+
         {task && columns && <TaskHistory events={task.history} />}
       </div>
     </dialog>

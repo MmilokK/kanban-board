@@ -38,6 +38,7 @@ import {
 } from '../tasks/task-service.js';
 import { createSubtask, deleteSubtask, updateSubtask } from '../tasks/subtask-service.js';
 import { createComment, deleteComment, updateComment } from '../tasks/comment-service.js';
+import { requireBoardEditor } from '../boards/board-access.js';
 
 const security = [
   {
@@ -76,6 +77,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request, reply) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await createColumn(user.id, request.params.boardId, request.body.title);
 
       return reply.status(201).send({
@@ -98,6 +100,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await renameColumn(
         user.id,
         request.params.boardId,
@@ -124,6 +127,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await deleteColumn(user.id, request.params.boardId, request.params.columnId);
 
       return {
@@ -146,6 +150,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await reorderColumns(user.id, request.params.boardId, request.body.columnIds);
 
       return {
@@ -174,6 +179,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request, reply) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await createTask(
         user.id,
         request.params.boardId,
@@ -201,6 +207,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await updateTask(
         user.id,
         request.params.boardId,
@@ -227,6 +234,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await deleteTask(user.id, request.params.boardId, request.params.taskId);
 
       return {
@@ -249,6 +257,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await reorderTasks(user.id, request.params.boardId, request.body.columns);
 
       return {
@@ -270,6 +279,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await archiveTask(user.id, request.params.boardId, request.params.taskId);
 
       return {
@@ -293,6 +303,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await restoreTask(
         user.id,
         request.params.boardId,
@@ -326,6 +337,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request, reply) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await createSubtask(
         user.id,
         request.params.boardId,
@@ -353,6 +365,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await updateSubtask(
         user.id,
         request.params.boardId,
@@ -380,6 +393,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await deleteSubtask(
         user.id,
         request.params.boardId,
@@ -413,6 +427,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request, reply) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await createComment(
         user.id,
         request.params.boardId,
@@ -440,6 +455,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await updateComment(
         user.id,
         request.params.boardId,
@@ -467,6 +483,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
     },
     async (request) => {
       const user = await requireAuth(request);
+      await requireBoardEditor(user.id, request.params.boardId);
       const board = await deleteComment(
         user.id,
         request.params.boardId,

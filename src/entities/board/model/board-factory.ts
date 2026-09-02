@@ -24,6 +24,7 @@ export function createBoardBundle({
   const board: Board = {
     id: boardId,
     title,
+    role: 'OWNER',
     columnIds: [
       columnIds.backlog,
       columnIds.todo,

@@ -4,6 +4,8 @@ type CloudBoardToolbarProps = {
   boards: ApiBoardListItem[];
   activeBoardId: string | null;
   archivedTaskCount: number;
+  canEdit: boolean;
+  canDelete: boolean;
   onSelectBoard: (boardId: string) => void;
   onCreateBoard: () => void;
   onRenameBoard: () => void;
@@ -15,6 +17,8 @@ export function CloudBoardToolbar({
   boards,
   activeBoardId,
   archivedTaskCount,
+  canEdit,
+  canDelete,
   onSelectBoard,
   onCreateBoard,
   onRenameBoard,
@@ -30,9 +34,7 @@ export function CloudBoardToolbar({
         <select
           value={activeBoardId ?? ''}
           onChange={(event) => {
-            if (!event.target.value) {
-              return;
-            }
+            if (!event.target.value) return;
 
             onSelectBoard(event.target.value);
           }}
@@ -54,12 +56,15 @@ export function CloudBoardToolbar({
       <button type="button" onClick={onCreateBoard}>
         Новая облачная доска
       </button>
-      <button type="button" disabled={!hasActiveBoard} onClick={onRenameBoard}>
+
+      <button type="button" disabled={!hasActiveBoard || !canEdit} onClick={onRenameBoard}>
         Переименовать
       </button>
-      <button type="button" disabled={!hasActiveBoard} onClick={onDeleteBoard}>
+
+      <button type="button" disabled={!hasActiveBoard || !canDelete} onClick={onDeleteBoard}>
         Удалить
       </button>
+
       <button type="button" disabled={!hasActiveBoard} onClick={onOpenArchive}>
         Архив
         {archivedTaskCount > 0 ? ` (${archivedTaskCount})` : ''}

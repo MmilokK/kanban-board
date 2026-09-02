@@ -124,11 +124,9 @@ export function migrateLegacyBoardState(legacyState: LegacyBoardState): AppState
 
   const board: Board = {
     id: MIGRATED_BOARD_ID,
-
     title: 'Kanban Board',
-
+    role: 'OWNER',
     columnIds: allColumnIds,
-
     createdAt,
     updatedAt,
   };

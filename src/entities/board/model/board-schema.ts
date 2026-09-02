@@ -224,6 +224,7 @@ export const columnSchema = z.object({
 export const boardSchema = z.object({
   id: entityIdSchema,
   title: z.string().trim().min(1),
+  role: z.enum(['OWNER', 'EDITOR', 'VIEWER']),
   columnIds: z.array(entityIdSchema),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),

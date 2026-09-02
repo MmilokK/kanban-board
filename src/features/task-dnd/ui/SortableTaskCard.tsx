@@ -10,6 +10,7 @@ type SortableTaskCardProps = {
   index: number;
   columnId: ColumnId;
   isCompletedColumn: boolean;
+  canEdit?: boolean;
   isDragDisabled?: boolean;
   onArchive: () => void;
   onDeleteTask: (taskId: TaskId) => void;
@@ -21,44 +22,48 @@ export function SortableTaskCard({
   index,
   columnId,
   isCompletedColumn,
+  canEdit = true,
   isDragDisabled = false,
   onArchive,
   onDeleteTask,
   onEditTask,
 }: SortableTaskCardProps) {
+  const dragDisabled = !canEdit || isDragDisabled;
+
   const { ref, handleRef, isDragging, isDropTarget } = useSortable({
     id: task.id,
     index,
     group: columnId,
     type: 'task',
     accept: 'task',
-    disabled: isDragDisabled,
+    disabled: dragDisabled,
   });
 
-  const dragHandle = (
+  const dragHandle = canEdit ? (
     <button
       className={styles.dragHandle}
       ref={handleRef}
       type="button"
       aria-label={`Переместить задачу «${task.title}»`}
-      disabled={isDragDisabled}
+      disabled={dragDisabled}
     >
       <span aria-hidden="true">⠿</span>
     </button>
-  );
+  ) : undefined;
 
   return (
     <li
       className={clsx(
         styles.item,
         isDragging && styles.dragging,
-        isDropTarget && styles.dropTarget,
+        isDropTarget && canEdit && styles.dropTarget,
       )}
       ref={ref}
     >
       <TaskCard
         dragHandle={dragHandle}
         task={task}
+        canEdit={canEdit}
         isCompletedColumn={isCompletedColumn}
         onDeleteTask={onDeleteTask}
         onEditTask={onEditTask}

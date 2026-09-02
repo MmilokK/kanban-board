@@ -11,6 +11,7 @@ type TaskCardProps = {
   task: Task;
   dragHandle?: ReactNode;
   isCompletedColumn: boolean;
+  canEdit?: boolean;
   onDeleteTask: (taskId: TaskId) => void;
   onEditTask: (taskId: TaskId) => void;
   onArchive: () => void;
@@ -38,6 +39,7 @@ export function TaskCard({
   task,
   dragHandle,
   isCompletedColumn,
+  canEdit = true,
   onDeleteTask,
   onEditTask,
   onArchive,
@@ -47,18 +49,25 @@ export function TaskCard({
   const subtaskProgress = getSubtaskProgress(task.subtasks);
 
   function handleDelete(): void {
+    if (!canEdit) return;
     onDeleteTask(task.id);
   }
 
   function handleEdit(): void {
+    if (!canEdit) return;
     onEditTask(task.id);
+  }
+
+  function handleArchive(): void {
+    if (!canEdit) return;
+    onArchive();
   }
 
   return (
     <article className={styles.card} data-due-status={dueStatus}>
       <div className={styles.header}>
         <div className={styles.titleGroup}>
-          {dragHandle}
+          {canEdit && dragHandle}
 
           <h3 className={styles.title}>{task.title}</h3>
         </div>
@@ -122,32 +131,35 @@ export function TaskCard({
           )}
         </div>
 
-        <div className={styles.actions}>
-          <button
-            className={styles.editButton}
-            type="button"
-            onClick={handleEdit}
-            aria-label={`Изменить задачу ${task.title}`}
-          >
-            Изменить
-          </button>
+        {canEdit && (
+          <div className={styles.actions}>
+            <button
+              className={styles.editButton}
+              type="button"
+              onClick={handleEdit}
+              aria-label={`Изменить задачу ${task.title}`}
+            >
+              Изменить
+            </button>
 
-          <button
-            className={styles.deleteButton}
-            type="button"
-            onClick={handleDelete}
-            aria-label={`Удалить задачу ${task.title}`}
-          >
-            Удалить
-          </button>
-          <button
-            type="button"
-            aria-label={`Архивировать задачу ${task.title}`}
-            onClick={onArchive}
-          >
-            В архив
-          </button>
-        </div>
+            <button
+              className={styles.deleteButton}
+              type="button"
+              onClick={handleDelete}
+              aria-label={`Удалить задачу ${task.title}`}
+            >
+              Удалить
+            </button>
+
+            <button
+              type="button"
+              aria-label={`Архивировать задачу ${task.title}`}
+              onClick={handleArchive}
+            >
+              В архив
+            </button>
+          </div>
+        )}
       </footer>
     </article>
   );

@@ -6,7 +6,7 @@ export function useCloudBoards() {
   return useQuery({
     queryKey: boardQueryKeys.lists(),
     queryFn: async () => {
-      return getBoards();
+      return getBoards().then((res) => res.boards);
     },
   });
 }

@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { move } from '@dnd-kit/helpers';
 import { DragDropProvider } from '@dnd-kit/react';
-
 import type { Board as BoardEntity } from '../../../entities/board/model/types';
 import type { TaskIdsByColumn } from '../../../entities/board/model/task-order';
 import type { Column } from '../../../entities/column/model/types';
@@ -21,7 +20,6 @@ import { TaskFilters } from '../../../features/task-filtering/ui/TaskFilters';
 import { TaskArchive } from '../../../features/task-archive/ui/TaskArchive';
 import { TaskDialog } from '../../../features/task-editor/ui/TaskDialog';
 import type { ColumnId, TaskId } from '../../../shared/model/entity-ids';
-
 import styles from './Board.module.scss';
 
 type TaskEditorState =
@@ -47,63 +45,42 @@ type ColumnEditorState =
 
 type BoardViewProps = {
   board: BoardEntity;
-
   columns: Record<ColumnId, Column>;
-
   tasks: Record<TaskId, Task>;
-
   isArchiveOpen: boolean;
-
+  canEdit?: boolean;
   onCloseArchive: () => void;
-
   onCreateColumn: (title: string) => void;
-
   onRenameColumn: (columnId: ColumnId, title: string) => void;
-
   onDeleteColumn: (columnId: ColumnId) => void;
-
   onMoveColumn: (columnId: ColumnId, targetIndex: number) => void;
-
   onCreateTask: (columnId: ColumnId, input: CreateTaskInput) => void;
-
   onUpdateTask: (taskId: TaskId, input: CreateTaskInput) => void;
-
   onDeleteTask: (taskId: TaskId) => void;
-
   onArchiveTask: (taskId: TaskId) => void;
-
   onRestoreArchivedTask: (taskId: TaskId, columnId: ColumnId) => void;
-
   onDeleteArchivedTask: (taskId: TaskId) => void;
-
   onReplaceTaskOrder: (nextOrder: TaskIdsByColumn, previousOrder: TaskIdsByColumn) => void;
-
   onAddSubtask: (
     taskId: TaskId,
     input: Parameters<NonNullable<React.ComponentProps<typeof TaskDialog>['onAddSubtask']>>[0],
   ) => void;
-
   onUpdateSubtask: (
     taskId: TaskId,
     subtaskId: string,
     input: Parameters<NonNullable<React.ComponentProps<typeof TaskDialog>['onUpdateSubtask']>>[1],
   ) => void;
-
   onToggleSubtask: (taskId: TaskId, subtaskId: string) => void;
-
   onDeleteSubtask: (taskId: TaskId, subtaskId: string) => void;
-
   onAddComment: (
     taskId: TaskId,
     input: Parameters<NonNullable<React.ComponentProps<typeof TaskDialog>['onAddComment']>>[0],
   ) => void;
-
   onUpdateComment: (
     taskId: TaskId,
     commentId: string,
     input: Parameters<NonNullable<React.ComponentProps<typeof TaskDialog>['onUpdateComment']>>[1],
   ) => void;
-
   onDeleteComment: (taskId: TaskId, commentId: string) => void;
 };
 
@@ -132,6 +109,7 @@ export function BoardView({
   columns,
   tasks,
   isArchiveOpen,
+  canEdit = true,
   onCloseArchive,
   onCreateColumn,
   onRenameColumn,
@@ -224,12 +202,14 @@ export function BoardView({
   }
 
   function handleOpenCreateColumn() {
+    if (!canEdit) return;
     setColumnEditorState({
       mode: 'create',
     });
   }
 
   function handleOpenRenameColumn(columnId: ColumnId) {
+    if (!canEdit) return;
     if (!columns[columnId]) return;
     setColumnEditorState({
       mode: 'rename',
@@ -242,18 +222,21 @@ export function BoardView({
   }
 
   function handleCreateColumn(values: ColumnFormValues) {
+    if (!canEdit) return;
     if (columnEditorState?.mode !== 'create') return;
     onCreateColumn(values.title);
     setColumnEditorState(null);
   }
 
   function handleRenameColumn(values: ColumnFormValues) {
+    if (!canEdit) return;
     if (columnEditorState?.mode !== 'rename') return;
     onRenameColumn(columnEditorState.columnId, values.title);
     setColumnEditorState(null);
   }
 
   function handleDeleteColumn(columnId: ColumnId) {
+    if (!canEdit) return;
     const column = columns[columnId];
     if (!column) return;
     const taskCount = column.taskIds.length;
@@ -269,6 +252,7 @@ export function BoardView({
   }
 
   function handleOpenCreateTask(columnId: ColumnId) {
+    if (!canEdit) return;
     setTaskEditorState({
       mode: 'create',
       columnId,
@@ -276,6 +260,7 @@ export function BoardView({
   }
 
   function handleOpenEditTask(taskId: TaskId) {
+    if (!canEdit) return;
     if (!tasks[taskId]) return;
     setTaskEditorState({
       mode: 'edit',
@@ -288,6 +273,7 @@ export function BoardView({
   }
 
   function handleTaskSubmit(input: CreateTaskInput) {
+    if (!canEdit) return;
     if (!taskEditorState) return;
     if (taskEditorState.mode === 'create') {
       onCreateTask(taskEditorState.columnId, input);
@@ -298,6 +284,7 @@ export function BoardView({
   }
 
   function handleDeleteTask(taskId: TaskId) {
+    if (!canEdit) return;
     onDeleteTask(taskId);
     if (taskEditorState?.mode === 'edit' && taskEditorState.taskId === taskId) {
       setTaskEditorState(null);
@@ -305,6 +292,7 @@ export function BoardView({
   }
 
   function handleDeleteArchivedTask(taskId: TaskId) {
+    if (!canEdit) return;
     const task = tasks[taskId];
     if (!task) return;
     const confirmed = window.confirm(`Окончательно удалить задачу «${task.title}» из архива?`);
@@ -313,6 +301,7 @@ export function BoardView({
   }
 
   function handleDragStart() {
+    if (!canEdit) return;
     if (isTaskViewModified) return;
     setDragTaskOrder(regularTaskOrder);
   }
@@ -320,7 +309,7 @@ export function BoardView({
   function handleDragOver(
     event: Parameters<NonNullable<React.ComponentProps<typeof DragDropProvider>['onDragOver']>>[0],
   ) {
-    if (isTaskViewModified) return;
+    if (!canEdit || isTaskViewModified) return;
     setDragTaskOrder((currentOrder) => {
       const order = currentOrder ?? regularTaskOrder;
       return move(order, event);
@@ -330,7 +319,7 @@ export function BoardView({
   function handleDragEnd(
     event: Parameters<NonNullable<React.ComponentProps<typeof DragDropProvider>['onDragEnd']>>[0],
   ) {
-    if (isTaskViewModified) return;
+    if (!canEdit || isTaskViewModified) return;
     const nextOrder = dragTaskOrder ?? regularTaskOrder;
     if (!event.canceled) {
       onReplaceTaskOrder(nextOrder, regularTaskOrder);
@@ -349,7 +338,13 @@ export function BoardView({
         onReset={resetTaskFilters}
       />
 
-      {isTaskViewModified && (
+      {!canEdit && (
+        <p className={styles.dragNotice} role="status">
+          Доска открыта в режиме просмотра.
+        </p>
+      )}
+
+      {canEdit && isTaskViewModified && (
         <p className={styles.dragNotice} role="status">
           Перетаскивание задач доступно только при ручном порядке без активных фильтров.
         </p>
@@ -357,9 +352,11 @@ export function BoardView({
 
       <header className={styles.header}>
         <h1 id="board-title">{board.title}</h1>
-        <button type="button" onClick={handleOpenCreateColumn}>
-          Новая колонка
-        </button>
+        {canEdit && (
+          <button type="button" onClick={handleOpenCreateColumn}>
+            Новая колонка
+          </button>
+        )}
       </header>
 
       <DragDropProvider
@@ -380,7 +377,8 @@ export function BoardView({
                   emptyMessage={
                     isTaskFilterActive ? 'Нет подходящих задач' : 'В колонке пока нет задач'
                   }
-                  isTaskDragDisabled={isTaskViewModified}
+                  canEdit={canEdit}
+                  isTaskDragDisabled={!canEdit || isTaskViewModified}
                   onCreateTask={() => {
                     handleOpenCreateTask(column.id);
                   }}
@@ -409,14 +407,16 @@ export function BoardView({
           <div className={styles.emptyColumns}>
             <h2>Пока нет колонок</h2>
             <p>Добавь первую колонку, чтобы создавать задачи.</p>
-            <button type="button" onClick={handleOpenCreateColumn}>
-              Создать колонку
-            </button>
+            {canEdit && (
+              <button type="button" onClick={handleOpenCreateColumn}>
+                Создать колонку
+              </button>
+            )}
           </div>
         )}
       </DragDropProvider>
 
-      {taskEditorState && (
+      {canEdit && taskEditorState && (
         <TaskDialog
           task={editingTask}
           columns={columns}
@@ -452,7 +452,7 @@ export function BoardView({
         />
       )}
 
-      {columnEditorState?.mode === 'create' && (
+      {canEdit && columnEditorState?.mode === 'create' && (
         <ColumnDialog
           title="Новая колонка"
           submitLabel="Создать"
@@ -464,7 +464,7 @@ export function BoardView({
         />
       )}
 
-      {columnEditorState?.mode === 'rename' && editingColumn && (
+      {canEdit && columnEditorState?.mode === 'rename' && editingColumn && (
         <ColumnDialog
           key={editingColumn.id}
           title="Переименование колонки"
@@ -481,7 +481,10 @@ export function BoardView({
         <TaskArchive
           tasks={archivedTasks}
           columns={orderedColumns}
-          onRestore={onRestoreArchivedTask}
+          onRestore={(taskId, columnId) => {
+            if (!canEdit) return;
+            onRestoreArchivedTask(taskId, columnId);
+          }}
           onDelete={handleDeleteArchivedTask}
           onClose={onCloseArchive}
         />
