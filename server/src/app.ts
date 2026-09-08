@@ -12,6 +12,8 @@ import { registerSwagger } from './plugins/swagger.js';
 import { registerBoardRoutes } from './routes/boards.js';
 import { registerBoardContentRoutes } from './routes/board-content.js';
 import { registerBoardMemberRoutes } from './routes/board-members.js';
+import { boardInvitationRoutes } from './routes/board-invitations.js';
+import { registerInvitationRoutes } from './routes/invitations.js';
 
 export type BuildAppOptions = {
   env?: Env;
@@ -71,6 +73,14 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
 
   await app.register(registerBoardMemberRoutes, {
     prefix: '/api/boards',
+  });
+
+  await app.register(boardInvitationRoutes, {
+    prefix: '/api/boards',
+  });
+
+  await app.register(registerInvitationRoutes, {
+    prefix: '/api/invitations',
   });
 
   return app;

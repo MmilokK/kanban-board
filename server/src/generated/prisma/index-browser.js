@@ -155,6 +155,22 @@ exports.Prisma.BoardMemberScalarFieldEnum = {
   updatedAt: 'updatedAt',
 };
 
+exports.Prisma.BoardInvitationScalarFieldEnum = {
+  id: 'id',
+  boardId: 'boardId',
+  invitedByUserId: 'invitedByUserId',
+  type: 'type',
+  email: 'email',
+  role: 'role',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  maxUses: 'maxUses',
+  usedCount: 'usedCount',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+};
+
 exports.Prisma.ColumnScalarFieldEnum = {
   id: 'id',
   boardId: 'boardId',
@@ -240,6 +256,11 @@ exports.BoardMemberRole = exports.$Enums.BoardMemberRole = {
   VIEWER: 'VIEWER',
 };
 
+exports.BoardInvitationType = exports.$Enums.BoardInvitationType = {
+  EMAIL: 'EMAIL',
+  LINK: 'LINK',
+};
+
 exports.TaskPriority = exports.$Enums.TaskPriority = {
   LOW: 'LOW',
   MEDIUM: 'MEDIUM',
@@ -268,6 +289,7 @@ exports.Prisma.ModelName = {
   User: 'User',
   Board: 'Board',
   BoardMember: 'BoardMember',
+  BoardInvitation: 'BoardInvitation',
   Column: 'Column',
   Task: 'Task',
   Subtask: 'Subtask',
