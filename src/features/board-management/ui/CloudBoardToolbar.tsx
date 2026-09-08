@@ -6,11 +6,13 @@ type CloudBoardToolbarProps = {
   archivedTaskCount: number;
   canEdit: boolean;
   canDelete: boolean;
+  canManageInvitations: boolean;
   onSelectBoard: (boardId: string) => void;
   onCreateBoard: () => void;
   onRenameBoard: () => void;
   onDeleteBoard: () => void;
   onOpenArchive: () => void;
+  onOpenInvitations: () => void;
 };
 
 export function CloudBoardToolbar({
@@ -19,11 +21,13 @@ export function CloudBoardToolbar({
   archivedTaskCount,
   canEdit,
   canDelete,
+  canManageInvitations,
   onSelectBoard,
   onCreateBoard,
   onRenameBoard,
   onDeleteBoard,
   onOpenArchive,
+  onOpenInvitations,
 }: CloudBoardToolbarProps) {
   const hasActiveBoard = activeBoardId !== null;
 
@@ -68,6 +72,14 @@ export function CloudBoardToolbar({
       <button type="button" disabled={!hasActiveBoard} onClick={onOpenArchive}>
         Архив
         {archivedTaskCount > 0 ? ` (${archivedTaskCount})` : ''}
+      </button>
+
+      <button
+        type="button"
+        disabled={!hasActiveBoard || !canManageInvitations}
+        onClick={onOpenInvitations}
+      >
+        Приглашения
       </button>
     </div>
   );

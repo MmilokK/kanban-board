@@ -37,6 +37,11 @@ enum TaskHistoryEventType {
   COMMENT_DELETED
 }
 
+enum BoardInvitationType {
+  EMAIL
+  LINK
+}
+
 model PasswordCredential {
   userId String @id
 
@@ -79,9 +84,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  memberships   BoardMember[]
-  comments      Comment[]
-  historyEvents TaskHistoryEvent[]
+  memberships          BoardMember[]
+  sentBoardInvitations BoardInvitation[]
+  comments             Comment[]
+  historyEvents        TaskHistoryEvent[]
 
   @@map("users")
 }
@@ -93,8 +99,9 @@ model Board {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  members BoardMember[]
-  columns Column[]
+  members     BoardMember[]
+  invitations BoardInvitation[]
+  columns     Column[]
 
   @@map("boards")
 }
@@ -118,6 +125,29 @@ model BoardMember {
   @@index([userId])
   @@index([boardId])
   @@map("board_members")
+}
+
+model BoardInvitation {
+  id              String              @id @default(uuid())
+  boardId         String
+  invitedByUserId String
+  type            BoardInvitationType
+  email           String?
+  role            BoardMemberRole
+  token           String              @unique
+  expiresAt       DateTime
+  maxUses         Int?
+  usedCount       Int                 @default(0)
+  revokedAt       DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  board         Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  invitedByUser User  @relation(fields: [invitedByUserId], references: [id], onDelete: Cascade)
+
+  @@index([boardId])
+  @@index([email])
+  @@index([expiresAt])
 }
 
 model Column {

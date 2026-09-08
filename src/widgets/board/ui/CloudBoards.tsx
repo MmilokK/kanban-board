@@ -14,14 +14,15 @@ import type {
 import { useCloudBoard } from '../../../entities/board/api/use-cloud-board';
 import { useCloudBoards } from '../../../entities/board/api/use-cloud-boards';
 import {
-  canManageBoardMembers,
   canEditBoard,
+  canManageBoardMembers,
 } from '../../../entities/board-member/model/board-member';
 import { BoardDialog } from '../../../features/board-management/ui/BoardDialog';
 import type { BoardFormValues } from '../../../features/board-management/model/board-form';
 import { CloudBoardToolbar } from '../../../features/board-management/ui/CloudBoardToolbar';
-import { CloudBoard } from './CloudBoard';
 import { BoardMembersButton } from '../../../features/board-members/ui/BoardMembersButton';
+import { BoardInvitationsDialog } from '../../../features/board-invitations/ui/BoardInvitationsDialog';
+import { CloudBoard } from './CloudBoard';
 
 type BoardEditorState =
   | {
@@ -33,6 +34,10 @@ type BoardEditorState =
     }
   | null;
 
+type CloudBoardsProps = {
+  initialBoardId?: string | null;
+};
+
 function getArchiveTaskCount(board: ApiBoard | undefined) {
   if (!board) return 0;
 
@@ -43,12 +48,13 @@ function getArchiveTaskCount(board: ApiBoard | undefined) {
   return board.tasks.filter((task) => task.columnId === archiveColumn.id).length;
 }
 
-export function CloudBoards() {
+export function CloudBoards({ initialBoardId = null }: CloudBoardsProps) {
   const queryClient = useQueryClient();
   const boardsQuery = useCloudBoards();
-  const [activeBoardId, setActiveBoardId] = useState<string | null>(null);
+  const [activeBoardId, setActiveBoardId] = useState<string | null>(initialBoardId);
   const [boardEditorState, setBoardEditorState] = useState<BoardEditorState>(null);
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+  const [isInvitationsOpen, setIsInvitationsOpen] = useState(false);
   const activeBoardQuery = useCloudBoard(activeBoardId ?? '');
 
   const boards = useMemo<ApiBoardListItem[]>(() => {
@@ -74,6 +80,7 @@ export function CloudBoards() {
       setActiveBoardId(response.board.id);
       setBoardEditorState(null);
       setIsArchiveOpen(false);
+      setIsInvitationsOpen(false);
     },
   });
 
@@ -102,6 +109,7 @@ export function CloudBoards() {
 
       setBoardEditorState(null);
       setIsArchiveOpen(false);
+      setIsInvitationsOpen(false);
     },
   });
 
@@ -112,12 +120,16 @@ export function CloudBoards() {
       ? boards.find((board) => board.id === boardEditorState.boardId)
       : undefined;
 
+  const canManageInvitations = canManageBoardMembers(activeBoard?.role ?? 'VIEWER');
   function handleSelectBoard(boardId: string) {
-    if (boardId === activeBoardId) return;
+    if (boardId === activeBoardId) {
+      return;
+    }
 
     setActiveBoardId(boardId);
     setBoardEditorState(null);
     setIsArchiveOpen(false);
+    setIsInvitationsOpen(false);
   }
 
   function handleOpenCreateBoard() {
@@ -159,7 +171,6 @@ export function CloudBoards() {
   function handleDeleteBoard() {
     if (!effectiveActiveBoardId || !activeBoard) return;
     if (!canManageBoardMembers(activeBoard.role)) return;
-
     const board = boards.find((currentBoard) => currentBoard.id === effectiveActiveBoardId);
 
     if (!board) return;
@@ -173,6 +184,17 @@ export function CloudBoards() {
     deleteBoardMutation.mutate({
       boardId: effectiveActiveBoardId,
     });
+  }
+
+  function handleOpenInvitations() {
+    if (!effectiveActiveBoardId || !activeBoard) return;
+    if (!canManageBoardMembers(activeBoard.role)) return;
+
+    setIsInvitationsOpen(true);
+  }
+
+  function handleCloseInvitations() {
+    setIsInvitationsOpen(false);
   }
 
   if (boardsQuery.isPending) {
@@ -201,8 +223,9 @@ export function CloudBoards() {
       <section aria-label="Облачные доски">
         <CloudBoardToolbar
           boards={boards}
-          canEdit={canEditBoard(activeBoard?.role || 'VIEWER')}
-          canDelete={canManageBoardMembers(activeBoard?.role || 'VIEWER')}
+          canEdit={canEditBoard(activeBoard?.role ?? 'VIEWER')}
+          canDelete={canManageBoardMembers(activeBoard?.role ?? 'VIEWER')}
+          canManageInvitations={canManageInvitations}
           activeBoardId={effectiveActiveBoardId}
           archivedTaskCount={archivedTaskCount}
           onSelectBoard={handleSelectBoard}
@@ -212,6 +235,7 @@ export function CloudBoards() {
           onOpenArchive={() => {
             setIsArchiveOpen((current) => !current);
           }}
+          onOpenInvitations={handleOpenInvitations}
         />
 
         {effectiveActiveBoardId ? (
@@ -263,6 +287,14 @@ export function CloudBoards() {
             onClose={handleCloseBoardDialog}
           />
         )}
+
+      {effectiveActiveBoardId && canManageInvitations && (
+        <BoardInvitationsDialog
+          boardId={effectiveActiveBoardId}
+          isOpen={isInvitationsOpen}
+          onClose={handleCloseInvitations}
+        />
+      )}
     </>
   );
 }

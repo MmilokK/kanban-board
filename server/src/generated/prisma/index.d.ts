@@ -37,6 +37,11 @@ export type Board = $Result.DefaultSelection<Prisma.$BoardPayload>;
  */
 export type BoardMember = $Result.DefaultSelection<Prisma.$BoardMemberPayload>;
 /**
+ * Model BoardInvitation
+ *
+ */
+export type BoardInvitation = $Result.DefaultSelection<Prisma.$BoardInvitationPayload>;
+/**
  * Model Column
  *
  */
@@ -100,6 +105,13 @@ export namespace $Enums {
 
   export type TaskHistoryEventType =
     (typeof TaskHistoryEventType)[keyof typeof TaskHistoryEventType];
+
+  export const BoardInvitationType: {
+    EMAIL: 'EMAIL';
+    LINK: 'LINK';
+  };
+
+  export type BoardInvitationType = (typeof BoardInvitationType)[keyof typeof BoardInvitationType];
 }
 
 export type BoardMemberRole = $Enums.BoardMemberRole;
@@ -113,6 +125,10 @@ export const TaskPriority: typeof $Enums.TaskPriority;
 export type TaskHistoryEventType = $Enums.TaskHistoryEventType;
 
 export const TaskHistoryEventType: typeof $Enums.TaskHistoryEventType;
+
+export type BoardInvitationType = $Enums.BoardInvitationType;
+
+export const BoardInvitationType: typeof $Enums.BoardInvitationType;
 
 /**
  * ##  Prisma Client ʲˢ
@@ -318,6 +334,16 @@ export class PrismaClient<
    * ```
    */
   get boardMember(): Prisma.BoardMemberDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.boardInvitation`: Exposes CRUD operations for the **BoardInvitation** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more BoardInvitations
+   * const boardInvitations = await prisma.boardInvitation.findMany()
+   * ```
+   */
+  get boardInvitation(): Prisma.BoardInvitationDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.column`: Exposes CRUD operations for the **Column** model.
@@ -816,6 +842,7 @@ export namespace Prisma {
     User: 'User';
     Board: 'Board';
     BoardMember: 'BoardMember';
+    BoardInvitation: 'BoardInvitation';
     Column: 'Column';
     Task: 'Task';
     Subtask: 'Subtask';
@@ -849,6 +876,7 @@ export namespace Prisma {
         | 'user'
         | 'board'
         | 'boardMember'
+        | 'boardInvitation'
         | 'column'
         | 'task'
         | 'subtask'
@@ -1224,6 +1252,80 @@ export namespace Prisma {
           count: {
             args: Prisma.BoardMemberCountArgs<ExtArgs>;
             result: $Utils.Optional<BoardMemberCountAggregateOutputType> | number;
+          };
+        };
+      };
+      BoardInvitation: {
+        payload: Prisma.$BoardInvitationPayload<ExtArgs>;
+        fields: Prisma.BoardInvitationFieldRefs;
+        operations: {
+          findUnique: {
+            args: Prisma.BoardInvitationFindUniqueArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$BoardInvitationPayload> | null;
+          };
+          findUniqueOrThrow: {
+            args: Prisma.BoardInvitationFindUniqueOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$BoardInvitationPayload>;
+          };
+          findFirst: {
+            args: Prisma.BoardInvitationFindFirstArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$BoardInvitationPayload> | null;
+          };
+          findFirstOrThrow: {
+            args: Prisma.BoardInvitationFindFirstOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$BoardInvitationPayload>;
+          };
+          findMany: {
+            args: Prisma.BoardInvitationFindManyArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$BoardInvitationPayload>[];
+          };
+          create: {
+            args: Prisma.BoardInvitationCreateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$BoardInvitationPayload>;
+          };
+          createMany: {
+            args: Prisma.BoardInvitationCreateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          createManyAndReturn: {
+            args: Prisma.BoardInvitationCreateManyAndReturnArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$BoardInvitationPayload>[];
+          };
+          delete: {
+            args: Prisma.BoardInvitationDeleteArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$BoardInvitationPayload>;
+          };
+          update: {
+            args: Prisma.BoardInvitationUpdateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$BoardInvitationPayload>;
+          };
+          deleteMany: {
+            args: Prisma.BoardInvitationDeleteManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          updateMany: {
+            args: Prisma.BoardInvitationUpdateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          updateManyAndReturn: {
+            args: Prisma.BoardInvitationUpdateManyAndReturnArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$BoardInvitationPayload>[];
+          };
+          upsert: {
+            args: Prisma.BoardInvitationUpsertArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$BoardInvitationPayload>;
+          };
+          aggregate: {
+            args: Prisma.BoardInvitationAggregateArgs<ExtArgs>;
+            result: $Utils.Optional<AggregateBoardInvitation>;
+          };
+          groupBy: {
+            args: Prisma.BoardInvitationGroupByArgs<ExtArgs>;
+            result: $Utils.Optional<BoardInvitationGroupByOutputType>[];
+          };
+          count: {
+            args: Prisma.BoardInvitationCountArgs<ExtArgs>;
+            result: $Utils.Optional<BoardInvitationCountAggregateOutputType> | number;
           };
         };
       };
@@ -1729,6 +1831,7 @@ export namespace Prisma {
     user?: UserOmit;
     board?: BoardOmit;
     boardMember?: BoardMemberOmit;
+    boardInvitation?: BoardInvitationOmit;
     column?: ColumnOmit;
     task?: TaskOmit;
     subtask?: SubtaskOmit;
@@ -1811,6 +1914,7 @@ export namespace Prisma {
   export type UserCountOutputType = {
     sessions: number;
     memberships: number;
+    sentBoardInvitations: number;
     comments: number;
     historyEvents: number;
   };
@@ -1820,6 +1924,7 @@ export namespace Prisma {
   > = {
     sessions?: boolean | UserCountOutputTypeCountSessionsArgs;
     memberships?: boolean | UserCountOutputTypeCountMembershipsArgs;
+    sentBoardInvitations?: boolean | UserCountOutputTypeCountSentBoardInvitationsArgs;
     comments?: boolean | UserCountOutputTypeCountCommentsArgs;
     historyEvents?: boolean | UserCountOutputTypeCountHistoryEventsArgs;
   };
@@ -1858,6 +1963,15 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
+  export type UserCountOutputTypeCountSentBoardInvitationsArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    where?: BoardInvitationWhereInput;
+  };
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountCommentsArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
   > = {
@@ -1879,6 +1993,7 @@ export namespace Prisma {
 
   export type BoardCountOutputType = {
     members: number;
+    invitations: number;
     columns: number;
   };
 
@@ -1886,6 +2001,7 @@ export namespace Prisma {
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
   > = {
     members?: boolean | BoardCountOutputTypeCountMembersArgs;
+    invitations?: boolean | BoardCountOutputTypeCountInvitationsArgs;
     columns?: boolean | BoardCountOutputTypeCountColumnsArgs;
   };
 
@@ -1909,6 +2025,15 @@ export namespace Prisma {
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
   > = {
     where?: BoardMemberWhereInput;
+  };
+
+  /**
+   * BoardCountOutputType without action
+   */
+  export type BoardCountOutputTypeCountInvitationsArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    where?: BoardInvitationWhereInput;
   };
 
   /**
@@ -4649,6 +4774,7 @@ export namespace Prisma {
         passwordCredential?: boolean | User$passwordCredentialArgs<ExtArgs>;
         sessions?: boolean | User$sessionsArgs<ExtArgs>;
         memberships?: boolean | User$membershipsArgs<ExtArgs>;
+        sentBoardInvitations?: boolean | User$sentBoardInvitationsArgs<ExtArgs>;
         comments?: boolean | User$commentsArgs<ExtArgs>;
         historyEvents?: boolean | User$historyEventsArgs<ExtArgs>;
         _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>;
@@ -4699,6 +4825,7 @@ export namespace Prisma {
     passwordCredential?: boolean | User$passwordCredentialArgs<ExtArgs>;
     sessions?: boolean | User$sessionsArgs<ExtArgs>;
     memberships?: boolean | User$membershipsArgs<ExtArgs>;
+    sentBoardInvitations?: boolean | User$sentBoardInvitationsArgs<ExtArgs>;
     comments?: boolean | User$commentsArgs<ExtArgs>;
     historyEvents?: boolean | User$historyEventsArgs<ExtArgs>;
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>;
@@ -4716,6 +4843,7 @@ export namespace Prisma {
       passwordCredential: Prisma.$PasswordCredentialPayload<ExtArgs> | null;
       sessions: Prisma.$SessionPayload<ExtArgs>[];
       memberships: Prisma.$BoardMemberPayload<ExtArgs>[];
+      sentBoardInvitations: Prisma.$BoardInvitationPayload<ExtArgs>[];
       comments: Prisma.$CommentPayload<ExtArgs>[];
       historyEvents: Prisma.$TaskHistoryEventPayload<ExtArgs>[];
     };
@@ -5226,6 +5354,12 @@ export namespace Prisma {
       args?: Subset<T, User$membershipsArgs<ExtArgs>>,
     ): Prisma.PrismaPromise<
       | $Result.GetResult<Prisma.$BoardMemberPayload<ExtArgs>, T, 'findMany', GlobalOmitOptions>
+      | Null
+    >;
+    sentBoardInvitations<T extends User$sentBoardInvitationsArgs<ExtArgs> = {}>(
+      args?: Subset<T, User$sentBoardInvitationsArgs<ExtArgs>>,
+    ): Prisma.PrismaPromise<
+      | $Result.GetResult<Prisma.$BoardInvitationPayload<ExtArgs>, T, 'findMany', GlobalOmitOptions>
       | Null
     >;
     comments<T extends User$commentsArgs<ExtArgs> = {}>(
@@ -5764,6 +5898,32 @@ export namespace Prisma {
   };
 
   /**
+   * User.sentBoardInvitations
+   */
+  export type User$sentBoardInvitationsArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the BoardInvitation
+     */
+    select?: BoardInvitationSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the BoardInvitation
+     */
+    omit?: BoardInvitationOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardInvitationInclude<ExtArgs> | null;
+    where?: BoardInvitationWhereInput;
+    orderBy?: BoardInvitationOrderByWithRelationInput | BoardInvitationOrderByWithRelationInput[];
+    cursor?: BoardInvitationWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: BoardInvitationScalarFieldEnum | BoardInvitationScalarFieldEnum[];
+  };
+
+  /**
    * User.comments
    */
   export type User$commentsArgs<
@@ -5990,6 +6150,7 @@ export namespace Prisma {
         createdAt?: boolean;
         updatedAt?: boolean;
         members?: boolean | Board$membersArgs<ExtArgs>;
+        invitations?: boolean | Board$invitationsArgs<ExtArgs>;
         columns?: boolean | Board$columnsArgs<ExtArgs>;
         _count?: boolean | BoardCountOutputTypeDefaultArgs<ExtArgs>;
       },
@@ -6031,6 +6192,7 @@ export namespace Prisma {
     $Extensions.GetOmit<'id' | 'title' | 'createdAt' | 'updatedAt', ExtArgs['result']['board']>;
   export type BoardInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     members?: boolean | Board$membersArgs<ExtArgs>;
+    invitations?: boolean | Board$invitationsArgs<ExtArgs>;
     columns?: boolean | Board$columnsArgs<ExtArgs>;
     _count?: boolean | BoardCountOutputTypeDefaultArgs<ExtArgs>;
   };
@@ -6045,6 +6207,7 @@ export namespace Prisma {
     name: 'Board';
     objects: {
       members: Prisma.$BoardMemberPayload<ExtArgs>[];
+      invitations: Prisma.$BoardInvitationPayload<ExtArgs>[];
       columns: Prisma.$ColumnPayload<ExtArgs>[];
     };
     scalars: $Extensions.GetPayloadResult<
@@ -6537,6 +6700,12 @@ export namespace Prisma {
       | $Result.GetResult<Prisma.$BoardMemberPayload<ExtArgs>, T, 'findMany', GlobalOmitOptions>
       | Null
     >;
+    invitations<T extends Board$invitationsArgs<ExtArgs> = {}>(
+      args?: Subset<T, Board$invitationsArgs<ExtArgs>>,
+    ): Prisma.PrismaPromise<
+      | $Result.GetResult<Prisma.$BoardInvitationPayload<ExtArgs>, T, 'findMany', GlobalOmitOptions>
+      | Null
+    >;
     columns<T extends Board$columnsArgs<ExtArgs> = {}>(
       args?: Subset<T, Board$columnsArgs<ExtArgs>>,
     ): Prisma.PrismaPromise<
@@ -7016,6 +7185,32 @@ export namespace Prisma {
     take?: number;
     skip?: number;
     distinct?: BoardMemberScalarFieldEnum | BoardMemberScalarFieldEnum[];
+  };
+
+  /**
+   * Board.invitations
+   */
+  export type Board$invitationsArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the BoardInvitation
+     */
+    select?: BoardInvitationSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the BoardInvitation
+     */
+    omit?: BoardInvitationOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardInvitationInclude<ExtArgs> | null;
+    where?: BoardInvitationWhereInput;
+    orderBy?: BoardInvitationOrderByWithRelationInput | BoardInvitationOrderByWithRelationInput[];
+    cursor?: BoardInvitationWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: BoardInvitationScalarFieldEnum | BoardInvitationScalarFieldEnum[];
   };
 
   /**
@@ -8330,6 +8525,1423 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: BoardMemberInclude<ExtArgs> | null;
+  };
+
+  /**
+   * Model BoardInvitation
+   */
+
+  export type AggregateBoardInvitation = {
+    _count: BoardInvitationCountAggregateOutputType | null;
+    _avg: BoardInvitationAvgAggregateOutputType | null;
+    _sum: BoardInvitationSumAggregateOutputType | null;
+    _min: BoardInvitationMinAggregateOutputType | null;
+    _max: BoardInvitationMaxAggregateOutputType | null;
+  };
+
+  export type BoardInvitationAvgAggregateOutputType = {
+    maxUses: number | null;
+    usedCount: number | null;
+  };
+
+  export type BoardInvitationSumAggregateOutputType = {
+    maxUses: number | null;
+    usedCount: number | null;
+  };
+
+  export type BoardInvitationMinAggregateOutputType = {
+    id: string | null;
+    boardId: string | null;
+    invitedByUserId: string | null;
+    type: $Enums.BoardInvitationType | null;
+    email: string | null;
+    role: $Enums.BoardMemberRole | null;
+    token: string | null;
+    expiresAt: Date | null;
+    maxUses: number | null;
+    usedCount: number | null;
+    revokedAt: Date | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+  };
+
+  export type BoardInvitationMaxAggregateOutputType = {
+    id: string | null;
+    boardId: string | null;
+    invitedByUserId: string | null;
+    type: $Enums.BoardInvitationType | null;
+    email: string | null;
+    role: $Enums.BoardMemberRole | null;
+    token: string | null;
+    expiresAt: Date | null;
+    maxUses: number | null;
+    usedCount: number | null;
+    revokedAt: Date | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+  };
+
+  export type BoardInvitationCountAggregateOutputType = {
+    id: number;
+    boardId: number;
+    invitedByUserId: number;
+    type: number;
+    email: number;
+    role: number;
+    token: number;
+    expiresAt: number;
+    maxUses: number;
+    usedCount: number;
+    revokedAt: number;
+    createdAt: number;
+    updatedAt: number;
+    _all: number;
+  };
+
+  export type BoardInvitationAvgAggregateInputType = {
+    maxUses?: true;
+    usedCount?: true;
+  };
+
+  export type BoardInvitationSumAggregateInputType = {
+    maxUses?: true;
+    usedCount?: true;
+  };
+
+  export type BoardInvitationMinAggregateInputType = {
+    id?: true;
+    boardId?: true;
+    invitedByUserId?: true;
+    type?: true;
+    email?: true;
+    role?: true;
+    token?: true;
+    expiresAt?: true;
+    maxUses?: true;
+    usedCount?: true;
+    revokedAt?: true;
+    createdAt?: true;
+    updatedAt?: true;
+  };
+
+  export type BoardInvitationMaxAggregateInputType = {
+    id?: true;
+    boardId?: true;
+    invitedByUserId?: true;
+    type?: true;
+    email?: true;
+    role?: true;
+    token?: true;
+    expiresAt?: true;
+    maxUses?: true;
+    usedCount?: true;
+    revokedAt?: true;
+    createdAt?: true;
+    updatedAt?: true;
+  };
+
+  export type BoardInvitationCountAggregateInputType = {
+    id?: true;
+    boardId?: true;
+    invitedByUserId?: true;
+    type?: true;
+    email?: true;
+    role?: true;
+    token?: true;
+    expiresAt?: true;
+    maxUses?: true;
+    usedCount?: true;
+    revokedAt?: true;
+    createdAt?: true;
+    updatedAt?: true;
+    _all?: true;
+  };
+
+  export type BoardInvitationAggregateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Filter which BoardInvitation to aggregate.
+     */
+    where?: BoardInvitationWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of BoardInvitations to fetch.
+     */
+    orderBy?: BoardInvitationOrderByWithRelationInput | BoardInvitationOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: BoardInvitationWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` BoardInvitations from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` BoardInvitations.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned BoardInvitations
+     **/
+    _count?: true | BoardInvitationCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+     **/
+    _avg?: BoardInvitationAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+     **/
+    _sum?: BoardInvitationSumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
+    _min?: BoardInvitationMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
+    _max?: BoardInvitationMaxAggregateInputType;
+  };
+
+  export type GetBoardInvitationAggregateType<T extends BoardInvitationAggregateArgs> = {
+    [P in keyof T & keyof AggregateBoardInvitation]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBoardInvitation[P]>
+      : GetScalarType<T[P], AggregateBoardInvitation[P]>;
+  };
+
+  export type BoardInvitationGroupByArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    where?: BoardInvitationWhereInput;
+    orderBy?:
+      BoardInvitationOrderByWithAggregationInput | BoardInvitationOrderByWithAggregationInput[];
+    by: BoardInvitationScalarFieldEnum[] | BoardInvitationScalarFieldEnum;
+    having?: BoardInvitationScalarWhereWithAggregatesInput;
+    take?: number;
+    skip?: number;
+    _count?: BoardInvitationCountAggregateInputType | true;
+    _avg?: BoardInvitationAvgAggregateInputType;
+    _sum?: BoardInvitationSumAggregateInputType;
+    _min?: BoardInvitationMinAggregateInputType;
+    _max?: BoardInvitationMaxAggregateInputType;
+  };
+
+  export type BoardInvitationGroupByOutputType = {
+    id: string;
+    boardId: string;
+    invitedByUserId: string;
+    type: $Enums.BoardInvitationType;
+    email: string | null;
+    role: $Enums.BoardMemberRole;
+    token: string;
+    expiresAt: Date;
+    maxUses: number | null;
+    usedCount: number;
+    revokedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+    _count: BoardInvitationCountAggregateOutputType | null;
+    _avg: BoardInvitationAvgAggregateOutputType | null;
+    _sum: BoardInvitationSumAggregateOutputType | null;
+    _min: BoardInvitationMinAggregateOutputType | null;
+    _max: BoardInvitationMaxAggregateOutputType | null;
+  };
+
+  type GetBoardInvitationGroupByPayload<T extends BoardInvitationGroupByArgs> =
+    Prisma.PrismaPromise<
+      Array<
+        PickEnumerable<BoardInvitationGroupByOutputType, T['by']> & {
+          [P in keyof T & keyof BoardInvitationGroupByOutputType]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], BoardInvitationGroupByOutputType[P]>
+            : GetScalarType<T[P], BoardInvitationGroupByOutputType[P]>;
+        }
+      >
+    >;
+
+  export type BoardInvitationSelect<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      boardId?: boolean;
+      invitedByUserId?: boolean;
+      type?: boolean;
+      email?: boolean;
+      role?: boolean;
+      token?: boolean;
+      expiresAt?: boolean;
+      maxUses?: boolean;
+      usedCount?: boolean;
+      revokedAt?: boolean;
+      createdAt?: boolean;
+      updatedAt?: boolean;
+      board?: boolean | BoardDefaultArgs<ExtArgs>;
+      invitedByUser?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['boardInvitation']
+  >;
+
+  export type BoardInvitationSelectCreateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      boardId?: boolean;
+      invitedByUserId?: boolean;
+      type?: boolean;
+      email?: boolean;
+      role?: boolean;
+      token?: boolean;
+      expiresAt?: boolean;
+      maxUses?: boolean;
+      usedCount?: boolean;
+      revokedAt?: boolean;
+      createdAt?: boolean;
+      updatedAt?: boolean;
+      board?: boolean | BoardDefaultArgs<ExtArgs>;
+      invitedByUser?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['boardInvitation']
+  >;
+
+  export type BoardInvitationSelectUpdateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      boardId?: boolean;
+      invitedByUserId?: boolean;
+      type?: boolean;
+      email?: boolean;
+      role?: boolean;
+      token?: boolean;
+      expiresAt?: boolean;
+      maxUses?: boolean;
+      usedCount?: boolean;
+      revokedAt?: boolean;
+      createdAt?: boolean;
+      updatedAt?: boolean;
+      board?: boolean | BoardDefaultArgs<ExtArgs>;
+      invitedByUser?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['boardInvitation']
+  >;
+
+  export type BoardInvitationSelectScalar = {
+    id?: boolean;
+    boardId?: boolean;
+    invitedByUserId?: boolean;
+    type?: boolean;
+    email?: boolean;
+    role?: boolean;
+    token?: boolean;
+    expiresAt?: boolean;
+    maxUses?: boolean;
+    usedCount?: boolean;
+    revokedAt?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
+  };
+
+  export type BoardInvitationOmit<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = $Extensions.GetOmit<
+    | 'id'
+    | 'boardId'
+    | 'invitedByUserId'
+    | 'type'
+    | 'email'
+    | 'role'
+    | 'token'
+    | 'expiresAt'
+    | 'maxUses'
+    | 'usedCount'
+    | 'revokedAt'
+    | 'createdAt'
+    | 'updatedAt',
+    ExtArgs['result']['boardInvitation']
+  >;
+  export type BoardInvitationInclude<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    board?: boolean | BoardDefaultArgs<ExtArgs>;
+    invitedByUser?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+  export type BoardInvitationIncludeCreateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    board?: boolean | BoardDefaultArgs<ExtArgs>;
+    invitedByUser?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+  export type BoardInvitationIncludeUpdateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    board?: boolean | BoardDefaultArgs<ExtArgs>;
+    invitedByUser?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+
+  export type $BoardInvitationPayload<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    name: 'BoardInvitation';
+    objects: {
+      board: Prisma.$BoardPayload<ExtArgs>;
+      invitedByUser: Prisma.$UserPayload<ExtArgs>;
+    };
+    scalars: $Extensions.GetPayloadResult<
+      {
+        id: string;
+        boardId: string;
+        invitedByUserId: string;
+        type: $Enums.BoardInvitationType;
+        email: string | null;
+        role: $Enums.BoardMemberRole;
+        token: string;
+        expiresAt: Date;
+        maxUses: number | null;
+        usedCount: number;
+        revokedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+      },
+      ExtArgs['result']['boardInvitation']
+    >;
+    composites: {};
+  };
+
+  type BoardInvitationGetPayload<
+    S extends boolean | null | undefined | BoardInvitationDefaultArgs,
+  > = $Result.GetResult<Prisma.$BoardInvitationPayload, S>;
+
+  type BoardInvitationCountArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = Omit<BoardInvitationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+    select?: BoardInvitationCountAggregateInputType | true;
+  };
+
+  export interface BoardInvitationDelegate<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+    GlobalOmitOptions = {},
+  > {
+    [K: symbol]: {
+      types: Prisma.TypeMap<ExtArgs>['model']['BoardInvitation'];
+      meta: { name: 'BoardInvitation' };
+    };
+    /**
+     * Find zero or one BoardInvitation that matches the filter.
+     * @param {BoardInvitationFindUniqueArgs} args - Arguments to find a BoardInvitation
+     * @example
+     * // Get one BoardInvitation
+     * const boardInvitation = await prisma.boardInvitation.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends BoardInvitationFindUniqueArgs>(
+      args: SelectSubset<T, BoardInvitationFindUniqueArgs<ExtArgs>>,
+    ): Prisma__BoardInvitationClient<
+      $Result.GetResult<
+        Prisma.$BoardInvitationPayload<ExtArgs>,
+        T,
+        'findUnique',
+        GlobalOmitOptions
+      > | null,
+      null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find one BoardInvitation that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {BoardInvitationFindUniqueOrThrowArgs} args - Arguments to find a BoardInvitation
+     * @example
+     * // Get one BoardInvitation
+     * const boardInvitation = await prisma.boardInvitation.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends BoardInvitationFindUniqueOrThrowArgs>(
+      args: SelectSubset<T, BoardInvitationFindUniqueOrThrowArgs<ExtArgs>>,
+    ): Prisma__BoardInvitationClient<
+      $Result.GetResult<
+        Prisma.$BoardInvitationPayload<ExtArgs>,
+        T,
+        'findUniqueOrThrow',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find the first BoardInvitation that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardInvitationFindFirstArgs} args - Arguments to find a BoardInvitation
+     * @example
+     * // Get one BoardInvitation
+     * const boardInvitation = await prisma.boardInvitation.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends BoardInvitationFindFirstArgs>(
+      args?: SelectSubset<T, BoardInvitationFindFirstArgs<ExtArgs>>,
+    ): Prisma__BoardInvitationClient<
+      $Result.GetResult<
+        Prisma.$BoardInvitationPayload<ExtArgs>,
+        T,
+        'findFirst',
+        GlobalOmitOptions
+      > | null,
+      null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find the first BoardInvitation that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardInvitationFindFirstOrThrowArgs} args - Arguments to find a BoardInvitation
+     * @example
+     * // Get one BoardInvitation
+     * const boardInvitation = await prisma.boardInvitation.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends BoardInvitationFindFirstOrThrowArgs>(
+      args?: SelectSubset<T, BoardInvitationFindFirstOrThrowArgs<ExtArgs>>,
+    ): Prisma__BoardInvitationClient<
+      $Result.GetResult<
+        Prisma.$BoardInvitationPayload<ExtArgs>,
+        T,
+        'findFirstOrThrow',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find zero or more BoardInvitations that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardInvitationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all BoardInvitations
+     * const boardInvitations = await prisma.boardInvitation.findMany()
+     *
+     * // Get first 10 BoardInvitations
+     * const boardInvitations = await prisma.boardInvitation.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const boardInvitationWithIdOnly = await prisma.boardInvitation.findMany({ select: { id: true } })
+     *
+     */
+    findMany<T extends BoardInvitationFindManyArgs>(
+      args?: SelectSubset<T, BoardInvitationFindManyArgs<ExtArgs>>,
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<Prisma.$BoardInvitationPayload<ExtArgs>, T, 'findMany', GlobalOmitOptions>
+    >;
+
+    /**
+     * Create a BoardInvitation.
+     * @param {BoardInvitationCreateArgs} args - Arguments to create a BoardInvitation.
+     * @example
+     * // Create one BoardInvitation
+     * const BoardInvitation = await prisma.boardInvitation.create({
+     *   data: {
+     *     // ... data to create a BoardInvitation
+     *   }
+     * })
+     *
+     */
+    create<T extends BoardInvitationCreateArgs>(
+      args: SelectSubset<T, BoardInvitationCreateArgs<ExtArgs>>,
+    ): Prisma__BoardInvitationClient<
+      $Result.GetResult<Prisma.$BoardInvitationPayload<ExtArgs>, T, 'create', GlobalOmitOptions>,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Create many BoardInvitations.
+     * @param {BoardInvitationCreateManyArgs} args - Arguments to create many BoardInvitations.
+     * @example
+     * // Create many BoardInvitations
+     * const boardInvitation = await prisma.boardInvitation.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends BoardInvitationCreateManyArgs>(
+      args?: SelectSubset<T, BoardInvitationCreateManyArgs<ExtArgs>>,
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many BoardInvitations and returns the data saved in the database.
+     * @param {BoardInvitationCreateManyAndReturnArgs} args - Arguments to create many BoardInvitations.
+     * @example
+     * // Create many BoardInvitations
+     * const boardInvitation = await prisma.boardInvitation.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many BoardInvitations and only return the `id`
+     * const boardInvitationWithIdOnly = await prisma.boardInvitation.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends BoardInvitationCreateManyAndReturnArgs>(
+      args?: SelectSubset<T, BoardInvitationCreateManyAndReturnArgs<ExtArgs>>,
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<
+        Prisma.$BoardInvitationPayload<ExtArgs>,
+        T,
+        'createManyAndReturn',
+        GlobalOmitOptions
+      >
+    >;
+
+    /**
+     * Delete a BoardInvitation.
+     * @param {BoardInvitationDeleteArgs} args - Arguments to delete one BoardInvitation.
+     * @example
+     * // Delete one BoardInvitation
+     * const BoardInvitation = await prisma.boardInvitation.delete({
+     *   where: {
+     *     // ... filter to delete one BoardInvitation
+     *   }
+     * })
+     *
+     */
+    delete<T extends BoardInvitationDeleteArgs>(
+      args: SelectSubset<T, BoardInvitationDeleteArgs<ExtArgs>>,
+    ): Prisma__BoardInvitationClient<
+      $Result.GetResult<Prisma.$BoardInvitationPayload<ExtArgs>, T, 'delete', GlobalOmitOptions>,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Update one BoardInvitation.
+     * @param {BoardInvitationUpdateArgs} args - Arguments to update one BoardInvitation.
+     * @example
+     * // Update one BoardInvitation
+     * const boardInvitation = await prisma.boardInvitation.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends BoardInvitationUpdateArgs>(
+      args: SelectSubset<T, BoardInvitationUpdateArgs<ExtArgs>>,
+    ): Prisma__BoardInvitationClient<
+      $Result.GetResult<Prisma.$BoardInvitationPayload<ExtArgs>, T, 'update', GlobalOmitOptions>,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Delete zero or more BoardInvitations.
+     * @param {BoardInvitationDeleteManyArgs} args - Arguments to filter BoardInvitations to delete.
+     * @example
+     * // Delete a few BoardInvitations
+     * const { count } = await prisma.boardInvitation.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends BoardInvitationDeleteManyArgs>(
+      args?: SelectSubset<T, BoardInvitationDeleteManyArgs<ExtArgs>>,
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more BoardInvitations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardInvitationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many BoardInvitations
+     * const boardInvitation = await prisma.boardInvitation.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends BoardInvitationUpdateManyArgs>(
+      args: SelectSubset<T, BoardInvitationUpdateManyArgs<ExtArgs>>,
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more BoardInvitations and returns the data updated in the database.
+     * @param {BoardInvitationUpdateManyAndReturnArgs} args - Arguments to update many BoardInvitations.
+     * @example
+     * // Update many BoardInvitations
+     * const boardInvitation = await prisma.boardInvitation.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more BoardInvitations and only return the `id`
+     * const boardInvitationWithIdOnly = await prisma.boardInvitation.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    updateManyAndReturn<T extends BoardInvitationUpdateManyAndReturnArgs>(
+      args: SelectSubset<T, BoardInvitationUpdateManyAndReturnArgs<ExtArgs>>,
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<
+        Prisma.$BoardInvitationPayload<ExtArgs>,
+        T,
+        'updateManyAndReturn',
+        GlobalOmitOptions
+      >
+    >;
+
+    /**
+     * Create or update one BoardInvitation.
+     * @param {BoardInvitationUpsertArgs} args - Arguments to update or create a BoardInvitation.
+     * @example
+     * // Update or create a BoardInvitation
+     * const boardInvitation = await prisma.boardInvitation.upsert({
+     *   create: {
+     *     // ... data to create a BoardInvitation
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the BoardInvitation we want to update
+     *   }
+     * })
+     */
+    upsert<T extends BoardInvitationUpsertArgs>(
+      args: SelectSubset<T, BoardInvitationUpsertArgs<ExtArgs>>,
+    ): Prisma__BoardInvitationClient<
+      $Result.GetResult<Prisma.$BoardInvitationPayload<ExtArgs>, T, 'upsert', GlobalOmitOptions>,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Count the number of BoardInvitations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardInvitationCountArgs} args - Arguments to filter BoardInvitations to count.
+     * @example
+     * // Count the number of BoardInvitations
+     * const count = await prisma.boardInvitation.count({
+     *   where: {
+     *     // ... the filter for the BoardInvitations we want to count
+     *   }
+     * })
+     **/
+    count<T extends BoardInvitationCountArgs>(
+      args?: Subset<T, BoardInvitationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], BoardInvitationCountAggregateOutputType>
+        : number
+    >;
+
+    /**
+     * Allows you to perform aggregations operations on a BoardInvitation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardInvitationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
+    aggregate<T extends BoardInvitationAggregateArgs>(
+      args: Subset<T, BoardInvitationAggregateArgs>,
+    ): Prisma.PrismaPromise<GetBoardInvitationAggregateType<T>>;
+
+    /**
+     * Group by BoardInvitation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardInvitationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
+    groupBy<
+      T extends BoardInvitationGroupByArgs,
+      HasSelectOrTake extends Or<Extends<'skip', Keys<T>>, Extends<'take', Keys<T>>>,
+      OrderByArg extends (True extends HasSelectOrTake
+        ? { orderBy: BoardInvitationGroupByArgs['orderBy'] }
+        : { orderBy?: BoardInvitationGroupByArgs['orderBy'] }),
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends (T['by'] extends never[] ? True : False),
+      InputErrors extends (ByEmpty extends True
+        ? `Error: "by" must not be empty.`
+        : HavingValid extends False
+          ? {
+              [P in HavingFields]: P extends ByFields
+                ? never
+                : P extends string
+                  ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+                  : [Error, 'Field ', P, ` in "having" needs to be provided in "by"`];
+            }[HavingFields]
+          : 'take' extends Keys<T>
+            ? 'orderBy' extends Keys<T>
+              ? ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields]
+              : 'Error: If you provide "take", you also need to provide "orderBy"'
+            : 'skip' extends Keys<T>
+              ? 'orderBy' extends Keys<T>
+                ? ByValid extends True
+                  ? {}
+                  : {
+                      [P in OrderFields]: P extends ByFields
+                        ? never
+                        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                    }[OrderFields]
+                : 'Error: If you provide "skip", you also need to provide "orderBy"'
+              : ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields]),
+    >(
+      args: SubsetIntersection<T, BoardInvitationGroupByArgs, OrderByArg> & InputErrors,
+    ): {} extends InputErrors
+      ? GetBoardInvitationGroupByPayload<T>
+      : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the BoardInvitation model
+     */
+    readonly fields: BoardInvitationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for BoardInvitation.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__BoardInvitationClient<
+    T,
+    Null = never,
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+    GlobalOmitOptions = {},
+  > extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: 'PrismaPromise';
+    board<T extends BoardDefaultArgs<ExtArgs> = {}>(
+      args?: Subset<T, BoardDefaultArgs<ExtArgs>>,
+    ): Prisma__BoardClient<
+      | $Result.GetResult<Prisma.$BoardPayload<ExtArgs>, T, 'findUniqueOrThrow', GlobalOmitOptions>
+      | Null,
+      Null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+    invitedByUser<T extends UserDefaultArgs<ExtArgs> = {}>(
+      args?: Subset<T, UserDefaultArgs<ExtArgs>>,
+    ): Prisma__UserClient<
+      | $Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, 'findUniqueOrThrow', GlobalOmitOptions>
+      | Null,
+      Null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(
+      onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+      onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
+    ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(
+      onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null,
+    ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
+  }
+
+  /**
+   * Fields of the BoardInvitation model
+   */
+  interface BoardInvitationFieldRefs {
+    readonly id: FieldRef<'BoardInvitation', 'String'>;
+    readonly boardId: FieldRef<'BoardInvitation', 'String'>;
+    readonly invitedByUserId: FieldRef<'BoardInvitation', 'String'>;
+    readonly type: FieldRef<'BoardInvitation', 'BoardInvitationType'>;
+    readonly email: FieldRef<'BoardInvitation', 'String'>;
+    readonly role: FieldRef<'BoardInvitation', 'BoardMemberRole'>;
+    readonly token: FieldRef<'BoardInvitation', 'String'>;
+    readonly expiresAt: FieldRef<'BoardInvitation', 'DateTime'>;
+    readonly maxUses: FieldRef<'BoardInvitation', 'Int'>;
+    readonly usedCount: FieldRef<'BoardInvitation', 'Int'>;
+    readonly revokedAt: FieldRef<'BoardInvitation', 'DateTime'>;
+    readonly createdAt: FieldRef<'BoardInvitation', 'DateTime'>;
+    readonly updatedAt: FieldRef<'BoardInvitation', 'DateTime'>;
+  }
+
+  // Custom InputTypes
+  /**
+   * BoardInvitation findUnique
+   */
+  export type BoardInvitationFindUniqueArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the BoardInvitation
+     */
+    select?: BoardInvitationSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the BoardInvitation
+     */
+    omit?: BoardInvitationOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardInvitationInclude<ExtArgs> | null;
+    /**
+     * Filter, which BoardInvitation to fetch.
+     */
+    where: BoardInvitationWhereUniqueInput;
+  };
+
+  /**
+   * BoardInvitation findUniqueOrThrow
+   */
+  export type BoardInvitationFindUniqueOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the BoardInvitation
+     */
+    select?: BoardInvitationSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the BoardInvitation
+     */
+    omit?: BoardInvitationOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardInvitationInclude<ExtArgs> | null;
+    /**
+     * Filter, which BoardInvitation to fetch.
+     */
+    where: BoardInvitationWhereUniqueInput;
+  };
+
+  /**
+   * BoardInvitation findFirst
+   */
+  export type BoardInvitationFindFirstArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the BoardInvitation
+     */
+    select?: BoardInvitationSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the BoardInvitation
+     */
+    omit?: BoardInvitationOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardInvitationInclude<ExtArgs> | null;
+    /**
+     * Filter, which BoardInvitation to fetch.
+     */
+    where?: BoardInvitationWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of BoardInvitations to fetch.
+     */
+    orderBy?: BoardInvitationOrderByWithRelationInput | BoardInvitationOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for BoardInvitations.
+     */
+    cursor?: BoardInvitationWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` BoardInvitations from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` BoardInvitations.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of BoardInvitations.
+     */
+    distinct?: BoardInvitationScalarFieldEnum | BoardInvitationScalarFieldEnum[];
+  };
+
+  /**
+   * BoardInvitation findFirstOrThrow
+   */
+  export type BoardInvitationFindFirstOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the BoardInvitation
+     */
+    select?: BoardInvitationSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the BoardInvitation
+     */
+    omit?: BoardInvitationOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardInvitationInclude<ExtArgs> | null;
+    /**
+     * Filter, which BoardInvitation to fetch.
+     */
+    where?: BoardInvitationWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of BoardInvitations to fetch.
+     */
+    orderBy?: BoardInvitationOrderByWithRelationInput | BoardInvitationOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for BoardInvitations.
+     */
+    cursor?: BoardInvitationWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` BoardInvitations from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` BoardInvitations.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of BoardInvitations.
+     */
+    distinct?: BoardInvitationScalarFieldEnum | BoardInvitationScalarFieldEnum[];
+  };
+
+  /**
+   * BoardInvitation findMany
+   */
+  export type BoardInvitationFindManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the BoardInvitation
+     */
+    select?: BoardInvitationSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the BoardInvitation
+     */
+    omit?: BoardInvitationOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardInvitationInclude<ExtArgs> | null;
+    /**
+     * Filter, which BoardInvitations to fetch.
+     */
+    where?: BoardInvitationWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of BoardInvitations to fetch.
+     */
+    orderBy?: BoardInvitationOrderByWithRelationInput | BoardInvitationOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing BoardInvitations.
+     */
+    cursor?: BoardInvitationWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` BoardInvitations from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` BoardInvitations.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of BoardInvitations.
+     */
+    distinct?: BoardInvitationScalarFieldEnum | BoardInvitationScalarFieldEnum[];
+  };
+
+  /**
+   * BoardInvitation create
+   */
+  export type BoardInvitationCreateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the BoardInvitation
+     */
+    select?: BoardInvitationSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the BoardInvitation
+     */
+    omit?: BoardInvitationOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardInvitationInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a BoardInvitation.
+     */
+    data: XOR<BoardInvitationCreateInput, BoardInvitationUncheckedCreateInput>;
+  };
+
+  /**
+   * BoardInvitation createMany
+   */
+  export type BoardInvitationCreateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * The data used to create many BoardInvitations.
+     */
+    data: BoardInvitationCreateManyInput | BoardInvitationCreateManyInput[];
+    skipDuplicates?: boolean;
+  };
+
+  /**
+   * BoardInvitation createManyAndReturn
+   */
+  export type BoardInvitationCreateManyAndReturnArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the BoardInvitation
+     */
+    select?: BoardInvitationSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the BoardInvitation
+     */
+    omit?: BoardInvitationOmit<ExtArgs> | null;
+    /**
+     * The data used to create many BoardInvitations.
+     */
+    data: BoardInvitationCreateManyInput | BoardInvitationCreateManyInput[];
+    skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardInvitationIncludeCreateManyAndReturn<ExtArgs> | null;
+  };
+
+  /**
+   * BoardInvitation update
+   */
+  export type BoardInvitationUpdateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the BoardInvitation
+     */
+    select?: BoardInvitationSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the BoardInvitation
+     */
+    omit?: BoardInvitationOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardInvitationInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a BoardInvitation.
+     */
+    data: XOR<BoardInvitationUpdateInput, BoardInvitationUncheckedUpdateInput>;
+    /**
+     * Choose, which BoardInvitation to update.
+     */
+    where: BoardInvitationWhereUniqueInput;
+  };
+
+  /**
+   * BoardInvitation updateMany
+   */
+  export type BoardInvitationUpdateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * The data used to update BoardInvitations.
+     */
+    data: XOR<BoardInvitationUpdateManyMutationInput, BoardInvitationUncheckedUpdateManyInput>;
+    /**
+     * Filter which BoardInvitations to update
+     */
+    where?: BoardInvitationWhereInput;
+    /**
+     * Limit how many BoardInvitations to update.
+     */
+    limit?: number;
+  };
+
+  /**
+   * BoardInvitation updateManyAndReturn
+   */
+  export type BoardInvitationUpdateManyAndReturnArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the BoardInvitation
+     */
+    select?: BoardInvitationSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the BoardInvitation
+     */
+    omit?: BoardInvitationOmit<ExtArgs> | null;
+    /**
+     * The data used to update BoardInvitations.
+     */
+    data: XOR<BoardInvitationUpdateManyMutationInput, BoardInvitationUncheckedUpdateManyInput>;
+    /**
+     * Filter which BoardInvitations to update
+     */
+    where?: BoardInvitationWhereInput;
+    /**
+     * Limit how many BoardInvitations to update.
+     */
+    limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardInvitationIncludeUpdateManyAndReturn<ExtArgs> | null;
+  };
+
+  /**
+   * BoardInvitation upsert
+   */
+  export type BoardInvitationUpsertArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the BoardInvitation
+     */
+    select?: BoardInvitationSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the BoardInvitation
+     */
+    omit?: BoardInvitationOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardInvitationInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the BoardInvitation to update in case it exists.
+     */
+    where: BoardInvitationWhereUniqueInput;
+    /**
+     * In case the BoardInvitation found by the `where` argument doesn't exist, create a new BoardInvitation with this data.
+     */
+    create: XOR<BoardInvitationCreateInput, BoardInvitationUncheckedCreateInput>;
+    /**
+     * In case the BoardInvitation was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<BoardInvitationUpdateInput, BoardInvitationUncheckedUpdateInput>;
+  };
+
+  /**
+   * BoardInvitation delete
+   */
+  export type BoardInvitationDeleteArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the BoardInvitation
+     */
+    select?: BoardInvitationSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the BoardInvitation
+     */
+    omit?: BoardInvitationOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardInvitationInclude<ExtArgs> | null;
+    /**
+     * Filter which BoardInvitation to delete.
+     */
+    where: BoardInvitationWhereUniqueInput;
+  };
+
+  /**
+   * BoardInvitation deleteMany
+   */
+  export type BoardInvitationDeleteManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Filter which BoardInvitations to delete
+     */
+    where?: BoardInvitationWhereInput;
+    /**
+     * Limit how many BoardInvitations to delete.
+     */
+    limit?: number;
+  };
+
+  /**
+   * BoardInvitation without action
+   */
+  export type BoardInvitationDefaultArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  > = {
+    /**
+     * Select specific fields to fetch from the BoardInvitation
+     */
+    select?: BoardInvitationSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the BoardInvitation
+     */
+    omit?: BoardInvitationOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardInvitationInclude<ExtArgs> | null;
   };
 
   /**
@@ -14998,6 +16610,25 @@ export namespace Prisma {
   export type BoardMemberScalarFieldEnum =
     (typeof BoardMemberScalarFieldEnum)[keyof typeof BoardMemberScalarFieldEnum];
 
+  export const BoardInvitationScalarFieldEnum: {
+    id: 'id';
+    boardId: 'boardId';
+    invitedByUserId: 'invitedByUserId';
+    type: 'type';
+    email: 'email';
+    role: 'role';
+    token: 'token';
+    expiresAt: 'expiresAt';
+    maxUses: 'maxUses';
+    usedCount: 'usedCount';
+    revokedAt: 'revokedAt';
+    createdAt: 'createdAt';
+    updatedAt: 'updatedAt';
+  };
+
+  export type BoardInvitationScalarFieldEnum =
+    (typeof BoardInvitationScalarFieldEnum)[keyof typeof BoardInvitationScalarFieldEnum];
+
   export const ColumnScalarFieldEnum: {
     id: 'id';
     boardId: 'boardId';
@@ -15144,6 +16775,22 @@ export namespace Prisma {
   export type ListEnumBoardMemberRoleFieldRefInput<$PrismaModel> = FieldRefInputType<
     $PrismaModel,
     'BoardMemberRole[]'
+  >;
+
+  /**
+   * Reference to a field of type 'BoardInvitationType'
+   */
+  export type EnumBoardInvitationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
+    $PrismaModel,
+    'BoardInvitationType'
+  >;
+
+  /**
+   * Reference to a field of type 'BoardInvitationType[]'
+   */
+  export type ListEnumBoardInvitationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
+    $PrismaModel,
+    'BoardInvitationType[]'
   >;
 
   /**
@@ -15350,6 +16997,7 @@ export namespace Prisma {
     > | null;
     sessions?: SessionListRelationFilter;
     memberships?: BoardMemberListRelationFilter;
+    sentBoardInvitations?: BoardInvitationListRelationFilter;
     comments?: CommentListRelationFilter;
     historyEvents?: TaskHistoryEventListRelationFilter;
   };
@@ -15363,6 +17011,7 @@ export namespace Prisma {
     passwordCredential?: PasswordCredentialOrderByWithRelationInput;
     sessions?: SessionOrderByRelationAggregateInput;
     memberships?: BoardMemberOrderByRelationAggregateInput;
+    sentBoardInvitations?: BoardInvitationOrderByRelationAggregateInput;
     comments?: CommentOrderByRelationAggregateInput;
     historyEvents?: TaskHistoryEventOrderByRelationAggregateInput;
   };
@@ -15383,6 +17032,7 @@ export namespace Prisma {
       > | null;
       sessions?: SessionListRelationFilter;
       memberships?: BoardMemberListRelationFilter;
+      sentBoardInvitations?: BoardInvitationListRelationFilter;
       comments?: CommentListRelationFilter;
       historyEvents?: TaskHistoryEventListRelationFilter;
     },
@@ -15420,6 +17070,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<'Board'> | Date | string;
     updatedAt?: DateTimeFilter<'Board'> | Date | string;
     members?: BoardMemberListRelationFilter;
+    invitations?: BoardInvitationListRelationFilter;
     columns?: ColumnListRelationFilter;
   };
 
@@ -15429,6 +17080,7 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
     members?: BoardMemberOrderByRelationAggregateInput;
+    invitations?: BoardInvitationOrderByRelationAggregateInput;
     columns?: ColumnOrderByRelationAggregateInput;
   };
 
@@ -15442,6 +17094,7 @@ export namespace Prisma {
       createdAt?: DateTimeFilter<'Board'> | Date | string;
       updatedAt?: DateTimeFilter<'Board'> | Date | string;
       members?: BoardMemberListRelationFilter;
+      invitations?: BoardInvitationListRelationFilter;
       columns?: ColumnListRelationFilter;
     },
     'id'
@@ -15532,6 +17185,114 @@ export namespace Prisma {
     role?: EnumBoardMemberRoleWithAggregatesFilter<'BoardMember'> | $Enums.BoardMemberRole;
     createdAt?: DateTimeWithAggregatesFilter<'BoardMember'> | Date | string;
     updatedAt?: DateTimeWithAggregatesFilter<'BoardMember'> | Date | string;
+  };
+
+  export type BoardInvitationWhereInput = {
+    AND?: BoardInvitationWhereInput | BoardInvitationWhereInput[];
+    OR?: BoardInvitationWhereInput[];
+    NOT?: BoardInvitationWhereInput | BoardInvitationWhereInput[];
+    id?: StringFilter<'BoardInvitation'> | string;
+    boardId?: StringFilter<'BoardInvitation'> | string;
+    invitedByUserId?: StringFilter<'BoardInvitation'> | string;
+    type?: EnumBoardInvitationTypeFilter<'BoardInvitation'> | $Enums.BoardInvitationType;
+    email?: StringNullableFilter<'BoardInvitation'> | string | null;
+    role?: EnumBoardMemberRoleFilter<'BoardInvitation'> | $Enums.BoardMemberRole;
+    token?: StringFilter<'BoardInvitation'> | string;
+    expiresAt?: DateTimeFilter<'BoardInvitation'> | Date | string;
+    maxUses?: IntNullableFilter<'BoardInvitation'> | number | null;
+    usedCount?: IntFilter<'BoardInvitation'> | number;
+    revokedAt?: DateTimeNullableFilter<'BoardInvitation'> | Date | string | null;
+    createdAt?: DateTimeFilter<'BoardInvitation'> | Date | string;
+    updatedAt?: DateTimeFilter<'BoardInvitation'> | Date | string;
+    board?: XOR<BoardScalarRelationFilter, BoardWhereInput>;
+    invitedByUser?: XOR<UserScalarRelationFilter, UserWhereInput>;
+  };
+
+  export type BoardInvitationOrderByWithRelationInput = {
+    id?: SortOrder;
+    boardId?: SortOrder;
+    invitedByUserId?: SortOrder;
+    type?: SortOrder;
+    email?: SortOrderInput | SortOrder;
+    role?: SortOrder;
+    token?: SortOrder;
+    expiresAt?: SortOrder;
+    maxUses?: SortOrderInput | SortOrder;
+    usedCount?: SortOrder;
+    revokedAt?: SortOrderInput | SortOrder;
+    createdAt?: SortOrder;
+    updatedAt?: SortOrder;
+    board?: BoardOrderByWithRelationInput;
+    invitedByUser?: UserOrderByWithRelationInput;
+  };
+
+  export type BoardInvitationWhereUniqueInput = Prisma.AtLeast<
+    {
+      id?: string;
+      token?: string;
+      AND?: BoardInvitationWhereInput | BoardInvitationWhereInput[];
+      OR?: BoardInvitationWhereInput[];
+      NOT?: BoardInvitationWhereInput | BoardInvitationWhereInput[];
+      boardId?: StringFilter<'BoardInvitation'> | string;
+      invitedByUserId?: StringFilter<'BoardInvitation'> | string;
+      type?: EnumBoardInvitationTypeFilter<'BoardInvitation'> | $Enums.BoardInvitationType;
+      email?: StringNullableFilter<'BoardInvitation'> | string | null;
+      role?: EnumBoardMemberRoleFilter<'BoardInvitation'> | $Enums.BoardMemberRole;
+      expiresAt?: DateTimeFilter<'BoardInvitation'> | Date | string;
+      maxUses?: IntNullableFilter<'BoardInvitation'> | number | null;
+      usedCount?: IntFilter<'BoardInvitation'> | number;
+      revokedAt?: DateTimeNullableFilter<'BoardInvitation'> | Date | string | null;
+      createdAt?: DateTimeFilter<'BoardInvitation'> | Date | string;
+      updatedAt?: DateTimeFilter<'BoardInvitation'> | Date | string;
+      board?: XOR<BoardScalarRelationFilter, BoardWhereInput>;
+      invitedByUser?: XOR<UserScalarRelationFilter, UserWhereInput>;
+    },
+    'id' | 'token'
+  >;
+
+  export type BoardInvitationOrderByWithAggregationInput = {
+    id?: SortOrder;
+    boardId?: SortOrder;
+    invitedByUserId?: SortOrder;
+    type?: SortOrder;
+    email?: SortOrderInput | SortOrder;
+    role?: SortOrder;
+    token?: SortOrder;
+    expiresAt?: SortOrder;
+    maxUses?: SortOrderInput | SortOrder;
+    usedCount?: SortOrder;
+    revokedAt?: SortOrderInput | SortOrder;
+    createdAt?: SortOrder;
+    updatedAt?: SortOrder;
+    _count?: BoardInvitationCountOrderByAggregateInput;
+    _avg?: BoardInvitationAvgOrderByAggregateInput;
+    _max?: BoardInvitationMaxOrderByAggregateInput;
+    _min?: BoardInvitationMinOrderByAggregateInput;
+    _sum?: BoardInvitationSumOrderByAggregateInput;
+  };
+
+  export type BoardInvitationScalarWhereWithAggregatesInput = {
+    AND?:
+      | BoardInvitationScalarWhereWithAggregatesInput
+      | BoardInvitationScalarWhereWithAggregatesInput[];
+    OR?: BoardInvitationScalarWhereWithAggregatesInput[];
+    NOT?:
+      | BoardInvitationScalarWhereWithAggregatesInput
+      | BoardInvitationScalarWhereWithAggregatesInput[];
+    id?: StringWithAggregatesFilter<'BoardInvitation'> | string;
+    boardId?: StringWithAggregatesFilter<'BoardInvitation'> | string;
+    invitedByUserId?: StringWithAggregatesFilter<'BoardInvitation'> | string;
+    type?:
+      EnumBoardInvitationTypeWithAggregatesFilter<'BoardInvitation'> | $Enums.BoardInvitationType;
+    email?: StringNullableWithAggregatesFilter<'BoardInvitation'> | string | null;
+    role?: EnumBoardMemberRoleWithAggregatesFilter<'BoardInvitation'> | $Enums.BoardMemberRole;
+    token?: StringWithAggregatesFilter<'BoardInvitation'> | string;
+    expiresAt?: DateTimeWithAggregatesFilter<'BoardInvitation'> | Date | string;
+    maxUses?: IntNullableWithAggregatesFilter<'BoardInvitation'> | number | null;
+    usedCount?: IntWithAggregatesFilter<'BoardInvitation'> | number;
+    revokedAt?: DateTimeNullableWithAggregatesFilter<'BoardInvitation'> | Date | string | null;
+    createdAt?: DateTimeWithAggregatesFilter<'BoardInvitation'> | Date | string;
+    updatedAt?: DateTimeWithAggregatesFilter<'BoardInvitation'> | Date | string;
   };
 
   export type ColumnWhereInput = {
@@ -16039,6 +17800,7 @@ export namespace Prisma {
     passwordCredential?: PasswordCredentialCreateNestedOneWithoutUserInput;
     sessions?: SessionCreateNestedManyWithoutUserInput;
     memberships?: BoardMemberCreateNestedManyWithoutUserInput;
+    sentBoardInvitations?: BoardInvitationCreateNestedManyWithoutInvitedByUserInput;
     comments?: CommentCreateNestedManyWithoutAuthorInput;
     historyEvents?: TaskHistoryEventCreateNestedManyWithoutActorInput;
   };
@@ -16052,6 +17814,7 @@ export namespace Prisma {
     passwordCredential?: PasswordCredentialUncheckedCreateNestedOneWithoutUserInput;
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput;
     memberships?: BoardMemberUncheckedCreateNestedManyWithoutUserInput;
+    sentBoardInvitations?: BoardInvitationUncheckedCreateNestedManyWithoutInvitedByUserInput;
     comments?: CommentUncheckedCreateNestedManyWithoutAuthorInput;
     historyEvents?: TaskHistoryEventUncheckedCreateNestedManyWithoutActorInput;
   };
@@ -16065,6 +17828,7 @@ export namespace Prisma {
     passwordCredential?: PasswordCredentialUpdateOneWithoutUserNestedInput;
     sessions?: SessionUpdateManyWithoutUserNestedInput;
     memberships?: BoardMemberUpdateManyWithoutUserNestedInput;
+    sentBoardInvitations?: BoardInvitationUpdateManyWithoutInvitedByUserNestedInput;
     comments?: CommentUpdateManyWithoutAuthorNestedInput;
     historyEvents?: TaskHistoryEventUpdateManyWithoutActorNestedInput;
   };
@@ -16078,6 +17842,7 @@ export namespace Prisma {
     passwordCredential?: PasswordCredentialUncheckedUpdateOneWithoutUserNestedInput;
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput;
     memberships?: BoardMemberUncheckedUpdateManyWithoutUserNestedInput;
+    sentBoardInvitations?: BoardInvitationUncheckedUpdateManyWithoutInvitedByUserNestedInput;
     comments?: CommentUncheckedUpdateManyWithoutAuthorNestedInput;
     historyEvents?: TaskHistoryEventUncheckedUpdateManyWithoutActorNestedInput;
   };
@@ -16112,6 +17877,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     members?: BoardMemberCreateNestedManyWithoutBoardInput;
+    invitations?: BoardInvitationCreateNestedManyWithoutBoardInput;
     columns?: ColumnCreateNestedManyWithoutBoardInput;
   };
 
@@ -16121,6 +17887,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     members?: BoardMemberUncheckedCreateNestedManyWithoutBoardInput;
+    invitations?: BoardInvitationUncheckedCreateNestedManyWithoutBoardInput;
     columns?: ColumnUncheckedCreateNestedManyWithoutBoardInput;
   };
 
@@ -16130,6 +17897,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     members?: BoardMemberUpdateManyWithoutBoardNestedInput;
+    invitations?: BoardInvitationUpdateManyWithoutBoardNestedInput;
     columns?: ColumnUpdateManyWithoutBoardNestedInput;
   };
 
@@ -16139,6 +17907,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     members?: BoardMemberUncheckedUpdateManyWithoutBoardNestedInput;
+    invitations?: BoardInvitationUncheckedUpdateManyWithoutBoardNestedInput;
     columns?: ColumnUncheckedUpdateManyWithoutBoardNestedInput;
   };
 
@@ -16220,6 +17989,116 @@ export namespace Prisma {
     boardId?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
     role?: EnumBoardMemberRoleFieldUpdateOperationsInput | $Enums.BoardMemberRole;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type BoardInvitationCreateInput = {
+    id?: string;
+    type: $Enums.BoardInvitationType;
+    email?: string | null;
+    role: $Enums.BoardMemberRole;
+    token: string;
+    expiresAt: Date | string;
+    maxUses?: number | null;
+    usedCount?: number;
+    revokedAt?: Date | string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    board: BoardCreateNestedOneWithoutInvitationsInput;
+    invitedByUser: UserCreateNestedOneWithoutSentBoardInvitationsInput;
+  };
+
+  export type BoardInvitationUncheckedCreateInput = {
+    id?: string;
+    boardId: string;
+    invitedByUserId: string;
+    type: $Enums.BoardInvitationType;
+    email?: string | null;
+    role: $Enums.BoardMemberRole;
+    token: string;
+    expiresAt: Date | string;
+    maxUses?: number | null;
+    usedCount?: number;
+    revokedAt?: Date | string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+  };
+
+  export type BoardInvitationUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    type?: EnumBoardInvitationTypeFieldUpdateOperationsInput | $Enums.BoardInvitationType;
+    email?: NullableStringFieldUpdateOperationsInput | string | null;
+    role?: EnumBoardMemberRoleFieldUpdateOperationsInput | $Enums.BoardMemberRole;
+    token?: StringFieldUpdateOperationsInput | string;
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null;
+    usedCount?: IntFieldUpdateOperationsInput | number;
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    board?: BoardUpdateOneRequiredWithoutInvitationsNestedInput;
+    invitedByUser?: UserUpdateOneRequiredWithoutSentBoardInvitationsNestedInput;
+  };
+
+  export type BoardInvitationUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    boardId?: StringFieldUpdateOperationsInput | string;
+    invitedByUserId?: StringFieldUpdateOperationsInput | string;
+    type?: EnumBoardInvitationTypeFieldUpdateOperationsInput | $Enums.BoardInvitationType;
+    email?: NullableStringFieldUpdateOperationsInput | string | null;
+    role?: EnumBoardMemberRoleFieldUpdateOperationsInput | $Enums.BoardMemberRole;
+    token?: StringFieldUpdateOperationsInput | string;
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null;
+    usedCount?: IntFieldUpdateOperationsInput | number;
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type BoardInvitationCreateManyInput = {
+    id?: string;
+    boardId: string;
+    invitedByUserId: string;
+    type: $Enums.BoardInvitationType;
+    email?: string | null;
+    role: $Enums.BoardMemberRole;
+    token: string;
+    expiresAt: Date | string;
+    maxUses?: number | null;
+    usedCount?: number;
+    revokedAt?: Date | string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+  };
+
+  export type BoardInvitationUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    type?: EnumBoardInvitationTypeFieldUpdateOperationsInput | $Enums.BoardInvitationType;
+    email?: NullableStringFieldUpdateOperationsInput | string | null;
+    role?: EnumBoardMemberRoleFieldUpdateOperationsInput | $Enums.BoardMemberRole;
+    token?: StringFieldUpdateOperationsInput | string;
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null;
+    usedCount?: IntFieldUpdateOperationsInput | number;
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type BoardInvitationUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    boardId?: StringFieldUpdateOperationsInput | string;
+    invitedByUserId?: StringFieldUpdateOperationsInput | string;
+    type?: EnumBoardInvitationTypeFieldUpdateOperationsInput | $Enums.BoardInvitationType;
+    email?: NullableStringFieldUpdateOperationsInput | string | null;
+    role?: EnumBoardMemberRoleFieldUpdateOperationsInput | $Enums.BoardMemberRole;
+    token?: StringFieldUpdateOperationsInput | string;
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null;
+    usedCount?: IntFieldUpdateOperationsInput | number;
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
@@ -16751,6 +18630,12 @@ export namespace Prisma {
     none?: BoardMemberWhereInput;
   };
 
+  export type BoardInvitationListRelationFilter = {
+    every?: BoardInvitationWhereInput;
+    some?: BoardInvitationWhereInput;
+    none?: BoardInvitationWhereInput;
+  };
+
   export type CommentListRelationFilter = {
     every?: CommentWhereInput;
     some?: CommentWhereInput;
@@ -16773,6 +18658,10 @@ export namespace Prisma {
   };
 
   export type BoardMemberOrderByRelationAggregateInput = {
+    _count?: SortOrder;
+  };
+
+  export type BoardInvitationOrderByRelationAggregateInput = {
     _count?: SortOrder;
   };
 
@@ -16911,6 +18800,24 @@ export namespace Prisma {
     _max?: NestedEnumBoardMemberRoleFilter<$PrismaModel>;
   };
 
+  export type EnumBoardInvitationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.BoardInvitationType | EnumBoardInvitationTypeFieldRefInput<$PrismaModel>;
+    in?: $Enums.BoardInvitationType[] | ListEnumBoardInvitationTypeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.BoardInvitationType[] | ListEnumBoardInvitationTypeFieldRefInput<$PrismaModel>;
+    not?: NestedEnumBoardInvitationTypeFilter<$PrismaModel> | $Enums.BoardInvitationType;
+  };
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null;
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null;
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null;
+    lt?: number | IntFieldRefInput<$PrismaModel>;
+    lte?: number | IntFieldRefInput<$PrismaModel>;
+    gt?: number | IntFieldRefInput<$PrismaModel>;
+    gte?: number | IntFieldRefInput<$PrismaModel>;
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null;
+  };
+
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>;
     in?: number[] | ListIntFieldRefInput<$PrismaModel>;
@@ -16920,6 +18827,132 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>;
     gte?: number | IntFieldRefInput<$PrismaModel>;
     not?: NestedIntFilter<$PrismaModel> | number;
+  };
+
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null;
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null;
+  };
+
+  export type BoardInvitationCountOrderByAggregateInput = {
+    id?: SortOrder;
+    boardId?: SortOrder;
+    invitedByUserId?: SortOrder;
+    type?: SortOrder;
+    email?: SortOrder;
+    role?: SortOrder;
+    token?: SortOrder;
+    expiresAt?: SortOrder;
+    maxUses?: SortOrder;
+    usedCount?: SortOrder;
+    revokedAt?: SortOrder;
+    createdAt?: SortOrder;
+    updatedAt?: SortOrder;
+  };
+
+  export type BoardInvitationAvgOrderByAggregateInput = {
+    maxUses?: SortOrder;
+    usedCount?: SortOrder;
+  };
+
+  export type BoardInvitationMaxOrderByAggregateInput = {
+    id?: SortOrder;
+    boardId?: SortOrder;
+    invitedByUserId?: SortOrder;
+    type?: SortOrder;
+    email?: SortOrder;
+    role?: SortOrder;
+    token?: SortOrder;
+    expiresAt?: SortOrder;
+    maxUses?: SortOrder;
+    usedCount?: SortOrder;
+    revokedAt?: SortOrder;
+    createdAt?: SortOrder;
+    updatedAt?: SortOrder;
+  };
+
+  export type BoardInvitationMinOrderByAggregateInput = {
+    id?: SortOrder;
+    boardId?: SortOrder;
+    invitedByUserId?: SortOrder;
+    type?: SortOrder;
+    email?: SortOrder;
+    role?: SortOrder;
+    token?: SortOrder;
+    expiresAt?: SortOrder;
+    maxUses?: SortOrder;
+    usedCount?: SortOrder;
+    revokedAt?: SortOrder;
+    createdAt?: SortOrder;
+    updatedAt?: SortOrder;
+  };
+
+  export type BoardInvitationSumOrderByAggregateInput = {
+    maxUses?: SortOrder;
+    usedCount?: SortOrder;
+  };
+
+  export type EnumBoardInvitationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BoardInvitationType | EnumBoardInvitationTypeFieldRefInput<$PrismaModel>;
+    in?: $Enums.BoardInvitationType[] | ListEnumBoardInvitationTypeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.BoardInvitationType[] | ListEnumBoardInvitationTypeFieldRefInput<$PrismaModel>;
+    not?:
+      NestedEnumBoardInvitationTypeWithAggregatesFilter<$PrismaModel> | $Enums.BoardInvitationType;
+    _count?: NestedIntFilter<$PrismaModel>;
+    _min?: NestedEnumBoardInvitationTypeFilter<$PrismaModel>;
+    _max?: NestedEnumBoardInvitationTypeFilter<$PrismaModel>;
+  };
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null;
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null;
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null;
+    lt?: number | IntFieldRefInput<$PrismaModel>;
+    lte?: number | IntFieldRefInput<$PrismaModel>;
+    gt?: number | IntFieldRefInput<$PrismaModel>;
+    gte?: number | IntFieldRefInput<$PrismaModel>;
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null;
+    _count?: NestedIntNullableFilter<$PrismaModel>;
+    _avg?: NestedFloatNullableFilter<$PrismaModel>;
+    _sum?: NestedIntNullableFilter<$PrismaModel>;
+    _min?: NestedIntNullableFilter<$PrismaModel>;
+    _max?: NestedIntNullableFilter<$PrismaModel>;
+  };
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>;
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>;
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>;
+    lt?: number | IntFieldRefInput<$PrismaModel>;
+    lte?: number | IntFieldRefInput<$PrismaModel>;
+    gt?: number | IntFieldRefInput<$PrismaModel>;
+    gte?: number | IntFieldRefInput<$PrismaModel>;
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number;
+    _count?: NestedIntFilter<$PrismaModel>;
+    _avg?: NestedFloatFilter<$PrismaModel>;
+    _sum?: NestedIntFilter<$PrismaModel>;
+    _min?: NestedIntFilter<$PrismaModel>;
+    _max?: NestedIntFilter<$PrismaModel>;
+  };
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null;
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null;
+    _count?: NestedIntNullableFilter<$PrismaModel>;
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>;
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>;
   };
 
   export type BoolFilter<$PrismaModel = never> = {
@@ -16983,22 +19016,6 @@ export namespace Prisma {
     position?: SortOrder;
   };
 
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>;
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>;
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>;
-    lt?: number | IntFieldRefInput<$PrismaModel>;
-    lte?: number | IntFieldRefInput<$PrismaModel>;
-    gt?: number | IntFieldRefInput<$PrismaModel>;
-    gte?: number | IntFieldRefInput<$PrismaModel>;
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number;
-    _count?: NestedIntFilter<$PrismaModel>;
-    _avg?: NestedFloatFilter<$PrismaModel>;
-    _sum?: NestedIntFilter<$PrismaModel>;
-    _min?: NestedIntFilter<$PrismaModel>;
-    _max?: NestedIntFilter<$PrismaModel>;
-  };
-
   export type BoolWithAggregatesFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>;
     not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean;
@@ -17020,17 +19037,6 @@ export namespace Prisma {
     hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>;
     hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>;
     isEmpty?: boolean;
-  };
-
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null;
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null;
   };
 
   export type ColumnScalarRelationFilter = {
@@ -17109,20 +19115,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>;
     _min?: NestedEnumTaskPriorityFilter<$PrismaModel>;
     _max?: NestedEnumTaskPriorityFilter<$PrismaModel>;
-  };
-
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null;
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null;
-    _count?: NestedIntNullableFilter<$PrismaModel>;
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>;
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>;
   };
 
   export type TaskScalarRelationFilter = {
@@ -17389,6 +19381,21 @@ export namespace Prisma {
     connect?: BoardMemberWhereUniqueInput | BoardMemberWhereUniqueInput[];
   };
 
+  export type BoardInvitationCreateNestedManyWithoutInvitedByUserInput = {
+    create?:
+      | XOR<
+          BoardInvitationCreateWithoutInvitedByUserInput,
+          BoardInvitationUncheckedCreateWithoutInvitedByUserInput
+        >
+      | BoardInvitationCreateWithoutInvitedByUserInput[]
+      | BoardInvitationUncheckedCreateWithoutInvitedByUserInput[];
+    connectOrCreate?:
+      | BoardInvitationCreateOrConnectWithoutInvitedByUserInput
+      | BoardInvitationCreateOrConnectWithoutInvitedByUserInput[];
+    createMany?: BoardInvitationCreateManyInvitedByUserInputEnvelope;
+    connect?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+  };
+
   export type CommentCreateNestedManyWithoutAuthorInput = {
     create?:
       | XOR<CommentCreateWithoutAuthorInput, CommentUncheckedCreateWithoutAuthorInput>
@@ -17444,6 +19451,21 @@ export namespace Prisma {
       BoardMemberCreateOrConnectWithoutUserInput | BoardMemberCreateOrConnectWithoutUserInput[];
     createMany?: BoardMemberCreateManyUserInputEnvelope;
     connect?: BoardMemberWhereUniqueInput | BoardMemberWhereUniqueInput[];
+  };
+
+  export type BoardInvitationUncheckedCreateNestedManyWithoutInvitedByUserInput = {
+    create?:
+      | XOR<
+          BoardInvitationCreateWithoutInvitedByUserInput,
+          BoardInvitationUncheckedCreateWithoutInvitedByUserInput
+        >
+      | BoardInvitationCreateWithoutInvitedByUserInput[]
+      | BoardInvitationUncheckedCreateWithoutInvitedByUserInput[];
+    connectOrCreate?:
+      | BoardInvitationCreateOrConnectWithoutInvitedByUserInput
+      | BoardInvitationCreateOrConnectWithoutInvitedByUserInput[];
+    createMany?: BoardInvitationCreateManyInvitedByUserInputEnvelope;
+    connect?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
   };
 
   export type CommentUncheckedCreateNestedManyWithoutAuthorInput = {
@@ -17538,6 +19560,34 @@ export namespace Prisma {
       | BoardMemberUpdateManyWithWhereWithoutUserInput
       | BoardMemberUpdateManyWithWhereWithoutUserInput[];
     deleteMany?: BoardMemberScalarWhereInput | BoardMemberScalarWhereInput[];
+  };
+
+  export type BoardInvitationUpdateManyWithoutInvitedByUserNestedInput = {
+    create?:
+      | XOR<
+          BoardInvitationCreateWithoutInvitedByUserInput,
+          BoardInvitationUncheckedCreateWithoutInvitedByUserInput
+        >
+      | BoardInvitationCreateWithoutInvitedByUserInput[]
+      | BoardInvitationUncheckedCreateWithoutInvitedByUserInput[];
+    connectOrCreate?:
+      | BoardInvitationCreateOrConnectWithoutInvitedByUserInput
+      | BoardInvitationCreateOrConnectWithoutInvitedByUserInput[];
+    upsert?:
+      | BoardInvitationUpsertWithWhereUniqueWithoutInvitedByUserInput
+      | BoardInvitationUpsertWithWhereUniqueWithoutInvitedByUserInput[];
+    createMany?: BoardInvitationCreateManyInvitedByUserInputEnvelope;
+    set?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    disconnect?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    delete?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    connect?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    update?:
+      | BoardInvitationUpdateWithWhereUniqueWithoutInvitedByUserInput
+      | BoardInvitationUpdateWithWhereUniqueWithoutInvitedByUserInput[];
+    updateMany?:
+      | BoardInvitationUpdateManyWithWhereWithoutInvitedByUserInput
+      | BoardInvitationUpdateManyWithWhereWithoutInvitedByUserInput[];
+    deleteMany?: BoardInvitationScalarWhereInput | BoardInvitationScalarWhereInput[];
   };
 
   export type CommentUpdateManyWithoutAuthorNestedInput = {
@@ -17655,6 +19705,34 @@ export namespace Prisma {
     deleteMany?: BoardMemberScalarWhereInput | BoardMemberScalarWhereInput[];
   };
 
+  export type BoardInvitationUncheckedUpdateManyWithoutInvitedByUserNestedInput = {
+    create?:
+      | XOR<
+          BoardInvitationCreateWithoutInvitedByUserInput,
+          BoardInvitationUncheckedCreateWithoutInvitedByUserInput
+        >
+      | BoardInvitationCreateWithoutInvitedByUserInput[]
+      | BoardInvitationUncheckedCreateWithoutInvitedByUserInput[];
+    connectOrCreate?:
+      | BoardInvitationCreateOrConnectWithoutInvitedByUserInput
+      | BoardInvitationCreateOrConnectWithoutInvitedByUserInput[];
+    upsert?:
+      | BoardInvitationUpsertWithWhereUniqueWithoutInvitedByUserInput
+      | BoardInvitationUpsertWithWhereUniqueWithoutInvitedByUserInput[];
+    createMany?: BoardInvitationCreateManyInvitedByUserInputEnvelope;
+    set?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    disconnect?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    delete?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    connect?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    update?:
+      | BoardInvitationUpdateWithWhereUniqueWithoutInvitedByUserInput
+      | BoardInvitationUpdateWithWhereUniqueWithoutInvitedByUserInput[];
+    updateMany?:
+      | BoardInvitationUpdateManyWithWhereWithoutInvitedByUserInput
+      | BoardInvitationUpdateManyWithWhereWithoutInvitedByUserInput[];
+    deleteMany?: BoardInvitationScalarWhereInput | BoardInvitationScalarWhereInput[];
+  };
+
   export type CommentUncheckedUpdateManyWithoutAuthorNestedInput = {
     create?:
       | XOR<CommentCreateWithoutAuthorInput, CommentUncheckedCreateWithoutAuthorInput>
@@ -17717,6 +19795,18 @@ export namespace Prisma {
     connect?: BoardMemberWhereUniqueInput | BoardMemberWhereUniqueInput[];
   };
 
+  export type BoardInvitationCreateNestedManyWithoutBoardInput = {
+    create?:
+      | XOR<BoardInvitationCreateWithoutBoardInput, BoardInvitationUncheckedCreateWithoutBoardInput>
+      | BoardInvitationCreateWithoutBoardInput[]
+      | BoardInvitationUncheckedCreateWithoutBoardInput[];
+    connectOrCreate?:
+      | BoardInvitationCreateOrConnectWithoutBoardInput
+      | BoardInvitationCreateOrConnectWithoutBoardInput[];
+    createMany?: BoardInvitationCreateManyBoardInputEnvelope;
+    connect?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+  };
+
   export type ColumnCreateNestedManyWithoutBoardInput = {
     create?:
       | XOR<ColumnCreateWithoutBoardInput, ColumnUncheckedCreateWithoutBoardInput>
@@ -17737,6 +19827,18 @@ export namespace Prisma {
       BoardMemberCreateOrConnectWithoutBoardInput | BoardMemberCreateOrConnectWithoutBoardInput[];
     createMany?: BoardMemberCreateManyBoardInputEnvelope;
     connect?: BoardMemberWhereUniqueInput | BoardMemberWhereUniqueInput[];
+  };
+
+  export type BoardInvitationUncheckedCreateNestedManyWithoutBoardInput = {
+    create?:
+      | XOR<BoardInvitationCreateWithoutBoardInput, BoardInvitationUncheckedCreateWithoutBoardInput>
+      | BoardInvitationCreateWithoutBoardInput[]
+      | BoardInvitationUncheckedCreateWithoutBoardInput[];
+    connectOrCreate?:
+      | BoardInvitationCreateOrConnectWithoutBoardInput
+      | BoardInvitationCreateOrConnectWithoutBoardInput[];
+    createMany?: BoardInvitationCreateManyBoardInputEnvelope;
+    connect?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
   };
 
   export type ColumnUncheckedCreateNestedManyWithoutBoardInput = {
@@ -17772,6 +19874,31 @@ export namespace Prisma {
       | BoardMemberUpdateManyWithWhereWithoutBoardInput
       | BoardMemberUpdateManyWithWhereWithoutBoardInput[];
     deleteMany?: BoardMemberScalarWhereInput | BoardMemberScalarWhereInput[];
+  };
+
+  export type BoardInvitationUpdateManyWithoutBoardNestedInput = {
+    create?:
+      | XOR<BoardInvitationCreateWithoutBoardInput, BoardInvitationUncheckedCreateWithoutBoardInput>
+      | BoardInvitationCreateWithoutBoardInput[]
+      | BoardInvitationUncheckedCreateWithoutBoardInput[];
+    connectOrCreate?:
+      | BoardInvitationCreateOrConnectWithoutBoardInput
+      | BoardInvitationCreateOrConnectWithoutBoardInput[];
+    upsert?:
+      | BoardInvitationUpsertWithWhereUniqueWithoutBoardInput
+      | BoardInvitationUpsertWithWhereUniqueWithoutBoardInput[];
+    createMany?: BoardInvitationCreateManyBoardInputEnvelope;
+    set?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    disconnect?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    delete?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    connect?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    update?:
+      | BoardInvitationUpdateWithWhereUniqueWithoutBoardInput
+      | BoardInvitationUpdateWithWhereUniqueWithoutBoardInput[];
+    updateMany?:
+      | BoardInvitationUpdateManyWithWhereWithoutBoardInput
+      | BoardInvitationUpdateManyWithWhereWithoutBoardInput[];
+    deleteMany?: BoardInvitationScalarWhereInput | BoardInvitationScalarWhereInput[];
   };
 
   export type ColumnUpdateManyWithoutBoardNestedInput = {
@@ -17817,6 +19944,31 @@ export namespace Prisma {
       | BoardMemberUpdateManyWithWhereWithoutBoardInput
       | BoardMemberUpdateManyWithWhereWithoutBoardInput[];
     deleteMany?: BoardMemberScalarWhereInput | BoardMemberScalarWhereInput[];
+  };
+
+  export type BoardInvitationUncheckedUpdateManyWithoutBoardNestedInput = {
+    create?:
+      | XOR<BoardInvitationCreateWithoutBoardInput, BoardInvitationUncheckedCreateWithoutBoardInput>
+      | BoardInvitationCreateWithoutBoardInput[]
+      | BoardInvitationUncheckedCreateWithoutBoardInput[];
+    connectOrCreate?:
+      | BoardInvitationCreateOrConnectWithoutBoardInput
+      | BoardInvitationCreateOrConnectWithoutBoardInput[];
+    upsert?:
+      | BoardInvitationUpsertWithWhereUniqueWithoutBoardInput
+      | BoardInvitationUpsertWithWhereUniqueWithoutBoardInput[];
+    createMany?: BoardInvitationCreateManyBoardInputEnvelope;
+    set?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    disconnect?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    delete?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    connect?: BoardInvitationWhereUniqueInput | BoardInvitationWhereUniqueInput[];
+    update?:
+      | BoardInvitationUpdateWithWhereUniqueWithoutBoardInput
+      | BoardInvitationUpdateWithWhereUniqueWithoutBoardInput[];
+    updateMany?:
+      | BoardInvitationUpdateManyWithWhereWithoutBoardInput
+      | BoardInvitationUpdateManyWithWhereWithoutBoardInput[];
+    deleteMany?: BoardInvitationScalarWhereInput | BoardInvitationScalarWhereInput[];
   };
 
   export type ColumnUncheckedUpdateManyWithoutBoardNestedInput = {
@@ -17878,6 +20030,73 @@ export namespace Prisma {
     >;
   };
 
+  export type BoardCreateNestedOneWithoutInvitationsInput = {
+    create?: XOR<BoardCreateWithoutInvitationsInput, BoardUncheckedCreateWithoutInvitationsInput>;
+    connectOrCreate?: BoardCreateOrConnectWithoutInvitationsInput;
+    connect?: BoardWhereUniqueInput;
+  };
+
+  export type UserCreateNestedOneWithoutSentBoardInvitationsInput = {
+    create?: XOR<
+      UserCreateWithoutSentBoardInvitationsInput,
+      UserUncheckedCreateWithoutSentBoardInvitationsInput
+    >;
+    connectOrCreate?: UserCreateOrConnectWithoutSentBoardInvitationsInput;
+    connect?: UserWhereUniqueInput;
+  };
+
+  export type EnumBoardInvitationTypeFieldUpdateOperationsInput = {
+    set?: $Enums.BoardInvitationType;
+  };
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null;
+    increment?: number;
+    decrement?: number;
+    multiply?: number;
+    divide?: number;
+  };
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number;
+    increment?: number;
+    decrement?: number;
+    multiply?: number;
+    divide?: number;
+  };
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null;
+  };
+
+  export type BoardUpdateOneRequiredWithoutInvitationsNestedInput = {
+    create?: XOR<BoardCreateWithoutInvitationsInput, BoardUncheckedCreateWithoutInvitationsInput>;
+    connectOrCreate?: BoardCreateOrConnectWithoutInvitationsInput;
+    upsert?: BoardUpsertWithoutInvitationsInput;
+    connect?: BoardWhereUniqueInput;
+    update?: XOR<
+      XOR<BoardUpdateToOneWithWhereWithoutInvitationsInput, BoardUpdateWithoutInvitationsInput>,
+      BoardUncheckedUpdateWithoutInvitationsInput
+    >;
+  };
+
+  export type UserUpdateOneRequiredWithoutSentBoardInvitationsNestedInput = {
+    create?: XOR<
+      UserCreateWithoutSentBoardInvitationsInput,
+      UserUncheckedCreateWithoutSentBoardInvitationsInput
+    >;
+    connectOrCreate?: UserCreateOrConnectWithoutSentBoardInvitationsInput;
+    upsert?: UserUpsertWithoutSentBoardInvitationsInput;
+    connect?: UserWhereUniqueInput;
+    update?: XOR<
+      XOR<
+        UserUpdateToOneWithWhereWithoutSentBoardInvitationsInput,
+        UserUpdateWithoutSentBoardInvitationsInput
+      >,
+      UserUncheckedUpdateWithoutSentBoardInvitationsInput
+    >;
+  };
+
   export type BoardCreateNestedOneWithoutColumnsInput = {
     create?: XOR<BoardCreateWithoutColumnsInput, BoardUncheckedCreateWithoutColumnsInput>;
     connectOrCreate?: BoardCreateOrConnectWithoutColumnsInput;
@@ -17904,14 +20123,6 @@ export namespace Prisma {
       TaskCreateOrConnectWithoutColumnInput | TaskCreateOrConnectWithoutColumnInput[];
     createMany?: TaskCreateManyColumnInputEnvelope;
     connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[];
-  };
-
-  export type IntFieldUpdateOperationsInput = {
-    set?: number;
-    increment?: number;
-    decrement?: number;
-    multiply?: number;
-    divide?: number;
   };
 
   export type BoolFieldUpdateOperationsInput = {
@@ -18056,10 +20267,6 @@ export namespace Prisma {
   export type TaskUpdatetagsInput = {
     set?: string[];
     push?: string | string[];
-  };
-
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null;
   };
 
   export type ColumnUpdateOneRequiredWithoutTasksNestedInput = {
@@ -18426,9 +20633,60 @@ export namespace Prisma {
     _max?: NestedEnumBoardMemberRoleFilter<$PrismaModel>;
   };
 
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>;
-    not?: NestedBoolFilter<$PrismaModel> | boolean;
+  export type NestedEnumBoardInvitationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.BoardInvitationType | EnumBoardInvitationTypeFieldRefInput<$PrismaModel>;
+    in?: $Enums.BoardInvitationType[] | ListEnumBoardInvitationTypeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.BoardInvitationType[] | ListEnumBoardInvitationTypeFieldRefInput<$PrismaModel>;
+    not?: NestedEnumBoardInvitationTypeFilter<$PrismaModel> | $Enums.BoardInvitationType;
+  };
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null;
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null;
+  };
+
+  export type NestedEnumBoardInvitationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BoardInvitationType | EnumBoardInvitationTypeFieldRefInput<$PrismaModel>;
+    in?: $Enums.BoardInvitationType[] | ListEnumBoardInvitationTypeFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.BoardInvitationType[] | ListEnumBoardInvitationTypeFieldRefInput<$PrismaModel>;
+    not?:
+      NestedEnumBoardInvitationTypeWithAggregatesFilter<$PrismaModel> | $Enums.BoardInvitationType;
+    _count?: NestedIntFilter<$PrismaModel>;
+    _min?: NestedEnumBoardInvitationTypeFilter<$PrismaModel>;
+    _max?: NestedEnumBoardInvitationTypeFilter<$PrismaModel>;
+  };
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null;
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null;
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null;
+    lt?: number | IntFieldRefInput<$PrismaModel>;
+    lte?: number | IntFieldRefInput<$PrismaModel>;
+    gt?: number | IntFieldRefInput<$PrismaModel>;
+    gte?: number | IntFieldRefInput<$PrismaModel>;
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null;
+    _count?: NestedIntNullableFilter<$PrismaModel>;
+    _avg?: NestedFloatNullableFilter<$PrismaModel>;
+    _sum?: NestedIntNullableFilter<$PrismaModel>;
+    _min?: NestedIntNullableFilter<$PrismaModel>;
+    _max?: NestedIntNullableFilter<$PrismaModel>;
+  };
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null;
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null;
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null;
+    lt?: number | FloatFieldRefInput<$PrismaModel>;
+    lte?: number | FloatFieldRefInput<$PrismaModel>;
+    gt?: number | FloatFieldRefInput<$PrismaModel>;
+    gte?: number | FloatFieldRefInput<$PrismaModel>;
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null;
   };
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -18458,6 +20716,25 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number;
   };
 
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null;
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null;
+    _count?: NestedIntNullableFilter<$PrismaModel>;
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>;
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>;
+  };
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>;
+    not?: NestedBoolFilter<$PrismaModel> | boolean;
+  };
+
   export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>;
     not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean;
@@ -18473,17 +20750,6 @@ export namespace Prisma {
     not?: NestedEnumTaskPriorityFilter<$PrismaModel> | $Enums.TaskPriority;
   };
 
-  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null;
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null;
-  };
-
   export type NestedEnumTaskPriorityWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.TaskPriority | EnumTaskPriorityFieldRefInput<$PrismaModel>;
     in?: $Enums.TaskPriority[] | ListEnumTaskPriorityFieldRefInput<$PrismaModel>;
@@ -18492,20 +20758,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>;
     _min?: NestedEnumTaskPriorityFilter<$PrismaModel>;
     _max?: NestedEnumTaskPriorityFilter<$PrismaModel>;
-  };
-
-  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null;
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null;
-    _count?: NestedIntNullableFilter<$PrismaModel>;
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>;
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>;
   };
 
   export type NestedEnumTaskHistoryEventTypeFilter<$PrismaModel = never> = {
@@ -18561,6 +20813,7 @@ export namespace Prisma {
     updatedAt?: Date | string;
     sessions?: SessionCreateNestedManyWithoutUserInput;
     memberships?: BoardMemberCreateNestedManyWithoutUserInput;
+    sentBoardInvitations?: BoardInvitationCreateNestedManyWithoutInvitedByUserInput;
     comments?: CommentCreateNestedManyWithoutAuthorInput;
     historyEvents?: TaskHistoryEventCreateNestedManyWithoutActorInput;
   };
@@ -18573,6 +20826,7 @@ export namespace Prisma {
     updatedAt?: Date | string;
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput;
     memberships?: BoardMemberUncheckedCreateNestedManyWithoutUserInput;
+    sentBoardInvitations?: BoardInvitationUncheckedCreateNestedManyWithoutInvitedByUserInput;
     comments?: CommentUncheckedCreateNestedManyWithoutAuthorInput;
     historyEvents?: TaskHistoryEventUncheckedCreateNestedManyWithoutActorInput;
   };
@@ -18613,6 +20867,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     sessions?: SessionUpdateManyWithoutUserNestedInput;
     memberships?: BoardMemberUpdateManyWithoutUserNestedInput;
+    sentBoardInvitations?: BoardInvitationUpdateManyWithoutInvitedByUserNestedInput;
     comments?: CommentUpdateManyWithoutAuthorNestedInput;
     historyEvents?: TaskHistoryEventUpdateManyWithoutActorNestedInput;
   };
@@ -18625,6 +20880,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput;
     memberships?: BoardMemberUncheckedUpdateManyWithoutUserNestedInput;
+    sentBoardInvitations?: BoardInvitationUncheckedUpdateManyWithoutInvitedByUserNestedInput;
     comments?: CommentUncheckedUpdateManyWithoutAuthorNestedInput;
     historyEvents?: TaskHistoryEventUncheckedUpdateManyWithoutActorNestedInput;
   };
@@ -18637,6 +20893,7 @@ export namespace Prisma {
     updatedAt?: Date | string;
     passwordCredential?: PasswordCredentialCreateNestedOneWithoutUserInput;
     memberships?: BoardMemberCreateNestedManyWithoutUserInput;
+    sentBoardInvitations?: BoardInvitationCreateNestedManyWithoutInvitedByUserInput;
     comments?: CommentCreateNestedManyWithoutAuthorInput;
     historyEvents?: TaskHistoryEventCreateNestedManyWithoutActorInput;
   };
@@ -18649,6 +20906,7 @@ export namespace Prisma {
     updatedAt?: Date | string;
     passwordCredential?: PasswordCredentialUncheckedCreateNestedOneWithoutUserInput;
     memberships?: BoardMemberUncheckedCreateNestedManyWithoutUserInput;
+    sentBoardInvitations?: BoardInvitationUncheckedCreateNestedManyWithoutInvitedByUserInput;
     comments?: CommentUncheckedCreateNestedManyWithoutAuthorInput;
     historyEvents?: TaskHistoryEventUncheckedCreateNestedManyWithoutActorInput;
   };
@@ -18677,6 +20935,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     passwordCredential?: PasswordCredentialUpdateOneWithoutUserNestedInput;
     memberships?: BoardMemberUpdateManyWithoutUserNestedInput;
+    sentBoardInvitations?: BoardInvitationUpdateManyWithoutInvitedByUserNestedInput;
     comments?: CommentUpdateManyWithoutAuthorNestedInput;
     historyEvents?: TaskHistoryEventUpdateManyWithoutActorNestedInput;
   };
@@ -18689,6 +20948,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     passwordCredential?: PasswordCredentialUncheckedUpdateOneWithoutUserNestedInput;
     memberships?: BoardMemberUncheckedUpdateManyWithoutUserNestedInput;
+    sentBoardInvitations?: BoardInvitationUncheckedUpdateManyWithoutInvitedByUserNestedInput;
     comments?: CommentUncheckedUpdateManyWithoutAuthorNestedInput;
     historyEvents?: TaskHistoryEventUncheckedUpdateManyWithoutActorNestedInput;
   };
@@ -18760,6 +21020,50 @@ export namespace Prisma {
 
   export type BoardMemberCreateManyUserInputEnvelope = {
     data: BoardMemberCreateManyUserInput | BoardMemberCreateManyUserInput[];
+    skipDuplicates?: boolean;
+  };
+
+  export type BoardInvitationCreateWithoutInvitedByUserInput = {
+    id?: string;
+    type: $Enums.BoardInvitationType;
+    email?: string | null;
+    role: $Enums.BoardMemberRole;
+    token: string;
+    expiresAt: Date | string;
+    maxUses?: number | null;
+    usedCount?: number;
+    revokedAt?: Date | string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    board: BoardCreateNestedOneWithoutInvitationsInput;
+  };
+
+  export type BoardInvitationUncheckedCreateWithoutInvitedByUserInput = {
+    id?: string;
+    boardId: string;
+    type: $Enums.BoardInvitationType;
+    email?: string | null;
+    role: $Enums.BoardMemberRole;
+    token: string;
+    expiresAt: Date | string;
+    maxUses?: number | null;
+    usedCount?: number;
+    revokedAt?: Date | string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+  };
+
+  export type BoardInvitationCreateOrConnectWithoutInvitedByUserInput = {
+    where: BoardInvitationWhereUniqueInput;
+    create: XOR<
+      BoardInvitationCreateWithoutInvitedByUserInput,
+      BoardInvitationUncheckedCreateWithoutInvitedByUserInput
+    >;
+  };
+
+  export type BoardInvitationCreateManyInvitedByUserInputEnvelope = {
+    data:
+      BoardInvitationCreateManyInvitedByUserInput | BoardInvitationCreateManyInvitedByUserInput[];
     skipDuplicates?: boolean;
   };
 
@@ -18905,6 +21209,53 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<'BoardMember'> | Date | string;
   };
 
+  export type BoardInvitationUpsertWithWhereUniqueWithoutInvitedByUserInput = {
+    where: BoardInvitationWhereUniqueInput;
+    update: XOR<
+      BoardInvitationUpdateWithoutInvitedByUserInput,
+      BoardInvitationUncheckedUpdateWithoutInvitedByUserInput
+    >;
+    create: XOR<
+      BoardInvitationCreateWithoutInvitedByUserInput,
+      BoardInvitationUncheckedCreateWithoutInvitedByUserInput
+    >;
+  };
+
+  export type BoardInvitationUpdateWithWhereUniqueWithoutInvitedByUserInput = {
+    where: BoardInvitationWhereUniqueInput;
+    data: XOR<
+      BoardInvitationUpdateWithoutInvitedByUserInput,
+      BoardInvitationUncheckedUpdateWithoutInvitedByUserInput
+    >;
+  };
+
+  export type BoardInvitationUpdateManyWithWhereWithoutInvitedByUserInput = {
+    where: BoardInvitationScalarWhereInput;
+    data: XOR<
+      BoardInvitationUpdateManyMutationInput,
+      BoardInvitationUncheckedUpdateManyWithoutInvitedByUserInput
+    >;
+  };
+
+  export type BoardInvitationScalarWhereInput = {
+    AND?: BoardInvitationScalarWhereInput | BoardInvitationScalarWhereInput[];
+    OR?: BoardInvitationScalarWhereInput[];
+    NOT?: BoardInvitationScalarWhereInput | BoardInvitationScalarWhereInput[];
+    id?: StringFilter<'BoardInvitation'> | string;
+    boardId?: StringFilter<'BoardInvitation'> | string;
+    invitedByUserId?: StringFilter<'BoardInvitation'> | string;
+    type?: EnumBoardInvitationTypeFilter<'BoardInvitation'> | $Enums.BoardInvitationType;
+    email?: StringNullableFilter<'BoardInvitation'> | string | null;
+    role?: EnumBoardMemberRoleFilter<'BoardInvitation'> | $Enums.BoardMemberRole;
+    token?: StringFilter<'BoardInvitation'> | string;
+    expiresAt?: DateTimeFilter<'BoardInvitation'> | Date | string;
+    maxUses?: IntNullableFilter<'BoardInvitation'> | number | null;
+    usedCount?: IntFilter<'BoardInvitation'> | number;
+    revokedAt?: DateTimeNullableFilter<'BoardInvitation'> | Date | string | null;
+    createdAt?: DateTimeFilter<'BoardInvitation'> | Date | string;
+    updatedAt?: DateTimeFilter<'BoardInvitation'> | Date | string;
+  };
+
   export type CommentUpsertWithWhereUniqueWithoutAuthorInput = {
     where: CommentWhereUniqueInput;
     update: XOR<CommentUpdateWithoutAuthorInput, CommentUncheckedUpdateWithoutAuthorInput>;
@@ -18999,6 +21350,49 @@ export namespace Prisma {
     skipDuplicates?: boolean;
   };
 
+  export type BoardInvitationCreateWithoutBoardInput = {
+    id?: string;
+    type: $Enums.BoardInvitationType;
+    email?: string | null;
+    role: $Enums.BoardMemberRole;
+    token: string;
+    expiresAt: Date | string;
+    maxUses?: number | null;
+    usedCount?: number;
+    revokedAt?: Date | string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    invitedByUser: UserCreateNestedOneWithoutSentBoardInvitationsInput;
+  };
+
+  export type BoardInvitationUncheckedCreateWithoutBoardInput = {
+    id?: string;
+    invitedByUserId: string;
+    type: $Enums.BoardInvitationType;
+    email?: string | null;
+    role: $Enums.BoardMemberRole;
+    token: string;
+    expiresAt: Date | string;
+    maxUses?: number | null;
+    usedCount?: number;
+    revokedAt?: Date | string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+  };
+
+  export type BoardInvitationCreateOrConnectWithoutBoardInput = {
+    where: BoardInvitationWhereUniqueInput;
+    create: XOR<
+      BoardInvitationCreateWithoutBoardInput,
+      BoardInvitationUncheckedCreateWithoutBoardInput
+    >;
+  };
+
+  export type BoardInvitationCreateManyBoardInputEnvelope = {
+    data: BoardInvitationCreateManyBoardInput | BoardInvitationCreateManyBoardInput[];
+    skipDuplicates?: boolean;
+  };
+
   export type ColumnCreateWithoutBoardInput = {
     id?: string;
     title: string;
@@ -19047,6 +21441,34 @@ export namespace Prisma {
     data: XOR<BoardMemberUpdateManyMutationInput, BoardMemberUncheckedUpdateManyWithoutBoardInput>;
   };
 
+  export type BoardInvitationUpsertWithWhereUniqueWithoutBoardInput = {
+    where: BoardInvitationWhereUniqueInput;
+    update: XOR<
+      BoardInvitationUpdateWithoutBoardInput,
+      BoardInvitationUncheckedUpdateWithoutBoardInput
+    >;
+    create: XOR<
+      BoardInvitationCreateWithoutBoardInput,
+      BoardInvitationUncheckedCreateWithoutBoardInput
+    >;
+  };
+
+  export type BoardInvitationUpdateWithWhereUniqueWithoutBoardInput = {
+    where: BoardInvitationWhereUniqueInput;
+    data: XOR<
+      BoardInvitationUpdateWithoutBoardInput,
+      BoardInvitationUncheckedUpdateWithoutBoardInput
+    >;
+  };
+
+  export type BoardInvitationUpdateManyWithWhereWithoutBoardInput = {
+    where: BoardInvitationScalarWhereInput;
+    data: XOR<
+      BoardInvitationUpdateManyMutationInput,
+      BoardInvitationUncheckedUpdateManyWithoutBoardInput
+    >;
+  };
+
   export type ColumnUpsertWithWhereUniqueWithoutBoardInput = {
     where: ColumnWhereUniqueInput;
     update: XOR<ColumnUpdateWithoutBoardInput, ColumnUncheckedUpdateWithoutBoardInput>;
@@ -19082,6 +21504,7 @@ export namespace Prisma {
     title: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    invitations?: BoardInvitationCreateNestedManyWithoutBoardInput;
     columns?: ColumnCreateNestedManyWithoutBoardInput;
   };
 
@@ -19090,6 +21513,7 @@ export namespace Prisma {
     title: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    invitations?: BoardInvitationUncheckedCreateNestedManyWithoutBoardInput;
     columns?: ColumnUncheckedCreateNestedManyWithoutBoardInput;
   };
 
@@ -19106,6 +21530,7 @@ export namespace Prisma {
     updatedAt?: Date | string;
     passwordCredential?: PasswordCredentialCreateNestedOneWithoutUserInput;
     sessions?: SessionCreateNestedManyWithoutUserInput;
+    sentBoardInvitations?: BoardInvitationCreateNestedManyWithoutInvitedByUserInput;
     comments?: CommentCreateNestedManyWithoutAuthorInput;
     historyEvents?: TaskHistoryEventCreateNestedManyWithoutActorInput;
   };
@@ -19118,6 +21543,7 @@ export namespace Prisma {
     updatedAt?: Date | string;
     passwordCredential?: PasswordCredentialUncheckedCreateNestedOneWithoutUserInput;
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput;
+    sentBoardInvitations?: BoardInvitationUncheckedCreateNestedManyWithoutInvitedByUserInput;
     comments?: CommentUncheckedCreateNestedManyWithoutAuthorInput;
     historyEvents?: TaskHistoryEventUncheckedCreateNestedManyWithoutActorInput;
   };
@@ -19143,6 +21569,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    invitations?: BoardInvitationUpdateManyWithoutBoardNestedInput;
     columns?: ColumnUpdateManyWithoutBoardNestedInput;
   };
 
@@ -19151,6 +21578,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    invitations?: BoardInvitationUncheckedUpdateManyWithoutBoardNestedInput;
     columns?: ColumnUncheckedUpdateManyWithoutBoardNestedInput;
   };
 
@@ -19173,6 +21601,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     passwordCredential?: PasswordCredentialUpdateOneWithoutUserNestedInput;
     sessions?: SessionUpdateManyWithoutUserNestedInput;
+    sentBoardInvitations?: BoardInvitationUpdateManyWithoutInvitedByUserNestedInput;
     comments?: CommentUpdateManyWithoutAuthorNestedInput;
     historyEvents?: TaskHistoryEventUpdateManyWithoutActorNestedInput;
   };
@@ -19185,6 +21614,139 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     passwordCredential?: PasswordCredentialUncheckedUpdateOneWithoutUserNestedInput;
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput;
+    sentBoardInvitations?: BoardInvitationUncheckedUpdateManyWithoutInvitedByUserNestedInput;
+    comments?: CommentUncheckedUpdateManyWithoutAuthorNestedInput;
+    historyEvents?: TaskHistoryEventUncheckedUpdateManyWithoutActorNestedInput;
+  };
+
+  export type BoardCreateWithoutInvitationsInput = {
+    id?: string;
+    title: string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    members?: BoardMemberCreateNestedManyWithoutBoardInput;
+    columns?: ColumnCreateNestedManyWithoutBoardInput;
+  };
+
+  export type BoardUncheckedCreateWithoutInvitationsInput = {
+    id?: string;
+    title: string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    members?: BoardMemberUncheckedCreateNestedManyWithoutBoardInput;
+    columns?: ColumnUncheckedCreateNestedManyWithoutBoardInput;
+  };
+
+  export type BoardCreateOrConnectWithoutInvitationsInput = {
+    where: BoardWhereUniqueInput;
+    create: XOR<BoardCreateWithoutInvitationsInput, BoardUncheckedCreateWithoutInvitationsInput>;
+  };
+
+  export type UserCreateWithoutSentBoardInvitationsInput = {
+    id?: string;
+    email: string;
+    name?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    passwordCredential?: PasswordCredentialCreateNestedOneWithoutUserInput;
+    sessions?: SessionCreateNestedManyWithoutUserInput;
+    memberships?: BoardMemberCreateNestedManyWithoutUserInput;
+    comments?: CommentCreateNestedManyWithoutAuthorInput;
+    historyEvents?: TaskHistoryEventCreateNestedManyWithoutActorInput;
+  };
+
+  export type UserUncheckedCreateWithoutSentBoardInvitationsInput = {
+    id?: string;
+    email: string;
+    name?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    passwordCredential?: PasswordCredentialUncheckedCreateNestedOneWithoutUserInput;
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput;
+    memberships?: BoardMemberUncheckedCreateNestedManyWithoutUserInput;
+    comments?: CommentUncheckedCreateNestedManyWithoutAuthorInput;
+    historyEvents?: TaskHistoryEventUncheckedCreateNestedManyWithoutActorInput;
+  };
+
+  export type UserCreateOrConnectWithoutSentBoardInvitationsInput = {
+    where: UserWhereUniqueInput;
+    create: XOR<
+      UserCreateWithoutSentBoardInvitationsInput,
+      UserUncheckedCreateWithoutSentBoardInvitationsInput
+    >;
+  };
+
+  export type BoardUpsertWithoutInvitationsInput = {
+    update: XOR<BoardUpdateWithoutInvitationsInput, BoardUncheckedUpdateWithoutInvitationsInput>;
+    create: XOR<BoardCreateWithoutInvitationsInput, BoardUncheckedCreateWithoutInvitationsInput>;
+    where?: BoardWhereInput;
+  };
+
+  export type BoardUpdateToOneWithWhereWithoutInvitationsInput = {
+    where?: BoardWhereInput;
+    data: XOR<BoardUpdateWithoutInvitationsInput, BoardUncheckedUpdateWithoutInvitationsInput>;
+  };
+
+  export type BoardUpdateWithoutInvitationsInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    title?: StringFieldUpdateOperationsInput | string;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    members?: BoardMemberUpdateManyWithoutBoardNestedInput;
+    columns?: ColumnUpdateManyWithoutBoardNestedInput;
+  };
+
+  export type BoardUncheckedUpdateWithoutInvitationsInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    title?: StringFieldUpdateOperationsInput | string;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    members?: BoardMemberUncheckedUpdateManyWithoutBoardNestedInput;
+    columns?: ColumnUncheckedUpdateManyWithoutBoardNestedInput;
+  };
+
+  export type UserUpsertWithoutSentBoardInvitationsInput = {
+    update: XOR<
+      UserUpdateWithoutSentBoardInvitationsInput,
+      UserUncheckedUpdateWithoutSentBoardInvitationsInput
+    >;
+    create: XOR<
+      UserCreateWithoutSentBoardInvitationsInput,
+      UserUncheckedCreateWithoutSentBoardInvitationsInput
+    >;
+    where?: UserWhereInput;
+  };
+
+  export type UserUpdateToOneWithWhereWithoutSentBoardInvitationsInput = {
+    where?: UserWhereInput;
+    data: XOR<
+      UserUpdateWithoutSentBoardInvitationsInput,
+      UserUncheckedUpdateWithoutSentBoardInvitationsInput
+    >;
+  };
+
+  export type UserUpdateWithoutSentBoardInvitationsInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    email?: StringFieldUpdateOperationsInput | string;
+    name?: NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    passwordCredential?: PasswordCredentialUpdateOneWithoutUserNestedInput;
+    sessions?: SessionUpdateManyWithoutUserNestedInput;
+    memberships?: BoardMemberUpdateManyWithoutUserNestedInput;
+    comments?: CommentUpdateManyWithoutAuthorNestedInput;
+    historyEvents?: TaskHistoryEventUpdateManyWithoutActorNestedInput;
+  };
+
+  export type UserUncheckedUpdateWithoutSentBoardInvitationsInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    email?: StringFieldUpdateOperationsInput | string;
+    name?: NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    passwordCredential?: PasswordCredentialUncheckedUpdateOneWithoutUserNestedInput;
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput;
+    memberships?: BoardMemberUncheckedUpdateManyWithoutUserNestedInput;
     comments?: CommentUncheckedUpdateManyWithoutAuthorNestedInput;
     historyEvents?: TaskHistoryEventUncheckedUpdateManyWithoutActorNestedInput;
   };
@@ -19195,6 +21757,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     members?: BoardMemberCreateNestedManyWithoutBoardInput;
+    invitations?: BoardInvitationCreateNestedManyWithoutBoardInput;
   };
 
   export type BoardUncheckedCreateWithoutColumnsInput = {
@@ -19203,6 +21766,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     members?: BoardMemberUncheckedCreateNestedManyWithoutBoardInput;
+    invitations?: BoardInvitationUncheckedCreateNestedManyWithoutBoardInput;
   };
 
   export type BoardCreateOrConnectWithoutColumnsInput = {
@@ -19269,6 +21833,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     members?: BoardMemberUpdateManyWithoutBoardNestedInput;
+    invitations?: BoardInvitationUpdateManyWithoutBoardNestedInput;
   };
 
   export type BoardUncheckedUpdateWithoutColumnsInput = {
@@ -19277,6 +21842,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     members?: BoardMemberUncheckedUpdateManyWithoutBoardNestedInput;
+    invitations?: BoardInvitationUncheckedUpdateManyWithoutBoardNestedInput;
   };
 
   export type TaskUpsertWithWhereUniqueWithoutColumnInput = {
@@ -19657,6 +22223,7 @@ export namespace Prisma {
     passwordCredential?: PasswordCredentialCreateNestedOneWithoutUserInput;
     sessions?: SessionCreateNestedManyWithoutUserInput;
     memberships?: BoardMemberCreateNestedManyWithoutUserInput;
+    sentBoardInvitations?: BoardInvitationCreateNestedManyWithoutInvitedByUserInput;
     historyEvents?: TaskHistoryEventCreateNestedManyWithoutActorInput;
   };
 
@@ -19669,6 +22236,7 @@ export namespace Prisma {
     passwordCredential?: PasswordCredentialUncheckedCreateNestedOneWithoutUserInput;
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput;
     memberships?: BoardMemberUncheckedCreateNestedManyWithoutUserInput;
+    sentBoardInvitations?: BoardInvitationUncheckedCreateNestedManyWithoutInvitedByUserInput;
     historyEvents?: TaskHistoryEventUncheckedCreateNestedManyWithoutActorInput;
   };
 
@@ -19740,6 +22308,7 @@ export namespace Prisma {
     passwordCredential?: PasswordCredentialUpdateOneWithoutUserNestedInput;
     sessions?: SessionUpdateManyWithoutUserNestedInput;
     memberships?: BoardMemberUpdateManyWithoutUserNestedInput;
+    sentBoardInvitations?: BoardInvitationUpdateManyWithoutInvitedByUserNestedInput;
     historyEvents?: TaskHistoryEventUpdateManyWithoutActorNestedInput;
   };
 
@@ -19752,6 +22321,7 @@ export namespace Prisma {
     passwordCredential?: PasswordCredentialUncheckedUpdateOneWithoutUserNestedInput;
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput;
     memberships?: BoardMemberUncheckedUpdateManyWithoutUserNestedInput;
+    sentBoardInvitations?: BoardInvitationUncheckedUpdateManyWithoutInvitedByUserNestedInput;
     historyEvents?: TaskHistoryEventUncheckedUpdateManyWithoutActorNestedInput;
   };
 
@@ -19801,6 +22371,7 @@ export namespace Prisma {
     passwordCredential?: PasswordCredentialCreateNestedOneWithoutUserInput;
     sessions?: SessionCreateNestedManyWithoutUserInput;
     memberships?: BoardMemberCreateNestedManyWithoutUserInput;
+    sentBoardInvitations?: BoardInvitationCreateNestedManyWithoutInvitedByUserInput;
     comments?: CommentCreateNestedManyWithoutAuthorInput;
   };
 
@@ -19813,6 +22384,7 @@ export namespace Prisma {
     passwordCredential?: PasswordCredentialUncheckedCreateNestedOneWithoutUserInput;
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput;
     memberships?: BoardMemberUncheckedCreateNestedManyWithoutUserInput;
+    sentBoardInvitations?: BoardInvitationUncheckedCreateNestedManyWithoutInvitedByUserInput;
     comments?: CommentUncheckedCreateNestedManyWithoutAuthorInput;
   };
 
@@ -19884,6 +22456,7 @@ export namespace Prisma {
     passwordCredential?: PasswordCredentialUpdateOneWithoutUserNestedInput;
     sessions?: SessionUpdateManyWithoutUserNestedInput;
     memberships?: BoardMemberUpdateManyWithoutUserNestedInput;
+    sentBoardInvitations?: BoardInvitationUpdateManyWithoutInvitedByUserNestedInput;
     comments?: CommentUpdateManyWithoutAuthorNestedInput;
   };
 
@@ -19896,6 +22469,7 @@ export namespace Prisma {
     passwordCredential?: PasswordCredentialUncheckedUpdateOneWithoutUserNestedInput;
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput;
     memberships?: BoardMemberUncheckedUpdateManyWithoutUserNestedInput;
+    sentBoardInvitations?: BoardInvitationUncheckedUpdateManyWithoutInvitedByUserNestedInput;
     comments?: CommentUncheckedUpdateManyWithoutAuthorNestedInput;
   };
 
@@ -19910,6 +22484,21 @@ export namespace Prisma {
     id?: string;
     boardId: string;
     role?: $Enums.BoardMemberRole;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+  };
+
+  export type BoardInvitationCreateManyInvitedByUserInput = {
+    id?: string;
+    boardId: string;
+    type: $Enums.BoardInvitationType;
+    email?: string | null;
+    role: $Enums.BoardMemberRole;
+    token: string;
+    expiresAt: Date | string;
+    maxUses?: number | null;
+    usedCount?: number;
+    revokedAt?: Date | string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
@@ -19975,6 +22564,51 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
 
+  export type BoardInvitationUpdateWithoutInvitedByUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    type?: EnumBoardInvitationTypeFieldUpdateOperationsInput | $Enums.BoardInvitationType;
+    email?: NullableStringFieldUpdateOperationsInput | string | null;
+    role?: EnumBoardMemberRoleFieldUpdateOperationsInput | $Enums.BoardMemberRole;
+    token?: StringFieldUpdateOperationsInput | string;
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null;
+    usedCount?: IntFieldUpdateOperationsInput | number;
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    board?: BoardUpdateOneRequiredWithoutInvitationsNestedInput;
+  };
+
+  export type BoardInvitationUncheckedUpdateWithoutInvitedByUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    boardId?: StringFieldUpdateOperationsInput | string;
+    type?: EnumBoardInvitationTypeFieldUpdateOperationsInput | $Enums.BoardInvitationType;
+    email?: NullableStringFieldUpdateOperationsInput | string | null;
+    role?: EnumBoardMemberRoleFieldUpdateOperationsInput | $Enums.BoardMemberRole;
+    token?: StringFieldUpdateOperationsInput | string;
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null;
+    usedCount?: IntFieldUpdateOperationsInput | number;
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type BoardInvitationUncheckedUpdateManyWithoutInvitedByUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    boardId?: StringFieldUpdateOperationsInput | string;
+    type?: EnumBoardInvitationTypeFieldUpdateOperationsInput | $Enums.BoardInvitationType;
+    email?: NullableStringFieldUpdateOperationsInput | string | null;
+    role?: EnumBoardMemberRoleFieldUpdateOperationsInput | $Enums.BoardMemberRole;
+    token?: StringFieldUpdateOperationsInput | string;
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null;
+    usedCount?: IntFieldUpdateOperationsInput | number;
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
   export type CommentUpdateWithoutAuthorInput = {
     id?: StringFieldUpdateOperationsInput | string;
     text?: StringFieldUpdateOperationsInput | string;
@@ -20031,6 +22665,21 @@ export namespace Prisma {
     updatedAt?: Date | string;
   };
 
+  export type BoardInvitationCreateManyBoardInput = {
+    id?: string;
+    invitedByUserId: string;
+    type: $Enums.BoardInvitationType;
+    email?: string | null;
+    role: $Enums.BoardMemberRole;
+    token: string;
+    expiresAt: Date | string;
+    maxUses?: number | null;
+    usedCount?: number;
+    revokedAt?: Date | string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+  };
+
   export type ColumnCreateManyBoardInput = {
     id?: string;
     title: string;
@@ -20061,6 +22710,51 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
     role?: EnumBoardMemberRoleFieldUpdateOperationsInput | $Enums.BoardMemberRole;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type BoardInvitationUpdateWithoutBoardInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    type?: EnumBoardInvitationTypeFieldUpdateOperationsInput | $Enums.BoardInvitationType;
+    email?: NullableStringFieldUpdateOperationsInput | string | null;
+    role?: EnumBoardMemberRoleFieldUpdateOperationsInput | $Enums.BoardMemberRole;
+    token?: StringFieldUpdateOperationsInput | string;
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null;
+    usedCount?: IntFieldUpdateOperationsInput | number;
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    invitedByUser?: UserUpdateOneRequiredWithoutSentBoardInvitationsNestedInput;
+  };
+
+  export type BoardInvitationUncheckedUpdateWithoutBoardInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    invitedByUserId?: StringFieldUpdateOperationsInput | string;
+    type?: EnumBoardInvitationTypeFieldUpdateOperationsInput | $Enums.BoardInvitationType;
+    email?: NullableStringFieldUpdateOperationsInput | string | null;
+    role?: EnumBoardMemberRoleFieldUpdateOperationsInput | $Enums.BoardMemberRole;
+    token?: StringFieldUpdateOperationsInput | string;
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null;
+    usedCount?: IntFieldUpdateOperationsInput | number;
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type BoardInvitationUncheckedUpdateManyWithoutBoardInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    invitedByUserId?: StringFieldUpdateOperationsInput | string;
+    type?: EnumBoardInvitationTypeFieldUpdateOperationsInput | $Enums.BoardInvitationType;
+    email?: NullableStringFieldUpdateOperationsInput | string | null;
+    role?: EnumBoardMemberRoleFieldUpdateOperationsInput | $Enums.BoardMemberRole;
+    token?: StringFieldUpdateOperationsInput | string;
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null;
+    usedCount?: IntFieldUpdateOperationsInput | number;
+    revokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
