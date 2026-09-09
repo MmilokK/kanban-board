@@ -260,7 +260,6 @@ export function BoardView({
   }
 
   function handleOpenEditTask(taskId: TaskId) {
-    if (!canEdit) return;
     if (!tasks[taskId]) return;
     setTaskEditorState({
       mode: 'edit',
@@ -416,7 +415,7 @@ export function BoardView({
         )}
       </DragDropProvider>
 
-      {canEdit && taskEditorState && (
+      {taskEditorState && (
         <TaskDialog
           task={editingTask}
           columns={columns}
@@ -481,6 +480,7 @@ export function BoardView({
         <TaskArchive
           tasks={archivedTasks}
           columns={orderedColumns}
+          canEdit={canEdit}
           onRestore={(taskId, columnId) => {
             if (!canEdit) return;
             onRestoreArchivedTask(taskId, columnId);

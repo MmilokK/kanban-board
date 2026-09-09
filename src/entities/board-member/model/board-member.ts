@@ -16,6 +16,10 @@ export function canEditBoard(role: BoardRole): boolean {
   return role === 'OWNER' || role === 'EDITOR';
 }
 
+export function canDeleteBoard(role: BoardRole): boolean {
+  return role === 'OWNER';
+}
+
 export function canManageBoardMembers(role: BoardRole): boolean {
   return role === 'OWNER';
 }

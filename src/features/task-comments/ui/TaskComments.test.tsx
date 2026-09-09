@@ -7,21 +7,14 @@ import { TaskComments } from './TaskComments';
 const comments: TaskComment[] = [
   {
     id: 'comment-1',
-
     text: 'Первый комментарий',
-
     createdAt: '2026-08-10T10:00:00.000Z',
-
     updatedAt: '2026-08-10T10:00:00.000Z',
   },
-
   {
     id: 'comment-2',
-
     text: 'Второй комментарий',
-
     createdAt: '2026-08-11T10:00:00.000Z',
-
     updatedAt: '2026-08-11T12:00:00.000Z',
   },
 ];
@@ -39,7 +32,6 @@ describe('Комментарии задачи', () => {
     );
 
     expect(screen.getByText('Первый комментарий')).toBeInTheDocument();
-
     expect(screen.getByText('Второй комментарий')).toBeInTheDocument();
   });
 
@@ -63,7 +55,6 @@ describe('Комментарии задачи', () => {
 
   it('добавляет комментарий', async () => {
     const user = userEvent.setup();
-
     const onAdd = vi.fn();
 
     render(<TaskComments comments={[]} onAdd={onAdd} onUpdate={vi.fn()} onDelete={vi.fn()} />);
@@ -98,7 +89,6 @@ describe('Комментарии задачи', () => {
 
   it('редактирует комментарий', async () => {
     const user = userEvent.setup();
-
     const onUpdate = vi.fn();
 
     render(
@@ -116,7 +106,6 @@ describe('Комментарии задачи', () => {
     });
 
     await user.clear(textbox);
-
     await user.type(textbox, 'Обновлённый комментарий');
 
     await user.click(
@@ -132,7 +121,6 @@ describe('Комментарии задачи', () => {
 
   it('удаляет комментарий', async () => {
     const user = userEvent.setup();
-
     const onDelete = vi.fn();
 
     render(
@@ -154,5 +142,81 @@ describe('Комментарии задачи', () => {
     );
 
     expect(screen.getByText('изменён')).toBeInTheDocument();
+  });
+
+  it('показывает комментарии без права редактирования', () => {
+    render(
+      <TaskComments
+        comments={comments}
+        canEdit={false}
+        onAdd={vi.fn()}
+        onUpdate={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Первый комментарий')).toBeInTheDocument();
+    expect(screen.getByText('Второй комментарий')).toBeInTheDocument();
+    expect(screen.getByText('изменён')).toBeInTheDocument();
+  });
+
+  it('скрывает создание комментария без права редактирования', () => {
+    render(
+      <TaskComments
+        comments={comments}
+        canEdit={false}
+        onAdd={vi.fn()}
+        onUpdate={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.queryByRole('textbox', {
+        name: 'Новый комментарий',
+      }),
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Добавить комментарий',
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('скрывает изменение и удаление комментариев без права редактирования', () => {
+    render(
+      <TaskComments
+        comments={comments}
+        canEdit={false}
+        onAdd={vi.fn()}
+        onUpdate={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Изменить комментарий Первый комментарий',
+      }),
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Удалить комментарий Первый комментарий',
+      }),
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Изменить комментарий Второй комментарий',
+      }),
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Удалить комментарий Второй комментарий',
+      }),
+    ).not.toBeInTheDocument();
   });
 });

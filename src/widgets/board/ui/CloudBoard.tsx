@@ -181,14 +181,16 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
     return mapCloudBoard(boardQuery.data.board);
   }, [boardQuery.data]);
 
-  if (boardQuery.isPending) {
+  if (boardQuery.isPending && !boardQuery.data) {
     return <p role="status">Загрузка доски…</p>;
   }
 
-  if (boardQuery.isError) {
+  if (boardQuery.isError && !boardQuery.data) {
     return (
       <div role="alert">
         <p>Не удалось загрузить доску.</p>
+        <p>Проверь подключение к сети и доступность сервера.</p>
+
         <button
           type="button"
           onClick={() => {
@@ -201,7 +203,7 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
     );
   }
 
-  if (!mappedBoard) {
+  if (!mappedBoard || !boardQuery.data) {
     return <p role="alert">Доска не найдена.</p>;
   }
 
@@ -209,6 +211,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
   const canEdit = canEditBoard(boardQuery.data.board.role);
 
   function handleCreateColumn(title: string) {
+    if (!canEdit) return;
+
     createColumnMutation.mutate({
       boardId,
       title,
@@ -216,6 +220,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
   }
 
   function handleRenameColumn(columnId: ColumnId, title: string) {
+    if (!canEdit) return;
+
     updateColumnMutation.mutate({
       boardId,
       columnId,
@@ -224,6 +230,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
   }
 
   function handleDeleteColumn(columnId: ColumnId) {
+    if (!canEdit) return;
+
     deleteColumnMutation.mutate({
       boardId,
       columnId,
@@ -231,6 +239,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
   }
 
   function handleMoveColumn(columnId: ColumnId, targetIndex: number) {
+    if (!canEdit) return;
+
     const regularColumnIds = board.columnIds.filter(
       (currentColumnId) => !columns[currentColumnId]?.isArchive,
     );
@@ -238,7 +248,9 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
     const currentIndex = regularColumnIds.indexOf(columnId);
 
     if (currentIndex === -1) return;
-    if (targetIndex < 0 || targetIndex >= regularColumnIds.length) return;
+    if (targetIndex < 0 || targetIndex >= regularColumnIds.length) {
+      return;
+    }
     if (currentIndex === targetIndex) return;
 
     const nextColumnIds = [...regularColumnIds];
@@ -247,6 +259,7 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
     if (!movedColumnId) return;
 
     nextColumnIds.splice(targetIndex, 0, movedColumnId);
+
     reorderColumnsMutation.mutate({
       boardId,
       columnIds: nextColumnIds,
@@ -257,6 +270,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
     columnId: ColumnId,
     input: Parameters<React.ComponentProps<typeof BoardView>['onCreateTask']>[1],
   ) {
+    if (!canEdit) return;
+
     const cloudInput: CreateCloudTaskInput = {
       title: input.title,
       description: input.description,
@@ -264,8 +279,6 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
       tags: input.tags,
       dueDate: input.dueDate || null,
     };
-
-    console.log('create cloud task', cloudInput);
 
     createTaskMutation.mutate({
       boardId,
@@ -278,6 +291,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
     taskId: TaskId,
     input: Parameters<React.ComponentProps<typeof BoardView>['onUpdateTask']>[1],
   ) {
+    if (!canEdit) return;
+
     const cloudInput: UpdateCloudTaskInput = {
       title: input.title,
       description: input.description,
@@ -285,8 +300,6 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
       tags: input.tags,
       dueDate: input.dueDate || null,
     };
-
-    console.log('update cloud task', cloudInput);
 
     updateTaskMutation.mutate({
       boardId,
@@ -296,6 +309,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
   }
 
   function handleDeleteTask(taskId: TaskId) {
+    if (!canEdit) return;
+
     deleteTaskMutation.mutate({
       boardId,
       taskId,
@@ -303,6 +318,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
   }
 
   function handleArchiveTask(taskId: TaskId) {
+    if (!canEdit) return;
+
     archiveTaskMutation.mutate({
       boardId,
       taskId,
@@ -310,6 +327,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
   }
 
   function handleRestoreArchivedTask(taskId: TaskId, columnId: ColumnId) {
+    if (!canEdit) return;
+
     restoreTaskMutation.mutate({
       boardId,
       taskId,
@@ -318,6 +337,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
   }
 
   function handleDeleteArchivedTask(taskId: TaskId) {
+    if (!canEdit) return;
+
     deleteTaskMutation.mutate({
       boardId,
       taskId,
@@ -325,12 +346,16 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
   }
 
   function handleReplaceTaskOrder(nextOrder: TaskIdsByColumn, previousOrder: TaskIdsByColumn) {
+    if (!canEdit) return;
+
     const hasChanges = Object.keys(nextOrder).some((columnId) => {
       const typedColumnId = columnId as ColumnId;
       const nextTaskIds = nextOrder[typedColumnId] ?? [];
       const previousTaskIds = previousOrder[typedColumnId] ?? [];
 
-      if (nextTaskIds.length !== previousTaskIds.length) return true;
+      if (nextTaskIds.length !== previousTaskIds.length) {
+        return true;
+      }
 
       return nextTaskIds.some((taskId, index) => taskId !== previousTaskIds[index]);
     });
@@ -358,6 +383,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
     taskId: TaskId,
     input: Parameters<React.ComponentProps<typeof BoardView>['onAddSubtask']>[1],
   ) {
+    if (!canEdit) return;
+
     createSubtaskMutation.mutate({
       boardId,
       taskId,
@@ -370,6 +397,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
     subtaskId: string,
     input: Parameters<React.ComponentProps<typeof BoardView>['onUpdateSubtask']>[2],
   ) {
+    if (!canEdit) return;
+
     updateSubtaskMutation.mutate({
       boardId,
       taskId,
@@ -379,6 +408,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
   }
 
   function handleToggleSubtask(taskId: TaskId, subtaskId: string) {
+    if (!canEdit) return;
+
     const task = tasks[taskId];
 
     if (!task) return;
@@ -391,11 +422,15 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
       boardId,
       taskId,
       subtaskId,
-      input: { isCompleted: !subtask.isCompleted },
+      input: {
+        isCompleted: !subtask.isCompleted,
+      },
     });
   }
 
   function handleDeleteSubtask(taskId: TaskId, subtaskId: string) {
+    if (!canEdit) return;
+
     deleteSubtaskMutation.mutate({
       boardId,
       taskId,
@@ -407,6 +442,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
     taskId: TaskId,
     input: Parameters<React.ComponentProps<typeof BoardView>['onAddComment']>[1],
   ) {
+    if (!canEdit) return;
+
     createCommentMutation.mutate({
       boardId,
       taskId,
@@ -419,6 +456,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
     commentId: string,
     input: Parameters<React.ComponentProps<typeof BoardView>['onUpdateComment']>[2],
   ) {
+    if (!canEdit) return;
+
     updateCommentMutation.mutate({
       boardId,
       taskId,
@@ -428,6 +467,8 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
   }
 
   function handleDeleteComment(taskId: TaskId, commentId: string) {
+    if (!canEdit) return;
+
     deleteCommentMutation.mutate({
       boardId,
       taskId,
@@ -436,32 +477,49 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
   }
 
   return (
-    <BoardView
-      key={board.id}
-      board={board}
-      columns={columns}
-      tasks={tasks}
-      isArchiveOpen={isArchiveOpen}
-      canEdit={canEdit}
-      onCloseArchive={onCloseArchive}
-      onCreateColumn={handleCreateColumn}
-      onRenameColumn={handleRenameColumn}
-      onDeleteColumn={handleDeleteColumn}
-      onMoveColumn={handleMoveColumn}
-      onCreateTask={handleCreateTask}
-      onUpdateTask={handleUpdateTask}
-      onDeleteTask={handleDeleteTask}
-      onArchiveTask={handleArchiveTask}
-      onRestoreArchivedTask={handleRestoreArchivedTask}
-      onDeleteArchivedTask={handleDeleteArchivedTask}
-      onReplaceTaskOrder={handleReplaceTaskOrder}
-      onAddSubtask={handleAddSubtask}
-      onUpdateSubtask={handleUpdateSubtask}
-      onToggleSubtask={handleToggleSubtask}
-      onDeleteSubtask={handleDeleteSubtask}
-      onAddComment={handleAddComment}
-      onUpdateComment={handleUpdateComment}
-      onDeleteComment={handleDeleteComment}
-    />
+    <>
+      {boardQuery.isError && boardQuery.data && (
+        <div role="alert">
+          <p>Не удалось обновить доску. Показаны последние загруженные данные.</p>
+
+          <button
+            type="button"
+            onClick={() => {
+              void boardQuery.refetch();
+            }}
+          >
+            Попробовать снова
+          </button>
+        </div>
+      )}
+
+      <BoardView
+        key={board.id}
+        board={board}
+        columns={columns}
+        tasks={tasks}
+        isArchiveOpen={isArchiveOpen}
+        canEdit={canEdit}
+        onCloseArchive={onCloseArchive}
+        onCreateColumn={handleCreateColumn}
+        onRenameColumn={handleRenameColumn}
+        onDeleteColumn={handleDeleteColumn}
+        onMoveColumn={handleMoveColumn}
+        onCreateTask={handleCreateTask}
+        onUpdateTask={handleUpdateTask}
+        onDeleteTask={handleDeleteTask}
+        onArchiveTask={handleArchiveTask}
+        onRestoreArchivedTask={handleRestoreArchivedTask}
+        onDeleteArchivedTask={handleDeleteArchivedTask}
+        onReplaceTaskOrder={handleReplaceTaskOrder}
+        onAddSubtask={handleAddSubtask}
+        onUpdateSubtask={handleUpdateSubtask}
+        onToggleSubtask={handleToggleSubtask}
+        onDeleteSubtask={handleDeleteSubtask}
+        onAddComment={handleAddComment}
+        onUpdateComment={handleUpdateComment}
+        onDeleteComment={handleDeleteComment}
+      />
+    </>
   );
 }
