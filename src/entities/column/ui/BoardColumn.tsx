@@ -5,7 +5,7 @@ import { useDroppable } from '@dnd-kit/react';
 import clsx from 'clsx';
 import { SortableTaskCard } from '../../../features/task-dnd/ui/SortableTaskCard';
 import styles from './BoardColumn.module.scss';
-import type { TaskId } from '../../../shared/model/entity-ids';
+import type { TaskId, ColumnId } from '../../../shared/model/entity-ids';
 
 type BoardColumnProps = {
   column: Column;
@@ -14,7 +14,7 @@ type BoardColumnProps = {
   emptyMessage?: string;
   isTaskDragDisabled?: boolean;
 
-  onCreateTask: (taskId: TaskId) => void;
+  onCreateTask: (columnId: ColumnId) => void;
   onEditTask: (taskId: TaskId) => void;
   onDeleteTask: (taskId: TaskId) => void;
   onArchiveTask: (taskId: TaskId) => void;

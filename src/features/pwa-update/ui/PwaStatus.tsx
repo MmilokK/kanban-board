@@ -4,9 +4,7 @@ import styles from './PwaStatus.module.scss';
 export function PwaStatus() {
   const {
     offlineReady: [offlineReady, setOfflineReady],
-
     needRefresh: [needRefresh, setNeedRefresh],
-
     updateServiceWorker,
   } = useRegisterSW();
 
@@ -33,8 +31,8 @@ export function PwaStatus() {
           </>
         ) : (
           <>
-            <strong>Приложение готово к работе без сети</strong>
-            <p>Основные файлы приложения сохранены на устройстве.</p>
+            <strong>Приложение сохранено для работы без сети</strong>
+            <p>Локальные доски доступны офлайн. Для cloud-досок требуется подключение к серверу.</p>
           </>
         )}
       </div>

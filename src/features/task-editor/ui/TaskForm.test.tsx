@@ -3,7 +3,22 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { TaskForm } from './TaskForm';
 
-describe('TaskForm', () => {
+const task = {
+  id: 'task-1',
+  title: 'Существующая задача',
+  description: 'Описание задачи',
+  priority: 'low' as const,
+  tags: ['React', 'CSS'],
+  subtasks: [],
+  comments: [],
+  history: [],
+  dueDate: '2026-07-10',
+  createdAt: '2026-07-01T10:00:00.000Z',
+  updatedAt: '2026-07-01T10:00:00.000Z',
+  archivedAt: null,
+};
+
+describe('Форма задачи', () => {
   it('показывает ошибку для пустого названия', async () => {
     const user = userEvent.setup();
 
@@ -58,20 +73,7 @@ describe('TaskForm', () => {
   it('показывает значения редактируемой задачи', () => {
     render(
       <TaskForm
-        task={{
-          id: 'task-1',
-          title: 'Существующая задача',
-          description: 'Описание задачи',
-          priority: 'low',
-          tags: ['React', 'CSS'],
-          subtasks: [],
-          comments: [],
-          history: [],
-          dueDate: null,
-          createdAt: '2026-07-01T10:00:00.000Z',
-          updatedAt: '2026-07-01T10:00:00.000Z',
-          archivedAt: null,
-        }}
+        task={task}
         submitLabel="Сохранить изменения"
         onCancel={vi.fn()}
         onSubmit={vi.fn()}
@@ -85,5 +87,76 @@ describe('TaskForm', () => {
     expect(screen.getByLabelText('Приоритет')).toHaveValue('low');
 
     expect(screen.getByLabelText('Теги')).toHaveValue('React, CSS');
+
+    expect(screen.getByLabelText('Срок выполнения')).toHaveValue('2026-07-10');
+  });
+
+  it('переводит поля в режим только для чтения без права редактирования', () => {
+    render(
+      <TaskForm
+        task={task}
+        submitLabel="Сохранить изменения"
+        canEdit={false}
+        onCancel={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText('Название')).toHaveAttribute('readonly');
+
+    expect(screen.getByLabelText('Описание')).toHaveAttribute('readonly');
+
+    expect(screen.getByLabelText('Теги')).toHaveAttribute('readonly');
+
+    expect(screen.getByLabelText('Приоритет')).toBeDisabled();
+
+    expect(screen.getByLabelText('Срок выполнения')).toBeDisabled();
+  });
+
+  it('скрывает сохранение без права редактирования', () => {
+    render(
+      <TaskForm
+        task={task}
+        submitLabel="Сохранить изменения"
+        canEdit={false}
+        onCancel={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Сохранить изменения',
+      }),
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.getByRole('button', {
+        name: 'Закрыть',
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it('закрывает форму в режиме просмотра', async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
+
+    render(
+      <TaskForm
+        task={task}
+        submitLabel="Сохранить изменения"
+        canEdit={false}
+        onCancel={onCancel}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Закрыть',
+      }),
+    );
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
   });
 });

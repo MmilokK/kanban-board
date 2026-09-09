@@ -1,6 +1,6 @@
+import { DragDropProvider } from '@dnd-kit/react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { DragDropProvider } from '@dnd-kit/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { ColumnId, TaskId } from '../../../shared/model/entity-ids';
 import type { Task } from '../../task/model/types';
@@ -41,6 +41,7 @@ type RenderBoardColumnOptions = {
   isTaskDragDisabled?: boolean;
   canMoveColumnLeft?: boolean;
   canMoveColumnRight?: boolean;
+  canEdit?: boolean;
 };
 
 function renderBoardColumn({
@@ -48,9 +49,9 @@ function renderBoardColumn({
   tasks = [],
   emptyMessage = '',
   isTaskDragDisabled = false,
-
   canMoveColumnLeft = true,
   canMoveColumnRight = true,
+  canEdit = true,
 }: RenderBoardColumnOptions = {}) {
   const onCreateTask = vi.fn();
   const onEditTask = vi.fn();
@@ -69,6 +70,7 @@ function renderBoardColumn({
         tasks={tasks}
         emptyMessage={emptyMessage}
         isTaskDragDisabled={isTaskDragDisabled}
+        canEdit={canEdit}
         onCreateTask={onCreateTask}
         onEditTask={onEditTask}
         onDeleteTask={onDeleteTask}
@@ -87,6 +89,7 @@ function renderBoardColumn({
     onCreateTask,
     onEditTask,
     onDeleteTask,
+    onArchiveTask,
     onRenameColumn,
     onDeleteColumn,
     onMoveColumnLeft,
@@ -127,7 +130,6 @@ describe('Колонка доски', () => {
     });
 
     expect(screen.getByText('Подготовить отчёт')).toBeInTheDocument();
-
     expect(screen.getByText('Собрать данные за месяц')).toBeInTheDocument();
   });
 
@@ -265,7 +267,6 @@ describe('Колонка доски', () => {
     );
 
     expect(onMoveColumnLeft).not.toHaveBeenCalled();
-
     expect(onMoveColumnRight).not.toHaveBeenCalled();
   });
 
@@ -287,7 +288,6 @@ describe('Колонка доски', () => {
     );
 
     expect(onEditTask).toHaveBeenCalledTimes(1);
-
     expect(onEditTask).toHaveBeenCalledWith(TASK_ID);
   });
 
@@ -309,7 +309,6 @@ describe('Колонка доски', () => {
     );
 
     expect(onDeleteTask).toHaveBeenCalledTimes(1);
-
     expect(onDeleteTask).toHaveBeenCalledWith(TASK_ID);
   });
 
@@ -337,5 +336,113 @@ describe('Колонка доски', () => {
         name: `Переместить задачу «${task.title}»`,
       }),
     ).toBeDisabled();
+  });
+
+  it('оставляет задачу доступной для просмотра без права редактирования', async () => {
+    const user = userEvent.setup();
+
+    const { onEditTask } = renderBoardColumn({
+      columnValue: {
+        ...column,
+        taskIds: [TASK_ID],
+      },
+      tasks: [task],
+      canEdit: false,
+    });
+
+    expect(screen.getByText(task.title)).toBeInTheDocument();
+
+    const openButton = screen.getByRole('button', {
+      name: `Открыть задачу ${task.title}`,
+    });
+
+    expect(openButton).toBeEnabled();
+
+    await user.click(openButton);
+
+    expect(onEditTask).toHaveBeenCalledTimes(1);
+    expect(onEditTask).toHaveBeenCalledWith(TASK_ID);
+  });
+
+  it('скрывает действия изменения задачи без права редактирования', () => {
+    renderBoardColumn({
+      columnValue: {
+        ...column,
+        taskIds: [TASK_ID],
+      },
+      tasks: [task],
+      canEdit: false,
+    });
+
+    expect(
+      screen.queryByRole('button', {
+        name: `Изменить задачу ${task.title}`,
+      }),
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('button', {
+        name: `Удалить задачу ${task.title}`,
+      }),
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('button', {
+        name: `Архивировать задачу ${task.title}`,
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('скрывает управление колонкой без права редактирования', () => {
+    renderBoardColumn({
+      canEdit: false,
+    });
+
+    expect(
+      screen.queryByRole('button', {
+        name: /создать задачу|добавить задачу/i,
+      }),
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Переименовать колонку Backlog',
+      }),
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Удалить колонку Backlog',
+      }),
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Переместить колонку Backlog влево',
+      }),
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Переместить колонку Backlog вправо',
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('скрывает управление перетаскиванием задачи без права редактирования', () => {
+    renderBoardColumn({
+      columnValue: {
+        ...column,
+        taskIds: [TASK_ID],
+      },
+      tasks: [task],
+      canEdit: false,
+    });
+
+    expect(
+      screen.queryByRole('button', {
+        name: `Переместить задачу «${task.title}»`,
+      }),
+    ).not.toBeInTheDocument();
   });
 });

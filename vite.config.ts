@@ -17,8 +17,8 @@ export default defineConfig({
         name: 'Kanban Board',
         short_name: 'Kanban',
         description: 'Kanban-доска для управления задачами',
-        start_url: './',
-        scope: './',
+        start_url: '/',
+        scope: '/',
         display: 'standalone',
         theme_color: '#111827',
         background_color: '#111827',
@@ -45,6 +45,7 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         navigateFallback: 'index.html',
+        navigateFallbackDenylist: [/^\/api\//],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2}'],
       },
     }),

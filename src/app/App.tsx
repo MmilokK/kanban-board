@@ -30,6 +30,15 @@ export function App() {
   const [cloudBoardId, setCloudBoardId] = useState<string | null>(null);
   const isLocalMode = workspaceMode === 'local';
 
+  function handleOpenLocalWorkspace() {
+    setCloudBoardId(null);
+    setWorkspaceMode('local');
+  }
+
+  function handleOpenCloudWorkspace() {
+    setWorkspaceMode('cloud');
+  }
+
   function handleInvitationAccepted(boardId: string) {
     window.history.replaceState(null, '', '/');
     setCloudBoardId(boardId);
@@ -60,9 +69,7 @@ export function App() {
           <button
             type="button"
             aria-pressed={workspaceMode === 'local'}
-            onClick={() => {
-              setWorkspaceMode('local');
-            }}
+            onClick={handleOpenLocalWorkspace}
           >
             Локальные доски
           </button>
@@ -70,9 +77,7 @@ export function App() {
           <button
             type="button"
             aria-pressed={workspaceMode === 'cloud'}
-            onClick={() => {
-              setWorkspaceMode('cloud');
-            }}
+            onClick={handleOpenCloudWorkspace}
           >
             Облачные доски
           </button>

@@ -66,7 +66,6 @@ describe('Архив задач', () => {
     );
 
     expect(screen.getByText(task.title)).toBeInTheDocument();
-
     expect(screen.getByText(task.description)).toBeInTheDocument();
   });
 
@@ -116,7 +115,6 @@ describe('Архив задач', () => {
 
   it('восстанавливает задачу в выбранную колонку', async () => {
     const user = userEvent.setup();
-
     const onRestore = vi.fn();
 
     render(
@@ -147,7 +145,6 @@ describe('Архив задач', () => {
 
   it('удаляет задачу из архива', async () => {
     const user = userEvent.setup();
-
     const onDelete = vi.fn();
 
     render(
@@ -171,13 +168,97 @@ describe('Архив задач', () => {
 
   it('закрывает архив', async () => {
     const user = userEvent.setup();
-
     const onClose = vi.fn();
 
     render(
       <TaskArchive
         tasks={[task]}
         columns={columns}
+        onRestore={vi.fn()}
+        onDelete={vi.fn()}
+        onClose={onClose}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Закрыть архив',
+      }),
+    );
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('показывает архив без права редактирования', () => {
+    render(
+      <TaskArchive
+        tasks={[task]}
+        columns={columns}
+        canEdit={false}
+        onRestore={vi.fn()}
+        onDelete={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText(task.title)).toBeInTheDocument();
+    expect(screen.getByText(task.description)).toBeInTheDocument();
+    expect(screen.getByText('Архивировано: 1')).toBeInTheDocument();
+  });
+
+  it('скрывает восстановление задачи без права редактирования', () => {
+    render(
+      <TaskArchive
+        tasks={[task]}
+        columns={columns}
+        canEdit={false}
+        onRestore={vi.fn()}
+        onDelete={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.queryByRole('combobox', {
+        name: 'Восстановить в',
+      }),
+    ).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Восстановить',
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('скрывает удаление задачи без права редактирования', () => {
+    render(
+      <TaskArchive
+        tasks={[task]}
+        columns={columns}
+        canEdit={false}
+        onRestore={vi.fn()}
+        onDelete={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.queryByRole('button', {
+        name: `Удалить из архива задачу ${task.title}`,
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('оставляет закрытие архива доступным без права редактирования', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+
+    render(
+      <TaskArchive
+        tasks={[task]}
+        columns={columns}
+        canEdit={false}
         onRestore={vi.fn()}
         onDelete={vi.fn()}
         onClose={onClose}

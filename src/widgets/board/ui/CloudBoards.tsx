@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+
 import {
   createCloudBoard,
   deleteCloudBoard,
@@ -14,6 +15,7 @@ import type {
 import { useCloudBoard } from '../../../entities/board/api/use-cloud-board';
 import { useCloudBoards } from '../../../entities/board/api/use-cloud-boards';
 import {
+  canDeleteBoard,
   canEditBoard,
   canManageBoardMembers,
 } from '../../../entities/board-member/model/board-member';
@@ -51,28 +53,27 @@ function getArchiveTaskCount(board: ApiBoard | undefined) {
 export function CloudBoards({ initialBoardId = null }: CloudBoardsProps) {
   const queryClient = useQueryClient();
   const boardsQuery = useCloudBoards();
+
   const [activeBoardId, setActiveBoardId] = useState<string | null>(initialBoardId);
   const [boardEditorState, setBoardEditorState] = useState<BoardEditorState>(null);
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
   const [isInvitationsOpen, setIsInvitationsOpen] = useState(false);
-  const activeBoardQuery = useCloudBoard(activeBoardId ?? '');
 
-  const boards = useMemo<ApiBoardListItem[]>(() => {
-    return boardsQuery.data ?? [];
-  }, [boardsQuery.data]);
+  const boards: ApiBoardListItem[] = boardsQuery.data ?? [];
 
-  const effectiveActiveBoardId = useMemo(() => {
-    if (activeBoardId && boards.some((board) => board.id === activeBoardId)) {
-      return activeBoardId;
-    }
+  const effectiveActiveBoardId =
+    activeBoardId && boards.some((board) => board.id === activeBoardId)
+      ? activeBoardId
+      : (boards[0]?.id ?? null);
 
-    return boards[0]?.id ?? null;
-  }, [boards, activeBoardId]);
+  const activeBoardQuery = useCloudBoard(effectiveActiveBoardId ?? '');
 
   const createBoardMutation = useMutation({
     mutationFn: ({ title }: { title: string }) => createCloudBoard(title),
+
     onSuccess: async (response: ApiBoardResponse) => {
       queryClient.setQueryData(boardQueryKeys.detail(response.board.id), response);
+
       await queryClient.invalidateQueries({
         queryKey: boardQueryKeys.lists(),
       });
@@ -87,17 +88,21 @@ export function CloudBoards({ initialBoardId = null }: CloudBoardsProps) {
   const renameBoardMutation = useMutation({
     mutationFn: ({ boardId, title }: { boardId: string; title: string }) =>
       renameCloudBoard(boardId, title),
+
     onSuccess: async (response: ApiBoardResponse) => {
       queryClient.setQueryData(boardQueryKeys.detail(response.board.id), response);
+
       await queryClient.invalidateQueries({
         queryKey: boardQueryKeys.lists(),
       });
+
       setBoardEditorState(null);
     },
   });
 
   const deleteBoardMutation = useMutation({
     mutationFn: ({ boardId }: { boardId: string }) => deleteCloudBoard(boardId),
+
     onSuccess: async (_response, variables) => {
       queryClient.removeQueries({
         queryKey: boardQueryKeys.detail(variables.boardId),
@@ -114,15 +119,18 @@ export function CloudBoards({ initialBoardId = null }: CloudBoardsProps) {
   });
 
   const activeBoard = activeBoardQuery.data?.board;
+
   const archivedTaskCount = getArchiveTaskCount(activeBoard);
+
   const editingBoard =
     boardEditorState?.mode === 'rename'
       ? boards.find((board) => board.id === boardEditorState.boardId)
       : undefined;
 
   const canManageInvitations = canManageBoardMembers(activeBoard?.role ?? 'VIEWER');
+
   function handleSelectBoard(boardId: string) {
-    if (boardId === activeBoardId) {
+    if (boardId === effectiveActiveBoardId) {
       return;
     }
 
@@ -170,7 +178,8 @@ export function CloudBoards({ initialBoardId = null }: CloudBoardsProps) {
 
   function handleDeleteBoard() {
     if (!effectiveActiveBoardId || !activeBoard) return;
-    if (!canManageBoardMembers(activeBoard.role)) return;
+    if (!canDeleteBoard(activeBoard.role)) return;
+
     const board = boards.find((currentBoard) => currentBoard.id === effectiveActiveBoardId);
 
     if (!board) return;
@@ -201,11 +210,15 @@ export function CloudBoards({ initialBoardId = null }: CloudBoardsProps) {
     return <p role="status">Загрузка облачных досок…</p>;
   }
 
-  if (boardsQuery.isError) {
+  if (boardsQuery.isError && !boardsQuery.data) {
     return (
       <div role="alert">
         <p>Не удалось загрузить облачные доски.</p>
-        <p>Если ты работаешь без авторизации, войди в аккаунт для доступа к облачным доскам.</p>
+        <p>
+          Проверь подключение к сети и доступность сервера. Для работы с облачными досками также
+          требуется авторизация.
+        </p>
+
         <button
           type="button"
           onClick={() => {
@@ -220,11 +233,26 @@ export function CloudBoards({ initialBoardId = null }: CloudBoardsProps) {
 
   return (
     <>
+      {boardsQuery.isError && boardsQuery.data && (
+        <div role="alert">
+          <p>Не удалось обновить список облачных досок. Показаны последние загруженные данные.</p>
+
+          <button
+            type="button"
+            onClick={() => {
+              void boardsQuery.refetch();
+            }}
+          >
+            Попробовать снова
+          </button>
+        </div>
+      )}
+
       <section aria-label="Облачные доски">
         <CloudBoardToolbar
           boards={boards}
           canEdit={canEditBoard(activeBoard?.role ?? 'VIEWER')}
-          canDelete={canManageBoardMembers(activeBoard?.role ?? 'VIEWER')}
+          canDelete={canDeleteBoard(activeBoard?.role ?? 'VIEWER')}
           canManageInvitations={canManageInvitations}
           activeBoardId={effectiveActiveBoardId}
           archivedTaskCount={archivedTaskCount}
@@ -257,6 +285,7 @@ export function CloudBoards({ initialBoardId = null }: CloudBoardsProps) {
           <div>
             <h2>Пока нет облачных досок</h2>
             <p>Создай первую облачную доску.</p>
+
             <button type="button" onClick={handleOpenCreateBoard}>
               Создать облачную доску
             </button>
