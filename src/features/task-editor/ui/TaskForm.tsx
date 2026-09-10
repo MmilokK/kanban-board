@@ -1,6 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import clsx from 'clsx';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+
 import type { Task } from '../../../entities/task/model/types';
 import { getTaskFormDefaultValues, taskFormSchema, type TaskFormValues } from '../model/task-form';
 import styles from './TaskForm.module.scss';
@@ -13,16 +15,78 @@ type TaskFormProps = {
   onCancel: () => void;
 };
 
+function areTaskFormValuesEqual(
+  first: Readonly<Partial<TaskFormValues>>,
+  second: TaskFormValues,
+): boolean {
+  return (
+    first.title === second.title &&
+    first.description === second.description &&
+    first.priority === second.priority &&
+    first.tags === second.tags &&
+    first.dueDate === second.dueDate
+  );
+}
+
+function getTaskFormValuesKey(values: TaskFormValues): string {
+  return JSON.stringify(values);
+}
+
 export function TaskForm({ task, submitLabel, canEdit = true, onSubmit, onCancel }: TaskFormProps) {
+  const serverValues = getTaskFormDefaultValues(task);
+  const serverValuesKey = getTaskFormValuesKey(serverValues);
+
+  const [dismissedExternalChangeKey, setDismissedExternalChangeKey] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    reset,
+    formState: { errors, isDirty, isSubmitting, defaultValues },
   } = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
     mode: 'onBlur',
-    defaultValues: getTaskFormDefaultValues(task),
+    defaultValues: serverValues,
   });
+
+  const baseValues = defaultValues ?? serverValues;
+
+  const serverHasChanged = !areTaskFormValuesEqual(baseValues, serverValues);
+
+  const hasExternalChanges =
+    canEdit && isDirty && serverHasChanged && dismissedExternalChangeKey !== serverValuesKey;
+
+  useEffect(() => {
+    if (isDirty && canEdit) {
+      return;
+    }
+
+    if (!serverHasChanged) {
+      return;
+    }
+
+    reset(serverValues);
+  }, [
+    canEdit,
+    isDirty,
+    reset,
+    serverHasChanged,
+    serverValues.description,
+    serverValues.dueDate,
+    serverValues.priority,
+    serverValues.tags,
+    serverValues.title,
+    serverValues,
+  ]);
+
+  function handleLoadExternalChanges(): void {
+    setDismissedExternalChangeKey(null);
+    reset(serverValues);
+  }
+
+  function handleKeepLocalChanges(): void {
+    setDismissedExternalChangeKey(serverValuesKey);
+  }
 
   return (
     <form
@@ -30,9 +94,24 @@ export function TaskForm({ task, submitLabel, canEdit = true, onSubmit, onCancel
       noValidate
       onSubmit={handleSubmit((values) => {
         if (!canEdit) return;
+
         onSubmit(values);
       })}
     >
+      {hasExternalChanges && (
+        <div role="alert">
+          <p>Задача была изменена другим пользователем.</p>
+
+          <button type="button" onClick={handleLoadExternalChanges}>
+            Загрузить изменения
+          </button>
+
+          <button type="button" onClick={handleKeepLocalChanges}>
+            Продолжить редактирование
+          </button>
+        </div>
+      )}
+
       <div className={styles.field}>
         <label className={styles.label} htmlFor="task-title">
           Название
@@ -137,13 +216,13 @@ export function TaskForm({ task, submitLabel, canEdit = true, onSubmit, onCancel
         </label>
 
         <input
+          {...register('dueDate')}
           className={styles.control}
           id="task-due-date"
           type="date"
           disabled={!canEdit}
           aria-invalid={errors.dueDate ? 'true' : 'false'}
           aria-describedby={errors.dueDate ? 'task-due-date-error' : undefined}
-          {...register('dueDate')}
         />
 
         {errors.dueDate && (

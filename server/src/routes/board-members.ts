@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from '@fastify/type-provider-zod';
+import z from 'zod';
 import { requireAuth } from '../auth/require-auth.js';
 import {
   getBoardMembers,
@@ -14,7 +15,7 @@ import {
   updateBoardMemberSchema,
 } from '../boards/board-member-schema.js';
 import { apiErrorSchema } from '../schemas/api-response-schema.js';
-import z from 'zod';
+import { publishBoardChanged, unsubscribeUserFromBoard } from '../realtime/realtime-hub.js';
 
 export async function registerBoardMemberRoutes(app: FastifyInstance): Promise<void> {
   const typedApp = app.withTypeProvider<ZodTypeProvider>();
@@ -64,12 +65,15 @@ export async function registerBoardMemberRoutes(app: FastifyInstance): Promise<v
 
     async (request) => {
       const user = await requireAuth(request);
+
       const member = await updateBoardMemberRole(
         user.id,
         request.params.boardId,
         request.params.userId,
         request.body.role,
       );
+
+      publishBoardChanged(request.params.boardId);
 
       return { member };
     },
@@ -97,6 +101,9 @@ export async function registerBoardMemberRoutes(app: FastifyInstance): Promise<v
       const user = await requireAuth(request);
 
       await removeBoardMember(user.id, request.params.boardId, request.params.userId);
+
+      publishBoardChanged(request.params.boardId);
+      unsubscribeUserFromBoard(request.params.userId, request.params.boardId);
 
       return reply.status(204).send();
     },

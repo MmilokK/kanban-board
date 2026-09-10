@@ -39,6 +39,7 @@ import {
 import { createSubtask, deleteSubtask, updateSubtask } from '../tasks/subtask-service.js';
 import { createComment, deleteComment, updateComment } from '../tasks/comment-service.js';
 import { requireBoardEditor } from '../boards/board-access.js';
+import { publishBoardChanged } from '../realtime/realtime-hub.js';
 
 const security = [
   {
@@ -79,6 +80,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
       const user = await requireAuth(request);
       await requireBoardEditor(user.id, request.params.boardId);
       const board = await createColumn(user.id, request.params.boardId, request.body.title);
+      publishBoardChanged(request.params.boardId);
 
       return reply.status(201).send({
         board,
@@ -107,6 +109,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
         request.params.columnId,
         request.body.title,
       );
+      publishBoardChanged(request.params.boardId);
 
       return {
         board,
@@ -129,6 +132,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
       const user = await requireAuth(request);
       await requireBoardEditor(user.id, request.params.boardId);
       const board = await deleteColumn(user.id, request.params.boardId, request.params.columnId);
+      publishBoardChanged(request.params.boardId);
 
       return {
         board,
@@ -152,6 +156,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
       const user = await requireAuth(request);
       await requireBoardEditor(user.id, request.params.boardId);
       const board = await reorderColumns(user.id, request.params.boardId, request.body.columnIds);
+      publishBoardChanged(request.params.boardId);
 
       return {
         board,
@@ -186,6 +191,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
         request.params.columnId,
         request.body,
       );
+      publishBoardChanged(request.params.boardId);
 
       return reply.status(201).send({
         board,
@@ -214,6 +220,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
         request.params.taskId,
         request.body,
       );
+      publishBoardChanged(request.params.boardId);
 
       return {
         board,
@@ -236,6 +243,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
       const user = await requireAuth(request);
       await requireBoardEditor(user.id, request.params.boardId);
       const board = await deleteTask(user.id, request.params.boardId, request.params.taskId);
+      publishBoardChanged(request.params.boardId);
 
       return {
         board,
@@ -259,6 +267,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
       const user = await requireAuth(request);
       await requireBoardEditor(user.id, request.params.boardId);
       const board = await reorderTasks(user.id, request.params.boardId, request.body.columns);
+      publishBoardChanged(request.params.boardId);
 
       return {
         board,
@@ -281,6 +290,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
       const user = await requireAuth(request);
       await requireBoardEditor(user.id, request.params.boardId);
       const board = await archiveTask(user.id, request.params.boardId, request.params.taskId);
+      publishBoardChanged(request.params.boardId);
 
       return {
         board,
@@ -310,6 +320,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
         request.params.taskId,
         request.body.columnId,
       );
+      publishBoardChanged(request.params.boardId);
 
       return {
         board,
@@ -344,6 +355,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
         request.params.taskId,
         request.body,
       );
+      publishBoardChanged(request.params.boardId);
 
       return reply.status(201).send({
         board,
@@ -373,6 +385,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
         request.params.subtaskId,
         request.body,
       );
+      publishBoardChanged(request.params.boardId);
 
       return {
         board,
@@ -400,6 +413,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
         request.params.taskId,
         request.params.subtaskId,
       );
+      publishBoardChanged(request.params.boardId);
 
       return {
         board,
@@ -434,6 +448,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
         request.params.taskId,
         request.body.text,
       );
+      publishBoardChanged(request.params.boardId);
 
       return reply.status(201).send({
         board,
@@ -463,6 +478,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
         request.params.commentId,
         request.body.text,
       );
+      publishBoardChanged(request.params.boardId);
 
       return {
         board,
@@ -490,6 +506,7 @@ export async function registerBoardContentRoutes(app: FastifyInstance): Promise<
         request.params.taskId,
         request.params.commentId,
       );
+      publishBoardChanged(request.params.boardId);
 
       return {
         board,

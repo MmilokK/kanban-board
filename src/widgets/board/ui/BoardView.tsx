@@ -415,41 +415,45 @@ export function BoardView({
         )}
       </DragDropProvider>
 
-      {taskEditorState && (
-        <TaskDialog
-          task={editingTask}
-          columns={columns}
-          title={taskEditorState.mode === 'create' ? 'Новая задача' : 'Редактирование задачи'}
-          submitLabel={taskEditorState.mode === 'create' ? 'Создать задачу' : 'Сохранить изменения'}
-          onClose={handleCloseTaskDialog}
-          onSubmit={handleTaskSubmit}
-          {...(editingTask
-            ? {
-                onAddSubtask: (input) => {
-                  onAddSubtask(editingTask.id, input);
-                },
-                onUpdateSubtask: (subtaskId, input) => {
-                  onUpdateSubtask(editingTask.id, subtaskId, input);
-                },
-                onToggleSubtask: (subtaskId) => {
-                  onToggleSubtask(editingTask.id, subtaskId);
-                },
-                onDeleteSubtask: (subtaskId) => {
-                  onDeleteSubtask(editingTask.id, subtaskId);
-                },
-                onAddComment: (input) => {
-                  onAddComment(editingTask.id, input);
-                },
-                onUpdateComment: (commentId, input) => {
-                  onUpdateComment(editingTask.id, commentId, input);
-                },
-                onDeleteComment: (commentId) => {
-                  onDeleteComment(editingTask.id, commentId);
-                },
-              }
-            : {})}
-        />
-      )}
+      {taskEditorState &&
+        (taskEditorState.mode === 'create' || (editingTask && !editingTask.archivedAt)) && (
+          <TaskDialog
+            task={editingTask}
+            columns={columns}
+            title={taskEditorState.mode === 'create' ? 'Новая задача' : 'Редактирование задачи'}
+            submitLabel={
+              taskEditorState.mode === 'create' ? 'Создать задачу' : 'Сохранить изменения'
+            }
+            canEdit={canEdit}
+            onClose={handleCloseTaskDialog}
+            onSubmit={handleTaskSubmit}
+            {...(editingTask
+              ? {
+                  onAddSubtask: (input) => {
+                    onAddSubtask(editingTask.id, input);
+                  },
+                  onUpdateSubtask: (subtaskId, input) => {
+                    onUpdateSubtask(editingTask.id, subtaskId, input);
+                  },
+                  onToggleSubtask: (subtaskId) => {
+                    onToggleSubtask(editingTask.id, subtaskId);
+                  },
+                  onDeleteSubtask: (subtaskId) => {
+                    onDeleteSubtask(editingTask.id, subtaskId);
+                  },
+                  onAddComment: (input) => {
+                    onAddComment(editingTask.id, input);
+                  },
+                  onUpdateComment: (commentId, input) => {
+                    onUpdateComment(editingTask.id, commentId, input);
+                  },
+                  onDeleteComment: (commentId) => {
+                    onDeleteComment(editingTask.id, commentId);
+                  },
+                }
+              : {})}
+          />
+        )}
 
       {canEdit && columnEditorState?.mode === 'create' && (
         <ColumnDialog

@@ -1,17 +1,24 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ApiError } from '../../../shared/api/api-error';
 import { CloudBoard } from './CloudBoard';
 
-const { useCloudBoardMock, refetchMock, mutateMock, mapCloudBoardMock } = vi.hoisted(() => ({
-  useCloudBoardMock: vi.fn(),
-  refetchMock: vi.fn(),
-  mutateMock: vi.fn(),
-  mapCloudBoardMock: vi.fn(),
-}));
+const { useCloudBoardMock, useBoardRealtimeMock, refetchMock, mutateMock, mapCloudBoardMock } =
+  vi.hoisted(() => ({
+    useCloudBoardMock: vi.fn(),
+    useBoardRealtimeMock: vi.fn(),
+    refetchMock: vi.fn(),
+    mutateMock: vi.fn(),
+    mapCloudBoardMock: vi.fn(),
+  }));
 
 vi.mock('../../../entities/board/api/use-cloud-board', () => ({
   useCloudBoard: useCloudBoardMock,
+}));
+
+vi.mock('../../../entities/board/api/use-board-realtime', () => ({
+  useBoardRealtime: useBoardRealtimeMock,
 }));
 
 vi.mock('../../../entities/board/api/use-cloud-board-mutation', () => ({
@@ -59,11 +66,13 @@ function createBoardQuery({
   isPending = false,
   isError = false,
   withData = true,
+  error = null,
 }: {
   role?: 'OWNER' | 'EDITOR' | 'VIEWER';
   isPending?: boolean;
   isError?: boolean;
   withData?: boolean;
+  error?: Error | null;
 } = {}) {
   return {
     data: withData
@@ -77,6 +86,7 @@ function createBoardQuery({
       : undefined,
     isPending,
     isError,
+    error,
     refetch: refetchMock,
   };
 }
@@ -88,6 +98,12 @@ describe('Cloud-доска', () => {
     mapCloudBoardMock.mockReturnValue(mappedBoard);
 
     useCloudBoardMock.mockReturnValue(createBoardQuery());
+  });
+
+  it('подключает realtime для текущей доски', () => {
+    render(<CloudBoard boardId="board-1" isArchiveOpen={false} onCloseArchive={vi.fn()} />);
+
+    expect(useBoardRealtimeMock).toHaveBeenCalledWith('board-1');
   });
 
   it('показывает загрузку, пока данные доски ещё не получены', () => {
@@ -110,6 +126,7 @@ describe('Cloud-доска', () => {
       createBoardQuery({
         isError: true,
         withData: false,
+        error: new Error('Network error'),
       }),
     );
 
@@ -124,6 +141,33 @@ describe('Cloud-доска', () => {
     expect(screen.queryByTestId('board-view')).not.toBeInTheDocument();
   });
 
+  it('показывает отсутствие доски при BOARD_NOT_FOUND', () => {
+    useCloudBoardMock.mockReturnValue(
+      createBoardQuery({
+        isError: true,
+        withData: false,
+        error: new ApiError('Доска не найдена', {
+          status: 404,
+          code: 'BOARD_NOT_FOUND',
+        }),
+      }),
+    );
+
+    render(<CloudBoard boardId="board-1" isArchiveOpen={false} onCloseArchive={vi.fn()} />);
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Доска не найдена или доступ к ней был удалён.',
+    );
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Попробовать снова',
+      }),
+    ).not.toBeInTheDocument();
+
+    expect(screen.queryByTestId('board-view')).not.toBeInTheDocument();
+  });
+
   it('повторяет загрузку после ошибки', async () => {
     const user = userEvent.setup();
 
@@ -131,6 +175,7 @@ describe('Cloud-доска', () => {
       createBoardQuery({
         isError: true,
         withData: false,
+        error: new Error('Network error'),
       }),
     );
 
@@ -149,6 +194,7 @@ describe('Cloud-доска', () => {
     useCloudBoardMock.mockReturnValue(
       createBoardQuery({
         isError: true,
+        error: new Error('Network error'),
       }),
     );
 
@@ -169,6 +215,7 @@ describe('Cloud-доска', () => {
     useCloudBoardMock.mockReturnValue(
       createBoardQuery({
         isError: true,
+        error: new Error('Network error'),
       }),
     );
 

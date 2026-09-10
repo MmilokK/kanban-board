@@ -32,6 +32,8 @@ import type {
 import type { TaskIdsByColumn } from '../../../entities/board/model/task-order';
 import { canEditBoard } from '../../../entities/board-member/model/board-member';
 import { BoardView } from './BoardView';
+import { useBoardRealtime } from '../../../entities/board/api/use-board-realtime';
+import { ApiError } from '../../../shared/api/api-error';
 
 type CloudBoardProps = {
   boardId: string;
@@ -41,6 +43,7 @@ type CloudBoardProps = {
 
 export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoardProps) {
   const boardQuery = useCloudBoard(boardId);
+  useBoardRealtime(boardId);
 
   const createColumnMutation = useCloudBoardMutation(
     ({ boardId, title }: { boardId: string; title: string }) => createCloudColumn(boardId, title),
@@ -183,6 +186,16 @@ export function CloudBoard({ boardId, isArchiveOpen, onCloseArchive }: CloudBoar
 
   if (boardQuery.isPending && !boardQuery.data) {
     return <p role="status">Загрузка доски…</p>;
+  }
+
+  if (
+    boardQuery.isError &&
+    !boardQuery.data &&
+    boardQuery.error instanceof ApiError &&
+    boardQuery.error.status === 404 &&
+    boardQuery.error.code === 'BOARD_NOT_FOUND'
+  ) {
+    return <p role="alert">Доска не найдена или доступ к ней был удалён.</p>;
   }
 
   if (boardQuery.isError && !boardQuery.data) {
