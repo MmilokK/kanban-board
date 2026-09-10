@@ -1,13 +1,15 @@
 import type { FastifyInstance } from 'fastify';
-
+import type { ZodTypeProvider } from '@fastify/type-provider-zod';
 import { requireAuth } from '../auth/require-auth.js';
-import { invitationTokenParamsSchema } from '../boards/board-invitation.schemas.js';
+import {
+  invitationTokenParamsSchema,
+  publicBoardInvitationResponseSchema,
+} from '../boards/board-invitation.schemas.js';
 import {
   acceptBoardInvitation,
   getPublicBoardInvitationByToken,
 } from '../boards/board-invitation.service.js';
-import { publicBoardInvitationResponseSchema } from '../boards/board-invitation.schemas.js';
-import type { ZodTypeProvider } from '@fastify/type-provider-zod';
+import { publishBoardChanged } from '../realtime/realtime-hub.js';
 
 export async function registerInvitationRoutes(app: FastifyInstance) {
   const typedApp = app.withTypeProvider<ZodTypeProvider>();
@@ -24,7 +26,6 @@ export async function registerInvitationRoutes(app: FastifyInstance) {
     },
     async (request) => {
       const { token } = request.params;
-
       const invitation = await getPublicBoardInvitationByToken(token);
 
       return {
@@ -43,8 +44,9 @@ export async function registerInvitationRoutes(app: FastifyInstance) {
     async (request) => {
       const { token } = request.params;
       const user = await requireAuth(request);
-
       const member = await acceptBoardInvitation(user.id, token);
+
+      publishBoardChanged(member.boardId);
 
       return {
         member,

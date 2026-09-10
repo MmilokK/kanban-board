@@ -159,4 +159,200 @@ describe('Форма задачи', () => {
 
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
+
+  it('обновляет значения из сервера, если форма не была изменена локально', async () => {
+    const { rerender } = render(
+      <TaskForm
+        task={task}
+        submitLabel="Сохранить изменения"
+        onCancel={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    rerender(
+      <TaskForm
+        task={{
+          ...task,
+          title: 'Обновлённая задача',
+          description: 'Новое описание',
+          priority: 'high',
+        }}
+        submitLabel="Сохранить изменения"
+        onCancel={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Название')).toHaveValue('Обновлённая задача');
+    });
+
+    expect(screen.getByLabelText('Описание')).toHaveValue('Новое описание');
+    expect(screen.getByLabelText('Приоритет')).toHaveValue('high');
+  });
+
+  it('не перезаписывает локальные изменения при обновлении задачи с сервера', async () => {
+    const user = userEvent.setup();
+
+    const { rerender } = render(
+      <TaskForm
+        task={task}
+        submitLabel="Сохранить изменения"
+        onCancel={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    const titleInput = screen.getByLabelText('Название');
+
+    await user.clear(titleInput);
+    await user.type(titleInput, 'Мои локальные изменения');
+
+    rerender(
+      <TaskForm
+        task={{
+          ...task,
+          title: 'Изменение другого пользователя',
+        }}
+        submitLabel="Сохранить изменения"
+        onCancel={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText('Название')).toHaveValue('Мои локальные изменения');
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Задача была изменена другим пользователем.',
+    );
+  });
+
+  it('загружает серверные изменения по запросу пользователя', async () => {
+    const user = userEvent.setup();
+
+    const { rerender } = render(
+      <TaskForm
+        task={task}
+        submitLabel="Сохранить изменения"
+        onCancel={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    const titleInput = screen.getByLabelText('Название');
+
+    await user.clear(titleInput);
+    await user.type(titleInput, 'Мои локальные изменения');
+
+    rerender(
+      <TaskForm
+        task={{
+          ...task,
+          title: 'Свежая версия с сервера',
+        }}
+        submitLabel="Сохранить изменения"
+        onCancel={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Загрузить изменения',
+      }),
+    );
+
+    expect(screen.getByLabelText('Название')).toHaveValue('Свежая версия с сервера');
+
+    expect(
+      screen.queryByText('Задача была изменена другим пользователем.'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('сохраняет локальные значения после выбора продолжить редактирование', async () => {
+    const user = userEvent.setup();
+
+    const { rerender } = render(
+      <TaskForm
+        task={task}
+        submitLabel="Сохранить изменения"
+        onCancel={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    const titleInput = screen.getByLabelText('Название');
+
+    await user.clear(titleInput);
+    await user.type(titleInput, 'Локальная версия');
+
+    rerender(
+      <TaskForm
+        task={{
+          ...task,
+          title: 'Серверная версия',
+        }}
+        submitLabel="Сохранить изменения"
+        onCancel={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Продолжить редактирование',
+      }),
+    );
+
+    expect(screen.getByLabelText('Название')).toHaveValue('Локальная версия');
+
+    expect(
+      screen.queryByText('Задача была изменена другим пользователем.'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('сбрасывает локальные изменения при потере права редактирования', async () => {
+    const user = userEvent.setup();
+
+    const { rerender } = render(
+      <TaskForm
+        task={task}
+        submitLabel="Сохранить изменения"
+        canEdit
+        onCancel={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    const titleInput = screen.getByLabelText('Название');
+
+    await user.clear(titleInput);
+    await user.type(titleInput, 'Несохранённое изменение');
+
+    rerender(
+      <TaskForm
+        task={{
+          ...task,
+          title: 'Актуальное название с сервера',
+        }}
+        submitLabel="Сохранить изменения"
+        canEdit={false}
+        onCancel={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Название')).toHaveValue('Актуальное название с сервера');
+    });
+
+    expect(screen.getByLabelText('Название')).toHaveAttribute('readonly');
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Сохранить изменения',
+      }),
+    ).not.toBeInTheDocument();
+  });
 });
