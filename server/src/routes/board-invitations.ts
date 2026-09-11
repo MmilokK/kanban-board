@@ -1,4 +1,6 @@
 import type { FastifyInstance } from 'fastify';
+import type { ZodTypeProvider } from '@fastify/type-provider-zod';
+import { requireAuth } from '../auth/require-auth.js';
 import {
   boardInvitationIdParamsSchema,
   boardInvitationParamsSchema,
@@ -13,8 +15,8 @@ import {
   listBoardInvitations,
   revokeBoardInvitation,
 } from '../boards/board-invitation.service.js';
-import { requireAuth } from '../auth/require-auth.js';
-import type { ZodTypeProvider } from '@fastify/type-provider-zod';
+import { db } from '../db/client.js';
+import { publishNotificationsChanged } from '../realtime/realtime-hub.js';
 
 function serializeBoardInvitation(invitation: {
   id: string;
@@ -54,6 +56,7 @@ function serializeBoardInvitation(invitation: {
 
 export async function boardInvitationRoutes(app: FastifyInstance) {
   const typedApp = app.withTypeProvider<ZodTypeProvider>();
+
   typedApp.post(
     '/:boardId/invitations/email',
     {
@@ -70,6 +73,18 @@ export async function boardInvitationRoutes(app: FastifyInstance) {
       const { boardId } = request.params;
       const user = await requireAuth(request);
       const invitation = await createEmailBoardInvitation(user.id, boardId, request.body);
+      const invitedUser = await db.user.findUnique({
+        where: {
+          email: request.body.email,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (invitedUser) {
+        publishNotificationsChanged(invitedUser.id);
+      }
 
       return {
         invitation: {
@@ -100,7 +115,9 @@ export async function boardInvitationRoutes(app: FastifyInstance) {
       const user = await requireAuth(request);
       const invitation = await createLinkBoardInvitation(user.id, boardId, request.body);
 
-      return { invitation: serializeBoardInvitation(invitation) };
+      return {
+        invitation: serializeBoardInvitation(invitation),
+      };
     },
   );
 
@@ -120,7 +137,9 @@ export async function boardInvitationRoutes(app: FastifyInstance) {
       const user = await requireAuth(request);
       const invitations = await listBoardInvitations(user.id, boardId);
 
-      return { invitations: invitations.map(serializeBoardInvitation) };
+      return {
+        invitations: invitations.map(serializeBoardInvitation),
+      };
     },
   );
 

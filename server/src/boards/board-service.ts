@@ -1,4 +1,4 @@
-import { BoardMemberRole, TaskPriority } from '../generated/prisma/client.js';
+import { BoardMemberRole, NotificationType, TaskPriority } from '../generated/prisma/client.js';
 import { db } from '../db/client.js';
 import { AppError } from '../errors/app-error.js';
 import { mapBoard, mapBoardListItem } from './board-mapper.js';
@@ -228,13 +228,57 @@ export async function renameBoard(userId: string, boardId: string, title: string
   return getBoard(userId, boardId);
 }
 
-export async function deleteBoard(userId: string, boardId: string): Promise<void> {
+export async function deleteBoard(userId: string, boardId: string): Promise<string[]> {
   await requireBoardOwner(userId, boardId);
 
-  await db.board.delete({
-    where: {
-      id: boardId,
-    },
+  return db.$transaction(async (tx) => {
+    const board = await tx.board.findUnique({
+      where: {
+        id: boardId,
+      },
+      select: {
+        title: true,
+        members: {
+          where: {
+            userId: {
+              not: userId,
+            },
+          },
+          select: {
+            userId: true,
+          },
+        },
+      },
+    });
+
+    if (!board) {
+      throw new AppError('Доска не найдена', {
+        statusCode: 404,
+        code: 'BOARD_NOT_FOUND',
+      });
+    }
+
+    const notifiedUserIds = board.members.map((member) => member.userId);
+
+    if (notifiedUserIds.length > 0) {
+      await tx.notification.createMany({
+        data: notifiedUserIds.map((memberUserId) => ({
+          userId: memberUserId,
+          type: NotificationType.BOARD_DELETED,
+          title: 'Доска удалена',
+          message: `Доска «${board.title}» была удалена`,
+          boardId,
+        })),
+      });
+    }
+
+    await tx.board.delete({
+      where: {
+        id: boardId,
+      },
+    });
+
+    return notifiedUserIds;
   });
 }
 

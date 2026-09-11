@@ -15,6 +15,7 @@ import { registerBoardMemberRoutes } from './routes/board-members.js';
 import { registerBoardRoutes } from './routes/boards.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerInvitationRoutes } from './routes/invitations.js';
+import { registerNotificationRoutes } from './routes/notifications.js';
 import { registerRealtimeRoutes } from './routes/realtime.js';
 
 export type BuildAppOptions = {
@@ -84,6 +85,10 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
 
   await app.register(registerInvitationRoutes, {
     prefix: '/api/invitations',
+  });
+
+  await app.register(registerNotificationRoutes, {
+    prefix: '/api/notifications',
   });
 
   await app.register(registerRealtimeRoutes, {

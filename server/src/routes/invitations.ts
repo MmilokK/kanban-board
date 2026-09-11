@@ -9,7 +9,7 @@ import {
   acceptBoardInvitation,
   getPublicBoardInvitationByToken,
 } from '../boards/board-invitation.service.js';
-import { publishBoardChanged } from '../realtime/realtime-hub.js';
+import { publishBoardChanged, publishNotificationsChanged } from '../realtime/realtime-hub.js';
 
 export async function registerInvitationRoutes(app: FastifyInstance) {
   const typedApp = app.withTypeProvider<ZodTypeProvider>();
@@ -47,6 +47,7 @@ export async function registerInvitationRoutes(app: FastifyInstance) {
       const member = await acceptBoardInvitation(user.id, token);
 
       publishBoardChanged(member.boardId);
+      publishNotificationsChanged(user.id);
 
       return {
         member,
