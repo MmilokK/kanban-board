@@ -14,8 +14,12 @@ import {
   boardMemberUserParamsSchema,
   updateBoardMemberSchema,
 } from '../boards/board-member-schema.js';
+import {
+  publishBoardChanged,
+  publishNotificationsChanged,
+  unsubscribeUserFromBoard,
+} from '../realtime/realtime-hub.js';
 import { apiErrorSchema } from '../schemas/api-response-schema.js';
-import { publishBoardChanged, unsubscribeUserFromBoard } from '../realtime/realtime-hub.js';
 
 export async function registerBoardMemberRoutes(app: FastifyInstance): Promise<void> {
   const typedApp = app.withTypeProvider<ZodTypeProvider>();
@@ -35,7 +39,6 @@ export async function registerBoardMemberRoutes(app: FastifyInstance): Promise<v
         },
       },
     },
-
     async (request) => {
       const user = await requireAuth(request);
       const members = await getBoardMembers(user.id, request.params.boardId);
@@ -62,7 +65,6 @@ export async function registerBoardMemberRoutes(app: FastifyInstance): Promise<v
         },
       },
     },
-
     async (request) => {
       const user = await requireAuth(request);
 
@@ -74,6 +76,7 @@ export async function registerBoardMemberRoutes(app: FastifyInstance): Promise<v
       );
 
       publishBoardChanged(request.params.boardId);
+      publishNotificationsChanged(request.params.userId);
 
       return { member };
     },
@@ -96,13 +99,14 @@ export async function registerBoardMemberRoutes(app: FastifyInstance): Promise<v
         },
       },
     },
-
     async (request, reply) => {
       const user = await requireAuth(request);
 
       await removeBoardMember(user.id, request.params.boardId, request.params.userId);
 
       publishBoardChanged(request.params.boardId);
+      publishNotificationsChanged(request.params.userId);
+
       unsubscribeUserFromBoard(request.params.userId, request.params.boardId);
 
       return reply.status(204).send();

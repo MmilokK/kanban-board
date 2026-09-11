@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { BoardInvitationType } from '../generated/prisma/client.js';
+import { BoardInvitationType, NotificationType } from '../generated/prisma/client.js';
 import { db } from '../db/client.js';
 import { AppError } from '../errors/app-error.js';
 import type {
@@ -7,6 +7,7 @@ import type {
   CreateLinkBoardInvitationInput,
 } from './board-invitation.types.js';
 import { requireBoardOwner } from './board-access.js';
+import { createNotification } from '../notifications/notification.service.js';
 
 const DEFAULT_INVITATION_EXPIRES_IN_DAYS = 7;
 
@@ -95,6 +96,27 @@ export async function createEmailBoardInvitation(
       maxUses: 1,
     },
   });
+
+  if (existingUser) {
+    const board = await db.board.findUnique({
+      where: {
+        id: boardId,
+      },
+      select: {
+        title: true,
+      },
+    });
+
+    if (board) {
+      await createNotification({
+        userId: existingUser.id,
+        type: NotificationType.BOARD_INVITATION_RECEIVED,
+        title: 'Новое приглашение',
+        message: `Вас пригласили на доску «${board.title}»`,
+        boardId,
+      });
+    }
+  }
 
   if (invitation.role === 'OWNER') {
     throw new AppError('Некорректная роль приглашения', {
@@ -341,6 +363,27 @@ export async function acceptBoardInvitation(currentUserId: string, token: string
         },
       },
     });
+
+    const board = await tx.board.findUnique({
+      where: {
+        id: invitation.boardId,
+      },
+      select: {
+        title: true,
+      },
+    });
+
+    if (board) {
+      await tx.notification.create({
+        data: {
+          userId: currentUserId,
+          type: NotificationType.BOARD_ACCESS_GRANTED,
+          title: 'Доступ к доске получен',
+          message: `Вы получили доступ к доске «${board.title}»`,
+          boardId: invitation.boardId,
+        },
+      });
+    }
 
     return member;
   });

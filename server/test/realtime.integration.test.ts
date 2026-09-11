@@ -814,4 +814,341 @@ describe('Realtime WebSocket', () => {
       await app.close();
     }
   });
+
+  it('отправляет NOTIFICATIONS_CHANGED пользователю после изменения его роли', async () => {
+    const app = await createApp();
+
+    try {
+      const ownerCookie = await registerUser(app, TEST_EMAIL);
+      const memberCookie = await registerUser(app, OTHER_TEST_EMAIL);
+
+      const boardId = await createBoard(app, ownerCookie, 'Realtime Notification Role Board');
+
+      await addBoardMember(boardId, OTHER_TEST_EMAIL, BoardMemberRole.VIEWER);
+
+      const member = await db.user.findUnique({
+        where: {
+          email: OTHER_TEST_EMAIL,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (!member) {
+        throw new Error('Участник realtime-теста не найден');
+      }
+
+      await app.ready();
+
+      const ownerSocket = await app.injectWS('/api/realtime', {
+        headers: {
+          cookie: ownerCookie,
+        },
+      });
+
+      const memberSocket = await app.injectWS('/api/realtime', {
+        headers: {
+          cookie: memberCookie,
+        },
+      });
+
+      const memberNotificationPromise = waitForMessage(memberSocket, 'NOTIFICATIONS_CHANGED');
+
+      const ownerNoNotificationPromise = expectNoMessage(ownerSocket, 'NOTIFICATIONS_CHANGED');
+
+      const response = await app.inject({
+        method: 'PATCH',
+        url: `/api/boards/${boardId}/members/${member.id}`,
+        headers: {
+          cookie: ownerCookie,
+        },
+        payload: {
+          role: BoardMemberRole.EDITOR,
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+
+      await expect(memberNotificationPromise).resolves.toEqual({
+        type: 'NOTIFICATIONS_CHANGED',
+      });
+
+      await expect(ownerNoNotificationPromise).resolves.toBeUndefined();
+
+      ownerSocket.terminate();
+      memberSocket.terminate();
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('отправляет NOTIFICATIONS_CHANGED на все соединения пользователя', async () => {
+    const app = await createApp();
+
+    try {
+      const ownerCookie = await registerUser(app, TEST_EMAIL);
+      const memberCookie = await registerUser(app, OTHER_TEST_EMAIL);
+
+      const boardId = await createBoard(app, ownerCookie, 'Realtime Multiple Connections Board');
+
+      await addBoardMember(boardId, OTHER_TEST_EMAIL, BoardMemberRole.VIEWER);
+
+      const member = await db.user.findUnique({
+        where: {
+          email: OTHER_TEST_EMAIL,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (!member) {
+        throw new Error('Участник realtime-теста не найден');
+      }
+
+      await app.ready();
+
+      const firstSocket = await app.injectWS('/api/realtime', {
+        headers: {
+          cookie: memberCookie,
+        },
+      });
+
+      const secondSocket = await app.injectWS('/api/realtime', {
+        headers: {
+          cookie: memberCookie,
+        },
+      });
+
+      const firstNotificationPromise = waitForMessage(firstSocket, 'NOTIFICATIONS_CHANGED');
+
+      const secondNotificationPromise = waitForMessage(secondSocket, 'NOTIFICATIONS_CHANGED');
+
+      const response = await app.inject({
+        method: 'PATCH',
+        url: `/api/boards/${boardId}/members/${member.id}`,
+        headers: {
+          cookie: ownerCookie,
+        },
+        payload: {
+          role: BoardMemberRole.EDITOR,
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+
+      await expect(firstNotificationPromise).resolves.toEqual({
+        type: 'NOTIFICATIONS_CHANGED',
+      });
+
+      await expect(secondNotificationPromise).resolves.toEqual({
+        type: 'NOTIFICATIONS_CHANGED',
+      });
+
+      firstSocket.terminate();
+      secondSocket.terminate();
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('отправляет NOTIFICATIONS_CHANGED после удаления участника', async () => {
+    const app = await createApp();
+
+    try {
+      const ownerCookie = await registerUser(app, TEST_EMAIL);
+      const memberCookie = await registerUser(app, OTHER_TEST_EMAIL);
+
+      const boardId = await createBoard(app, ownerCookie, 'Realtime Revoke Notification Board');
+
+      await addBoardMember(boardId, OTHER_TEST_EMAIL, BoardMemberRole.VIEWER);
+
+      const member = await db.user.findUnique({
+        where: {
+          email: OTHER_TEST_EMAIL,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (!member) {
+        throw new Error('Участник realtime-теста не найден');
+      }
+
+      await app.ready();
+
+      const memberSocket = await app.injectWS('/api/realtime', {
+        headers: {
+          cookie: memberCookie,
+        },
+      });
+
+      const notificationPromise = waitForMessage(memberSocket, 'NOTIFICATIONS_CHANGED');
+
+      const response = await app.inject({
+        method: 'DELETE',
+        url: `/api/boards/${boardId}/members/${member.id}`,
+        headers: {
+          cookie: ownerCookie,
+        },
+      });
+
+      expect(response.statusCode).toBe(204);
+
+      await expect(notificationPromise).resolves.toEqual({
+        type: 'NOTIFICATIONS_CHANGED',
+      });
+
+      memberSocket.terminate();
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('отправляет NOTIFICATIONS_CHANGED участнику после удаления доски', async () => {
+    const app = await createApp();
+
+    try {
+      const ownerCookie = await registerUser(app, TEST_EMAIL);
+      const memberCookie = await registerUser(app, OTHER_TEST_EMAIL);
+
+      const boardId = await createBoard(app, ownerCookie, 'Realtime Deleted Board Notification');
+
+      await addBoardMember(boardId, OTHER_TEST_EMAIL, BoardMemberRole.VIEWER);
+
+      await app.ready();
+
+      const memberSocket = await app.injectWS('/api/realtime', {
+        headers: {
+          cookie: memberCookie,
+        },
+      });
+
+      const notificationPromise = waitForMessage(memberSocket, 'NOTIFICATIONS_CHANGED');
+
+      const response = await app.inject({
+        method: 'DELETE',
+        url: `/api/boards/${boardId}`,
+        headers: {
+          cookie: ownerCookie,
+        },
+      });
+
+      expect(response.statusCode).toBe(204);
+
+      await expect(notificationPromise).resolves.toEqual({
+        type: 'NOTIFICATIONS_CHANGED',
+      });
+
+      memberSocket.terminate();
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('отправляет NOTIFICATIONS_CHANGED после принятия приглашения', async () => {
+    const app = await createApp();
+
+    try {
+      const ownerCookie = await registerUser(app, TEST_EMAIL);
+      const inviteeCookie = await registerUser(app, OTHER_TEST_EMAIL);
+
+      const boardId = await createBoard(app, ownerCookie, 'Realtime Access Notification Board');
+
+      const invitationResponse = await app.inject({
+        method: 'POST',
+        url: `/api/boards/${boardId}/invitations/link`,
+        headers: {
+          cookie: ownerCookie,
+        },
+        payload: {
+          role: 'VIEWER',
+          expiresInDays: 7,
+          maxUses: 1,
+        },
+      });
+
+      expect(invitationResponse.statusCode).toBe(200);
+
+      const invitationBody = invitationResponse.json() as {
+        invitation: {
+          token: string;
+        };
+      };
+
+      await app.ready();
+
+      const inviteeSocket = await app.injectWS('/api/realtime', {
+        headers: {
+          cookie: inviteeCookie,
+        },
+      });
+
+      const notificationPromise = waitForMessage(inviteeSocket, 'NOTIFICATIONS_CHANGED');
+
+      const acceptResponse = await app.inject({
+        method: 'POST',
+        url: `/api/invitations/${invitationBody.invitation.token}/accept`,
+        headers: {
+          cookie: inviteeCookie,
+        },
+      });
+
+      expect(acceptResponse.statusCode).toBe(200);
+
+      await expect(notificationPromise).resolves.toEqual({
+        type: 'NOTIFICATIONS_CHANGED',
+      });
+
+      inviteeSocket.terminate();
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('отправляет NOTIFICATIONS_CHANGED после email-приглашения зарегистрированного пользователя', async () => {
+    const app = await createApp();
+
+    try {
+      const ownerCookie = await registerUser(app, TEST_EMAIL);
+      const inviteeCookie = await registerUser(app, OTHER_TEST_EMAIL);
+
+      const boardId = await createBoard(app, ownerCookie, 'Realtime Email Invitation Board');
+
+      await app.ready();
+
+      const inviteeSocket = await app.injectWS('/api/realtime', {
+        headers: {
+          cookie: inviteeCookie,
+        },
+      });
+
+      const notificationPromise = waitForMessage(inviteeSocket, 'NOTIFICATIONS_CHANGED');
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/boards/${boardId}/invitations/email`,
+        headers: {
+          cookie: ownerCookie,
+        },
+        payload: {
+          email: OTHER_TEST_EMAIL,
+          role: 'VIEWER',
+          expiresInDays: 7,
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+
+      await expect(notificationPromise).resolves.toEqual({
+        type: 'NOTIFICATIONS_CHANGED',
+      });
+
+      inviteeSocket.terminate();
+    } finally {
+      await app.close();
+    }
+  });
 });

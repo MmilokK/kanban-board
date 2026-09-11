@@ -5,13 +5,17 @@ type BoardChangedMessage = {
   boardId: string;
 };
 
+type NotificationsChangedMessage = {
+  type: 'NOTIFICATIONS_CHANGED';
+};
+
+type RealtimeServerMessage = BoardChangedMessage | NotificationsChangedMessage;
+
 const boardSubscribers = new Map<string, Set<WebSocket>>();
-
 const socketSubscriptions = new Map<WebSocket, Set<string>>();
-
 const socketUsers = new Map<WebSocket, string>();
 
-function sendMessage(socket: WebSocket, message: BoardChangedMessage): void {
+function sendMessage(socket: WebSocket, message: RealtimeServerMessage): void {
   socket.send(JSON.stringify(message));
 }
 
@@ -79,6 +83,18 @@ export function unsubscribeUserFromBoard(userId: string, boardId: string): void 
   }
 }
 
+export function unsubscribeAllFromBoard(boardId: string): void {
+  const subscribers = boardSubscribers.get(boardId);
+
+  if (!subscribers) {
+    return;
+  }
+
+  for (const socket of [...subscribers]) {
+    unsubscribeFromBoard(socket, boardId);
+  }
+}
+
 export function removeRealtimeSocket(socket: WebSocket): void {
   const subscriptions = socketSubscriptions.get(socket);
 
@@ -124,14 +140,20 @@ export function publishBoardChanged(boardId: string): void {
   }
 }
 
-export function unsubscribeAllFromBoard(boardId: string): void {
-  const subscribers = boardSubscribers.get(boardId);
+export function publishNotificationsChanged(userId: string): void {
+  const message: NotificationsChangedMessage = {
+    type: 'NOTIFICATIONS_CHANGED',
+  };
 
-  if (!subscribers) {
-    return;
-  }
+  for (const [socket, socketUserId] of socketUsers) {
+    if (socketUserId !== userId) {
+      continue;
+    }
 
-  for (const socket of [...subscribers]) {
-    unsubscribeFromBoard(socket, boardId);
+    if (socket.readyState !== socket.OPEN) {
+      continue;
+    }
+
+    sendMessage(socket, message);
   }
 }

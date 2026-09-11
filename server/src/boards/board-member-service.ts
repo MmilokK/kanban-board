@@ -1,3 +1,4 @@
+import { NotificationType } from '../generated/prisma/client.js';
 import type { BoardMemberRole } from '../generated/prisma/client.js';
 import { db } from '../db/client.js';
 import { AppError } from '../errors/app-error.js';
@@ -27,6 +28,14 @@ function mapBoardMember(member: BoardMemberWithUser) {
     createdAt: member.createdAt.toISOString(),
     updatedAt: member.updatedAt.toISOString(),
   };
+}
+
+function getBoardRoleLabel(role: 'EDITOR' | 'VIEWER'): string {
+  if (role === 'EDITOR') {
+    return 'Редактор';
+  }
+
+  return 'Наблюдатель';
 }
 
 export async function getBoardMembers(currentUserId: string, boardId: string) {
@@ -95,22 +104,56 @@ export async function updateBoardMemberRole(
     });
   }
 
-  const updatedMember = await db.boardMember.update({
-    where: {
-      id: targetMembership.id,
-    },
-    data: {
-      role,
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          email: true,
-          name: true,
+  if (targetMembership.role === role) {
+    return mapBoardMember(targetMembership);
+  }
+
+  const updatedMember = await db.$transaction(async (tx) => {
+    const board = await tx.board.findUnique({
+      where: {
+        id: boardId,
+      },
+      select: {
+        title: true,
+      },
+    });
+
+    if (!board) {
+      throw new AppError('Доска не найдена', {
+        statusCode: 404,
+        code: 'BOARD_NOT_FOUND',
+      });
+    }
+
+    const member = await tx.boardMember.update({
+      where: {
+        id: targetMembership.id,
+      },
+      data: {
+        role,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+          },
         },
       },
-    },
+    });
+
+    await tx.notification.create({
+      data: {
+        userId: targetUserId,
+        type: NotificationType.BOARD_ROLE_CHANGED,
+        title: 'Роль на доске изменена',
+        message: `Ваша роль на доске «${board.title}» изменена на «${getBoardRoleLabel(role)}»`,
+        boardId,
+      },
+    });
+
+    return member;
   });
 
   return mapBoardMember(updatedMember);
@@ -150,9 +193,37 @@ export async function removeBoardMember(
     });
   }
 
-  await db.boardMember.delete({
-    where: {
-      id: targetMembership.id,
-    },
+  await db.$transaction(async (tx) => {
+    const board = await tx.board.findUnique({
+      where: {
+        id: boardId,
+      },
+      select: {
+        title: true,
+      },
+    });
+
+    if (!board) {
+      throw new AppError('Доска не найдена', {
+        statusCode: 404,
+        code: 'BOARD_NOT_FOUND',
+      });
+    }
+
+    await tx.boardMember.delete({
+      where: {
+        id: targetMembership.id,
+      },
+    });
+
+    await tx.notification.create({
+      data: {
+        userId: targetUserId,
+        type: NotificationType.BOARD_ACCESS_REVOKED,
+        title: 'Доступ к доске отозван',
+        message: `Вы больше не имеете доступа к доске «${board.title}»`,
+        boardId,
+      },
+    });
   });
 }

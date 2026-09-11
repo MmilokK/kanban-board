@@ -42,6 +42,14 @@ enum BoardInvitationType {
   LINK
 }
 
+enum NotificationType {
+  BOARD_INVITATION_RECEIVED
+  BOARD_ACCESS_GRANTED
+  BOARD_ROLE_CHANGED
+  BOARD_ACCESS_REVOKED
+  BOARD_DELETED
+}
+
 model PasswordCredential {
   userId String @id
 
@@ -88,6 +96,7 @@ model User {
   sentBoardInvitations BoardInvitation[]
   comments             Comment[]
   historyEvents        TaskHistoryEvent[]
+  notifications        Notification[]
 
   @@map("users")
 }
@@ -270,4 +279,20 @@ model TaskHistoryEvent {
   @@index([actorId])
   @@index([createdAt])
   @@map("task_history_events")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  boardId   String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+  @@index([userId, createdAt])
 }

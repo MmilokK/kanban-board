@@ -24,7 +24,11 @@ import {
   requireBoardMember,
   requireBoardOwner,
 } from '../boards/board-access.js';
-import { publishBoardChanged, unsubscribeAllFromBoard } from '../realtime/realtime-hub.js';
+import {
+  publishBoardChanged,
+  publishNotificationsChanged,
+  unsubscribeAllFromBoard,
+} from '../realtime/realtime-hub.js';
 
 export async function registerBoardRoutes(app: FastifyInstance): Promise<void> {
   const typedApp = app.withTypeProvider<ZodTypeProvider>();
@@ -178,9 +182,11 @@ export async function registerBoardRoutes(app: FastifyInstance): Promise<void> {
     async (request, reply) => {
       const user = await requireAuth(request);
       await requireBoardOwner(user.id, request.params.boardId);
-      await deleteBoard(user.id, request.params.boardId);
-
+      const notifiedUserIds = await deleteBoard(user.id, request.params.boardId);
       publishBoardChanged(request.params.boardId);
+      for (const notifiedUserId of notifiedUserIds) {
+        publishNotificationsChanged(notifiedUserId);
+      }
       unsubscribeAllFromBoard(request.params.boardId);
 
       return reply.status(204).send();
